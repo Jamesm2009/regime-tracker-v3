@@ -336,6 +336,7 @@ const BT = {
 //  STATE
 // ════════════════════════════════════════════
 let allPrices = {spy:[], dbc:[], gld:[]};  // raw [{d,c}] from Yahoo
+let etfPerf = {};  // {ticker: 20d_return_pct} populated after ETF fetch
 let historyRows = [];   // [{d, q, g, i, ig, spyClose}] built after fetch
 let currentRange = 63;
 let histChart = null, sigChart = null, btChartInst = null;
@@ -374,6 +375,23 @@ async function doFetch(manual=false) {
     ]);
     allPrices = {spy, dbc, gld};
     buildHistoryRows();
+    // Determine current quadrant so we know which ETFs to fetch
+    const latestRow = historyRows[historyRows.length - 1];
+    const fetchQ = latestRow ? latestRow.q : 2;
+    const etfsToFetch = RECS[fetchQ] || [];
+    // Fetch all ETFs in the current quadrant basket (21 days needed for 20d return)
+    const etfResults = await Promise.allSettled(
+      etfsToFetch.map(t => fetchYahoo(t, 30))
+    );
+    etfPerf = {};
+    etfsToFetch.forEach((ticker, idx) => {
+      const r = etfResults[idx];
+      if (r.status === 'fulfilled' && r.value.length >= 21) {
+        const prices = r.value;
+        const n = prices.length;
+        etfPerf[ticker] = (prices[n-1].c - prices[n-21].c) / prices[n-21].c * 100;
+      }
+    });
     renderAll();
     badge.className = 'data-badge badge-live';
     badge.textContent = '⬤ Live data';
@@ -507,31 +525,21 @@ function renderLivePanel(row) {
   setGauge('i-bar','i-val','i-desc', row.i, 15, ['Inflation rising → commodities','Inflation falling → bonds/tech']);
   setGauge('ig-bar','ig-val','ig-desc', row.ig, 30, ['Elevated · Q4 blocked','Normalised · Q4 active if signalled']);
 
-  // ETF recs — use real 20d SPY performance as stand-in for live perf tracking
+  // ETF recs — real 20d returns from live Yahoo Finance fetch
   document.getElementById('rec-lbl').textContent = QNAMES[q];
-  const spy = allPrices.spy;
-  const n = spy.length;
-  const spy20d = n >= 21 ? (spy[n-1].c - spy[n-21].c) / spy[n-21].c * 100 : null;
-
-  const perfHints = {
-    // Real 20d returns from the fetched data where we have them
-    'SPY': spy20d,
-    'QQQ': spy20d != null ? spy20d * 1.18 : null,
-    'DBC': row.i != null ? row.i * 2.1 : null,
-    'GLD': row.i != null ? row.i * 1.7 : null,
-  };
-
   const grid = document.getElementById('recs-grid');
   grid.innerHTML = '';
   (RECS[q] || []).forEach(etf => {
-    const ret = perfHints[etf];
-    const cls = ret == null ? 'neu' : ret >= 0 ? 'pos' : 'neg';
-    const retStr = ret == null ? '—' : (ret >= 0 ? '+' : '') + ret.toFixed(2) + '%';
-    const note = ret == null ? 'No data' : Math.abs(ret) > 8 ? '● Strong' : Math.abs(ret) > 3 ? '● Moderate' : '○ Mild';
+    const r = etfPerf[etf];
+    const cls = r == null ? 'neu' : r >= 0 ? 'pos' : 'neg';
+    const retStr = r == null ? '—' : (r >= 0 ? '+' : '') + r.toFixed(2) + '%';
+    const strength = r == null ? '' : Math.abs(r) > 10 ? '▲▲ Very strong' : Math.abs(r) > 5 ? '▲ Strong' : Math.abs(r) > 2 ? '● Moderate' : '○ Mild';
+    const noteCol = r == null ? '' : r >= 0 ? 'color:var(--q1)' : 'color:var(--q3)';
     grid.innerHTML += `<div class="etf-tile">
       <div class="etf-tick" style="color:${QCOLS[q]}">${etf}</div>
       <div class="etf-ret ${cls}">${retStr}</div>
-      <div class="etf-note">${note} 20d · backtested</div>
+      <div class="etf-note" style="${noteCol}">${strength}</div>
+      <div class="etf-note" style="color:var(--dimmer);font-size:9px;margin-top:1px;">20d return · live</div>
     </div>`;
   });
 }
@@ -601,18 +609,23 @@ function buildHistChart() {
   const labels = slice.map(r => r.d);
   // Real SPY close prices for the line
   const spyLine = slice.map(r => r.spyClose);
-  // Quadrant background — scaled to max close + buffer
-  const maxClose = Math.max(...spyLine.filter(Boolean)) * 1.12;
+  const validPrices = spyLine.filter(Boolean);
+  const minClose = Math.min(...validPrices);
+  const maxClose = Math.max(...validPrices);
+  // Pad 2% top and bottom so line never touches the edge
+  const yMin = minClose * 0.98;
+  const yMax = maxClose * 1.02;
   const bgC = slice.map(r => {
     const op = 0.45;
-    if (!r.q) return `rgba(255,255,255,0.03)`;
+    if (!r.q) return 'rgba(255,255,255,0.03)';
     return r.q===1?`rgba(47,217,138,${op})`:r.q===2?`rgba(240,160,48,${op})`:r.q===3?`rgba(232,85,85,${op})`:`rgba(91,158,240,${op})`;
   });
 
   if (histChart) histChart.destroy();
   histChart = new Chart(document.getElementById('histChart').getContext('2d'), {
     data: { labels, datasets: [
-      { type:'bar',  data: slice.map(() => maxClose), backgroundColor: bgC, barThickness:'flex', order:2 },
+      // Background bars use a fixed giant value; axis is clamped to SPY range via min/max
+      { type:'bar',  data: slice.map(() => yMax * 10), backgroundColor: bgC, barThickness:'flex', order:2 },
       { type:'line', data: spyLine, borderColor:'rgba(238,235,229,.9)', borderWidth:1.8,
         pointRadius:0, tension:0.2, order:1, yAxisID:'y', fill:false }
     ]},
@@ -623,7 +636,8 @@ function buildHistChart() {
       },
       scales:{
         x:{ grid:{display:false}, ticks:{maxTicksLimit:8, font:{size:10}, color:'#8e8b86'} },
-        y:{ position:'right', grid:{color:'rgba(255,255,255,.04)'},
+        y:{ position:'right', min: yMin, max: yMax,
+            grid:{color:'rgba(255,255,255,.04)'},
             ticks:{font:{size:10}, color:'#8e8b86', callback: v => '$'+v.toFixed(0)} }
       }
     }
