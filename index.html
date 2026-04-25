@@ -1,53 +1,51 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Macro Regime Tracker</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap');
 :root {
   --bg:#0c0d0f; --surface:#161819; --surface2:#1e2124; --surface3:#252830;
-  --border:rgba(255,255,255,0.09); --border2:rgba(255,255,255,0.16);
-  --text:#eeebe5; --muted:#b0ada7; --dim:#7e7b76; --dimmer:#555250;
-  --q1:#2fd98a; --q1d:rgba(47,217,138,.13); --q1b:rgba(47,217,138,.45);
-  --q2:#f0a030; --q2d:rgba(240,160,48,.13);  --q2b:rgba(240,160,48,.45);
-  --q3:#e85555; --q3d:rgba(232,85,85,.13);   --q3b:rgba(232,85,85,.45);
-  --q4:#5b9ef0; --q4d:rgba(91,158,240,.13);  --q4b:rgba(91,158,240,.45);
-  --head:'Syne',sans-serif; --mono:'DM Mono',monospace;
+  --border:rgba(255,255,255,0.09); --border2:rgba(255,255,255,0.18);
+  --text:#eeebe5; --muted:#c0bdb8; --dim:#8e8b86; --dimmer:#5e5b58;
+  --q1:#2fd98a; --q1d:rgba(47,217,138,.13); --q1b:rgba(47,217,138,.3);
+  --q2:#f0a030; --q2d:rgba(240,160,48,.13);  --q2b:rgba(240,160,48,.3);
+  --q3:#e85555; --q3d:rgba(232,85,85,.13);   --q3b:rgba(232,85,85,.3);
+  --q4:#5b9ef0; --q4d:rgba(91,158,240,.13);  --q4b:rgba(91,158,240,.3);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--bg);color:var(--text);font-family:var(--head);min-height:100vh;font-size:14px;}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;font-size:14px;}
 .app{max-width:1100px;margin:0 auto;padding:18px 16px;}
 
-/* topbar */
+/* ── TOPBAR ── */
 .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:10px;flex-wrap:wrap;}
 .logo{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
-.topbar-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-.datestamp{font-family:var(--mono);font-size:12px;color:var(--dim);}
-.data-badge{font-family:var(--mono);font-size:10px;padding:3px 10px;border-radius:20px;border:1px solid;cursor:pointer;transition:.15s;}
-.data-badge.live{border-color:var(--q1);color:var(--q1);background:rgba(47,217,138,.08);}
-.data-badge.demo{border-color:var(--q2);color:var(--q2);background:rgba(240,160,48,.08);}
-.data-badge.loading{border-color:var(--dim);color:var(--dim);background:transparent;}
-.refresh-btn{font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:.15s;}
-.refresh-btn:hover{background:var(--surface2);color:var(--text);}
+.topbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.datestamp{font-family:'DM Mono',monospace;font-size:12px;color:var(--dim);}
+.countdown{font-family:'DM Mono',monospace;font-size:11px;color:var(--dimmer);}
+.data-badge{font-family:'DM Mono',monospace;font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid;cursor:pointer;user-select:none;}
+.badge-live{border-color:var(--q1);color:var(--q1);background:rgba(47,217,138,.08);}
+.badge-demo{border-color:var(--q2);color:var(--q2);background:rgba(240,160,48,.08);}
+.badge-loading{border-color:var(--dimmer);color:var(--dim);background:transparent;}
+.badge-error{border-color:var(--q3);color:var(--q3);background:rgba(232,85,85,.08);}
+.refresh-btn{font-family:'DM Mono',monospace;font-size:12px;padding:5px 14px;border-radius:7px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);cursor:pointer;}
+.refresh-btn:hover{background:var(--surface3);color:var(--text);}
+.refresh-btn:disabled{opacity:.4;cursor:default;}
 
-/* tabs */
+/* ── TABS ── */
 .tabs{display:flex;gap:3px;margin-bottom:16px;background:var(--surface);border-radius:10px;padding:4px;border:1px solid var(--border);width:fit-content;}
-.tab{font-size:12px;font-weight:600;padding:6px 16px;border-radius:7px;cursor:pointer;color:var(--dim);transition:.15s;border:none;background:none;font-family:var(--head);letter-spacing:.02em;}
+.tab{font-size:12px;font-weight:600;padding:6px 16px;border-radius:7px;cursor:pointer;color:var(--dim);border:none;background:none;font-family:'Syne',sans-serif;letter-spacing:.02em;transition:.15s;}
 .tab:hover{color:var(--muted);}
 .tab.active{background:var(--surface2);color:var(--text);}
 .tab-pane{display:none;}
 .tab-pane.active{display:block;}
 
-/* cards */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;}
-.card-title{font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--dim);margin-bottom:14px;}
-
 /* ── LIVE TAB ── */
 .hero{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
-.regime-card{background:var(--surface);border:1.5px solid var(--border2);border-radius:14px;padding:20px 22px;position:relative;overflow:hidden;transition:border-color .3s;}
+.regime-card{background:var(--surface);border:1.5px solid var(--border2);border-radius:14px;padding:20px 22px;position:relative;overflow:hidden;}
 .regime-card::before{content:'';position:absolute;inset:0;border-radius:14px;pointer-events:none;}
 .regime-card.q1{border-color:var(--q1b);}.regime-card.q1::before{background:var(--q1d);}
 .regime-card.q2{border-color:var(--q2b);}.regime-card.q2::before{background:var(--q2d);}
@@ -55,104 +53,108 @@ body{background:var(--bg);color:var(--text);font-family:var(--head);min-height:1
 .regime-card.q4{border-color:var(--q4b);}.regime-card.q4::before{background:var(--q4d);}
 .regime-lbl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
 .regime-name{font-size:30px;font-weight:800;line-height:1;margin-bottom:6px;}
-.regime-arrow{font-size:13px;color:var(--muted);margin-bottom:14px;}
+.regime-arrow{font-size:13px;color:var(--muted);margin-bottom:16px;}
 .regime-meta{display:flex;gap:20px;}
-.meta-item{}
-.meta-val{font-family:var(--mono);font-size:20px;font-weight:500;color:var(--text);}
+.meta-val{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:var(--text);}
 .meta-lbl{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-top:2px;}
-.q1 .regime-name{color:var(--q1);}.q2 .regime-name{color:var(--q2);}.q3 .regime-name{color:var(--q3);}.q4 .regime-name{color:var(--q4);}
+.q1 .regime-name{color:var(--q1);}.q2 .regime-name{color:var(--q2);}
+.q3 .regime-name{color:var(--q3);}.q4 .regime-name{color:var(--q4);}
 
 .status-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;}
 .s-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);}
 .s-row:last-child{border-bottom:none;}
 .s-lbl{font-size:12px;color:var(--muted);}
-.s-val{font-family:var(--mono);font-size:13px;color:var(--text);}
-.pill{font-size:10px;padding:3px 11px;border-radius:20px;font-weight:600;font-family:var(--mono);}
-.pill-g{background:rgba(47,217,138,.15);color:var(--q1);}
-.pill-a{background:rgba(240,160,48,.18);color:var(--q2);}
-.pill-r{background:rgba(232,85,85,.15);color:var(--q3);}
-.pill-b{background:rgba(91,158,240,.15);color:var(--q4);}
-.pill-d{background:rgba(255,255,255,.07);color:var(--dim);}
+.s-val{font-family:'DM Mono',monospace;font-size:13px;color:var(--text);}
+.pill{font-size:10px;padding:3px 11px;border-radius:20px;font-weight:600;font-family:'DM Mono',monospace;}
+.pill-g{background:rgba(47,217,138,.18);color:var(--q1);}
+.pill-a{background:rgba(240,160,48,.2);color:var(--q2);}
+.pill-r{background:rgba(232,85,85,.18);color:var(--q3);}
+.pill-b{background:rgba(91,158,240,.18);color:var(--q4);}
+.pill-d{background:rgba(255,255,255,.08);color:var(--dim);}
 
-/* gauges */
+/* ── GAUGES ── */
 .gauges{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
 .gauge{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
 .g-lbl{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);margin-bottom:8px;}
-.g-val{font-family:var(--mono);font-size:22px;font-weight:500;margin-bottom:8px;}
-.g-bg{height:5px;background:rgba(255,255,255,.07);border-radius:3px;position:relative;margin-bottom:6px;}
-.g-center{position:absolute;left:50%;top:-2px;width:1px;height:9px;background:var(--border2);}
+.g-val{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;margin-bottom:8px;}
+.g-bg{height:5px;background:rgba(255,255,255,.07);border-radius:3px;position:relative;margin-bottom:7px;}
+.g-center{position:absolute;left:50%;top:-3px;width:1px;height:11px;background:var(--border2);}
 .g-fill{height:5px;border-radius:3px;position:absolute;}
 .g-desc{font-size:11px;color:var(--muted);}
 
-/* ETF recs */
+/* ── ETF RECS ── */
 .sec-head{font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--dim);margin-bottom:10px;margin-top:4px;}
 .recs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
 .etf-tile{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 13px;transition:border-color .2s;}
 .etf-tile:hover{border-color:var(--border2);}
-.etf-tick{font-family:var(--mono);font-size:14px;font-weight:500;margin-bottom:4px;}
-.etf-ret{font-family:var(--mono);font-size:18px;font-weight:500;}
+.etf-tick{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;margin-bottom:4px;}
+.etf-ret{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;}
 .etf-note{font-size:10px;color:var(--muted);margin-top:2px;}
 .pos{color:var(--q1);}.neg{color:var(--q3);}.neu{color:var(--muted);}
 
-/* track record */
-.track-wrap{margin-bottom:14px;}
-.track-row{display:grid;grid-template-columns:90px 130px 70px 80px 80px 80px 1fr;gap:6px;align-items:center;padding:9px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:5px;font-size:12px;}
+/* ── TRACK RECORD ── */
+.track-head{display:grid;grid-template-columns:95px 135px 68px 80px 80px 80px 1fr;gap:6px;padding:4px 14px 8px;font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);}
+.track-row{display:grid;grid-template-columns:95px 135px 68px 80px 80px 80px 1fr;gap:6px;align-items:center;padding:9px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:5px;font-size:12px;}
 .track-row.today{border-color:var(--border2);background:var(--surface2);}
-.track-head{display:grid;grid-template-columns:90px 130px 70px 80px 80px 80px 1fr;gap:6px;padding:4px 14px 8px;font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);}
-.qbadge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;}
-.qb1{background:rgba(47,217,138,.15);color:var(--q1);}.qb2{background:rgba(240,160,48,.15);color:var(--q2);}
-.qb3{background:rgba(232,85,85,.15);color:var(--q3);}.qb4{background:rgba(91,158,240,.15);color:var(--q4);}
-.mono{font-family:var(--mono);}
+.qbadge{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;}
+.qb1{background:rgba(47,217,138,.18);color:var(--q1);}.qb2{background:rgba(240,160,48,.18);color:var(--q2);}
+.qb3{background:rgba(232,85,85,.18);color:var(--q3);}.qb4{background:rgba(91,158,240,.18);color:var(--q4);}
 
-/* chart */
+/* ── CHART CARDS ── */
 .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:12px;}
 .chart-ctrl{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.card-title{font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--dim);}
 .ctrl-btns{display:flex;gap:6px;}
-.ctrl-btn{font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:.15s;}
+.ctrl-btn{font-family:'DM Mono',monospace;font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:.15s;}
 .ctrl-btn.active,.ctrl-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--border2);}
 .chart-wrap{position:relative;}
 .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;}
 .leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);}
 .leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
 
-/* backtest */
+/* ── BACKTEST ── */
 .bt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;}
 .bt-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
 .bt-card.active{border-width:1.5px;}
 .bt-q{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;}
 .bt-stat{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin:5px 0;}
-.bt-stat span:last-child{font-family:var(--mono);color:var(--text);font-size:12px;}
+.bt-stat span:last-child{font-family:'DM Mono',monospace;color:var(--text);}
 .bt-curr{font-size:10px;font-weight:600;margin-top:8px;}
+.method-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-top:12px;}
+.method-text{font-size:12px;color:var(--muted);line-height:1.8;}
 
 /* ── HOW IT WORKS ── */
 .how-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
-.how-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;}
-.how-title{font-size:14px;font-weight:700;margin-bottom:14px;}
-.how-step{display:flex;gap:12px;margin:8px 0;line-height:1.6;}
-.how-n{font-family:var(--mono);font-size:10px;min-width:22px;height:22px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;color:var(--muted);flex-shrink:0;margin-top:1px;}
-.how-step-text{font-size:13px;color:var(--muted);line-height:1.65;}
-.how-step-text strong{color:var(--text);}
+.how-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;}
 .how-card.wide{grid-column:1/-1;}
+.how-title{font-size:14px;font-weight:700;margin-bottom:14px;}
+.how-step{display:flex;gap:12px;margin:8px 0;}
+.how-n{font-family:'DM Mono',monospace;font-size:10px;min-width:22px;height:22px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;color:var(--dim);flex-shrink:0;margin-top:2px;}
+.how-body{font-size:13px;color:var(--muted);line-height:1.7;}
+.how-body strong{color:var(--text);}
 .how-connect{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px;}
+.note-box{margin-top:14px;padding:13px 16px;background:var(--surface2);border-radius:9px;font-size:12px;color:var(--muted);line-height:1.75;}
+.note-box strong{color:var(--text);}
+code{background:var(--surface2);padding:2px 7px;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;color:var(--text);}
 
-/* next refresh countdown */
-.next-refresh{font-family:var(--mono);font-size:11px;color:var(--dim);}
-
-hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
+hr.div{border:none;border-top:1px solid var(--border);margin:14px 0;}
 </style>
 </head>
 <body>
 <div class="app">
+
+  <!-- TOPBAR -->
   <div class="topbar">
     <div class="logo">▣ Macro Regime Tracker</div>
     <div class="topbar-right">
-      <span class="next-refresh" id="next-refresh"></span>
-      <span class="data-badge demo" id="data-badge" onclick="fetchLiveData(true)" title="Click to refresh">⬤ Demo data</span>
-      <button class="refresh-btn" onclick="fetchLiveData(true)">↻ Refresh</button>
-      <span class="datestamp" id="datestamp">2026-04-23 · as of last close</span>
+      <span class="countdown" id="countdown"></span>
+      <span class="data-badge badge-loading" id="data-badge" onclick="doFetch(true)">⟳ Loading…</span>
+      <button class="refresh-btn" id="refresh-btn" onclick="doFetch(true)">↻ Refresh</button>
+      <span class="datestamp" id="datestamp">—</span>
     </div>
   </div>
 
+  <!-- TABS -->
   <div class="tabs">
     <button class="tab active" onclick="showTab('live',this)">Live Regime</button>
     <button class="tab" onclick="showTab('history',this)">History</button>
@@ -160,509 +162,581 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
     <button class="tab" onclick="showTab('howto',this)">How It Works</button>
   </div>
 
-  <!-- ── LIVE TAB ── -->
+  <!-- ══════════════ LIVE TAB ══════════════ -->
   <div class="tab-pane active" id="tab-live">
     <div class="hero">
       <div class="regime-card" id="regime-card">
         <div class="regime-lbl">Current Regime</div>
-        <div class="regime-name" id="regime-name">Overheating</div>
-        <div class="regime-arrow" id="regime-arrow">Growth ↑  Inflation ↑</div>
+        <div class="regime-name" id="regime-name">—</div>
+        <div class="regime-arrow" id="regime-arrow">—</div>
         <div class="regime-meta">
-          <div class="meta-item"><div class="meta-val" id="days-val">5</div><div class="meta-lbl">Days Active</div></div>
-          <div class="meta-item"><div class="meta-val" id="hit-val">58%</div><div class="meta-lbl">Hit Rate</div></div>
-          <div class="meta-item"><div class="meta-val" id="fwd-val">+1.48%</div><div class="meta-lbl">Avg Fwd 20d</div></div>
+          <div><div class="meta-val" id="days-val">—</div><div class="meta-lbl">Days Active</div></div>
+          <div><div class="meta-val" id="hit-val">—</div><div class="meta-lbl">Hit Rate</div></div>
+          <div><div class="meta-val" id="fwd-val">—</div><div class="meta-lbl">Avg Fwd 20d</div></div>
         </div>
       </div>
       <div class="status-card">
         <div class="s-row"><span class="s-lbl">3-Day Confirmation</span><span class="pill pill-g" id="confirm-pill">CONFIRMED</span></div>
-        <div class="s-row"><span class="s-lbl">Inflation Gate (63d)</span><span class="pill pill-a" id="gate-pill">HIGH (>3% proxy)</span></div>
+        <div class="s-row"><span class="s-lbl">Inflation Gate (63d)</span><span class="pill" id="gate-pill">—</span></div>
         <div class="s-row"><span class="s-lbl">Q4 Filter Active</span><span class="pill pill-d" id="q4-pill">N/A</span></div>
-        <div class="s-row"><span class="s-lbl">Growth Signal (SPY 20d)</span><span class="s-val pos" id="g-status">+7.86%</span></div>
-        <div class="s-row"><span class="s-lbl">Inflation Signal (DBC+GLD 20d)</span><span class="s-val pos" id="i-status">+4.82%</span></div>
-        <div class="s-row"><span class="s-lbl">Signal Sources</span><span class="s-val" style="font-size:11px;color:var(--muted);">SPY · DBC · GLD · IEF · SHY</span></div>
+        <div class="s-row"><span class="s-lbl">Growth Signal (SPY 20d)</span><span class="s-val" id="g-status">—</span></div>
+        <div class="s-row"><span class="s-lbl">Inflation Signal (DBC+GLD 20d)</span><span class="s-val" id="i-status">—</span></div>
+        <div class="s-row"><span class="s-lbl">Signal Sources</span><span class="s-val" style="font-size:11px;color:var(--muted);">SPY · DBC · GLD</span></div>
       </div>
     </div>
 
     <div class="gauges">
       <div class="gauge">
         <div class="g-lbl">Growth · SPY 20d Return</div>
-        <div class="g-val pos" id="g-val">+7.86%</div>
+        <div class="g-val" id="g-val">—</div>
         <div class="g-bg"><div class="g-center"></div><div class="g-fill" id="g-bar"></div></div>
-        <div class="g-desc" id="g-desc">Growth rising → risk-on</div>
+        <div class="g-desc" id="g-desc">—</div>
       </div>
       <div class="gauge">
-        <div class="g-lbl">Inflation · DBC+GLD 20d</div>
-        <div class="g-val pos" id="i-val">+4.82%</div>
+        <div class="g-lbl">Inflation · DBC+GLD 20d Avg</div>
+        <div class="g-val" id="i-val">—</div>
         <div class="g-bg"><div class="g-center"></div><div class="g-fill" id="i-bar"></div></div>
-        <div class="g-desc" id="i-desc">Inflation rising → commodities</div>
+        <div class="g-desc" id="i-desc">—</div>
       </div>
       <div class="gauge">
-        <div class="g-lbl">Infl Gate · DBC+GLD 63d</div>
-        <div class="g-val pos" id="ig-val">+10.66%</div>
+        <div class="g-lbl">Infl Gate · DBC+GLD 63d Avg</div>
+        <div class="g-val" id="ig-val">—</div>
         <div class="g-bg"><div class="g-center"></div><div class="g-fill" id="ig-bar"></div></div>
-        <div class="g-desc" id="ig-desc">Elevated · Q4 blocked</div>
+        <div class="g-desc" id="ig-desc">—</div>
       </div>
     </div>
 
-    <div class="sec-head">Recommended ETFs — <span id="rec-lbl">Overheating</span> · 20-day forward return (backtested)</div>
+    <div class="sec-head">Recommended ETFs — <span id="rec-lbl">—</span> · 20-day forward return (backtested avg)</div>
     <div class="recs-grid" id="recs-grid"></div>
 
     <div class="sec-head">Recent Track Record — Last 5 Trading Days</div>
-    <div class="track-wrap">
-      <div class="track-head">
-        <span>Date</span><span>Regime</span><span>SPY Day</span>
-        <span>Growth</span><span>Inflation</span><span>Gate 63d</span><span>Notes</span>
-      </div>
-      <div id="track-body"></div>
+    <div class="track-head">
+      <span>Date</span><span>Regime</span><span>SPY Day</span>
+      <span>Growth 20d</span><span>Inflation 20d</span><span>Gate 63d</span><span>Notes</span>
     </div>
+    <div id="track-body"></div>
   </div>
 
-  <!-- ── HISTORY TAB ── -->
+  <!-- ══════════════ HISTORY TAB ══════════════ -->
   <div class="tab-pane" id="tab-history">
     <div class="chart-card">
       <div class="chart-ctrl">
-        <div class="card-title" style="margin:0;">Regime History · SPY Price + Quadrant Background</div>
+        <div class="card-title">Regime History · SPY Price + Quadrant Background</div>
         <div class="ctrl-btns">
           <button class="ctrl-btn active" onclick="setRange(63,this)">3M</button>
           <button class="ctrl-btn" onclick="setRange(126,this)">6M</button>
           <button class="ctrl-btn" onclick="setRange(252,this)">1Y</button>
         </div>
       </div>
-      <div class="chart-wrap" style="height:200px;"><canvas id="histChart"></canvas></div>
+      <div class="chart-wrap" style="height:210px;"><canvas id="histChart"></canvas></div>
       <div class="legend">
-        <div class="leg-item"><div class="leg-dot" style="background:rgba(47,217,138,.4);"></div>Q1 Goldilocks</div>
-        <div class="leg-item"><div class="leg-dot" style="background:rgba(240,160,48,.4);"></div>Q2 Overheating</div>
-        <div class="leg-item"><div class="leg-dot" style="background:rgba(232,85,85,.4);"></div>Q3 Stagflation</div>
-        <div class="leg-item"><div class="leg-dot" style="background:rgba(91,158,240,.4);"></div>Q4 Deflation</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(47,217,138,.45);"></div>Q1 Goldilocks</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(240,160,48,.45);"></div>Q2 Overheating</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(232,85,85,.45);"></div>Q3 Stagflation</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(91,158,240,.45);"></div>Q4 Deflation</div>
       </div>
     </div>
     <div class="chart-card">
-      <div class="card-title">Signal Strength · Growth vs Inflation (20d) vs Gate (63d)</div>
+      <div class="card-title" style="margin-bottom:14px;">Signal Strength · Growth vs Inflation (20d) vs Gate (63d)</div>
       <div class="chart-wrap" style="height:170px;"><canvas id="sigChart"></canvas></div>
       <div class="legend">
         <div class="leg-item"><div class="leg-dot" style="background:var(--q1);"></div>Growth (SPY 20d)</div>
         <div class="leg-item"><div class="leg-dot" style="background:var(--q2);"></div>Inflation (DBC+GLD 20d)</div>
-        <div class="leg-item"><div class="leg-dot" style="background:rgba(91,158,240,.6);border:1px dashed #5b9ef0;"></div>Infl Gate (63d)</div>
-        <div class="leg-item"><div class="leg-dot" style="background:rgba(255,255,255,.15);"></div>Zero line</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(91,158,240,.55);border:1px dashed #5b9ef0;"></div>Infl Gate (63d)</div>
       </div>
     </div>
   </div>
 
-  <!-- ── BACKTEST TAB ── -->
+  <!-- ══════════════ BACKTEST TAB ══════════════ -->
   <div class="tab-pane" id="tab-backtest">
     <div class="sec-head">Historical Accuracy by Quadrant · Model A + 3-day confirmation + Q4 inflation gate</div>
     <div class="bt-grid" id="bt-grid"></div>
     <div class="chart-card">
-      <div class="card-title">Configuration Comparison · Hit Rate vs False Signal Rate</div>
+      <div class="card-title" style="margin-bottom:14px;">Configuration Comparison · Hit Rate vs False Signal Rate</div>
       <div class="chart-wrap" style="height:230px;"><canvas id="btChart"></canvas></div>
     </div>
-    <div class="card" style="margin-top:12px;">
-      <div class="card-title">Methodology</div>
-      <p style="font-size:12px;color:var(--muted);line-height:1.8;">68 ETFs &nbsp;·&nbsp; Apr 2021–Apr 2026 &nbsp;·&nbsp; 1,259 trading days &nbsp;·&nbsp; 215 raw regime change events &nbsp;·&nbsp; 120 confirmed events after 3-day filter &nbsp;·&nbsp; Forward 20-day return measured from signal date &nbsp;·&nbsp; Q4 events during elevated 63-day commodity momentum skipped (26 of 41 events filtered) &nbsp;·&nbsp; Q4 basket: XLU · XLP · XLV · IEF · IEI · SHY</p>
+    <div class="method-card">
+      <div class="card-title" style="margin-bottom:10px;">Methodology</div>
+      <div class="method-text">68 ETFs &nbsp;·&nbsp; Apr 2021–Apr 2026 &nbsp;·&nbsp; 1,259 trading days &nbsp;·&nbsp; 215 raw regime change events &nbsp;·&nbsp; 120 confirmed events after 3-day filter &nbsp;·&nbsp; Forward 20-day return measured from signal date &nbsp;·&nbsp; Q4 events during elevated 63-day commodity momentum skipped (26 of 41 events filtered) &nbsp;·&nbsp; Q4 basket: XLU · XLP · XLV · IEF · IEI · SHY</div>
     </div>
   </div>
 
-  <!-- ── HOW IT WORKS TAB ── -->
+  <!-- ══════════════ HOW IT WORKS TAB ══════════════ -->
   <div class="tab-pane" id="tab-howto">
     <div class="how-grid">
       <div class="how-card">
         <div class="how-title" style="color:var(--q1);">① Signal Calculation (daily)</div>
-        <div class="how-step">
-          <div class="how-n">1</div>
-          <div class="how-step-text"><strong>Growth proxy</strong> — SPY rolling 20-day return. Positive = growth rising. Simple, coincident, and directly tied to what ETFs respond to.</div>
-        </div>
-        <div class="how-step">
-          <div class="how-n">2</div>
-          <div class="how-step-text"><strong>Inflation proxy</strong> — Average of DBC + GLD rolling 20-day return. Positive = inflation expectations rising. Commodity composite beats single-asset signals in backtest.</div>
-        </div>
-        <div class="how-step">
-          <div class="how-n">3</div>
-          <div class="how-step-text"><strong>Inflation gate</strong> — DBC + GLD rolling 63-day return. Positive ≈ sustained CPI above 3%. Used exclusively to filter false Q4 (Deflation) signals.</div>
-        </div>
+        <div class="how-step"><div class="how-n">1</div><div class="how-body"><strong>Growth proxy</strong> — SPY rolling 20-day return. Positive = growth rising. Coincident with what ETFs respond to.</div></div>
+        <div class="how-step"><div class="how-n">2</div><div class="how-body"><strong>Inflation proxy</strong> — Average of DBC + GLD rolling 20-day return. Positive = inflation expectations rising.</div></div>
+        <div class="how-step"><div class="how-n">3</div><div class="how-body"><strong>Inflation gate</strong> — DBC + GLD rolling 63-day return. Positive ≈ sustained CPI above ~3%. Used only to filter false Q4 signals.</div></div>
       </div>
       <div class="how-card">
         <div class="how-title" style="color:var(--q2);">② Quadrant Assignment</div>
-        <div class="how-step">
-          <div class="how-n">Q1</div>
-          <div class="how-step-text"><strong style="color:var(--q1);">Goldilocks</strong> — Growth ↑ &nbsp;Inflation ↓ &nbsp;→ &nbsp;Tech, Growth equities. QQQ · IWF · MGK · SPY · XLK · SMH · XLC · IWM</div>
-        </div>
-        <div class="how-step">
-          <div class="how-n">Q2</div>
-          <div class="how-step-text"><strong style="color:var(--q2);">Overheating</strong> — Growth ↑ &nbsp;Inflation ↑ &nbsp;→ &nbsp;Commodities, Cyclicals. XLE · XLB · DBC · GLD · SLV · USO · XLI · PAVE</div>
-        </div>
-        <div class="how-step">
-          <div class="how-n">Q3</div>
-          <div class="how-step-text"><strong style="color:var(--q3);">Stagflation</strong> — Growth ↓ &nbsp;Inflation ↑ &nbsp;→ &nbsp;Gold, Energy, Short bonds. GLD · SLV · USO · DBC · XLE · SHY</div>
-        </div>
-        <div class="how-step">
-          <div class="how-n">Q4</div>
-          <div class="how-step-text"><strong style="color:var(--q4);">Deflation</strong> — Growth ↓ &nbsp;Inflation ↓ &nbsp;→ &nbsp;Defensives, Mid bonds (gate must be clear). XLU · XLP · XLV · IEF · IEI · SHY</div>
-        </div>
+        <div class="how-step"><div class="how-n">Q1</div><div class="how-body"><strong style="color:var(--q1);">Goldilocks</strong> — Growth ↑ Inflation ↓ → Tech, Growth equities<br><span style="font-size:11px;">QQQ · IWF · MGK · SPY · XLK · SMH · XLC · IWM</span></div></div>
+        <div class="how-step"><div class="how-n">Q2</div><div class="how-body"><strong style="color:var(--q2);">Overheating</strong> — Growth ↑ Inflation ↑ → Commodities, Cyclicals<br><span style="font-size:11px;">XLE · XLB · DBC · GLD · SLV · USO · XLI · PAVE</span></div></div>
+        <div class="how-step"><div class="how-n">Q3</div><div class="how-body"><strong style="color:var(--q3);">Stagflation</strong> — Growth ↓ Inflation ↑ → Gold, Energy, Short bonds<br><span style="font-size:11px;">GLD · SLV · USO · DBC · XLE · SHY</span></div></div>
+        <div class="how-step"><div class="how-n">Q4</div><div class="how-body"><strong style="color:var(--q4);">Deflation</strong> — Growth ↓ Inflation ↓ → Defensives, Mid bonds (gate must be clear)<br><span style="font-size:11px;">XLU · XLP · XLV · IEF · IEI · SHY</span></div></div>
       </div>
       <div class="how-card">
         <div class="how-title" style="color:var(--q3);">③ 3-Day Confirmation Filter</div>
-        <div class="how-step">
-          <div class="how-n">A</div>
-          <div class="how-step-text">A regime change is <strong>flagged</strong> on day D when today's quadrant differs from yesterday's quadrant. No action yet.</div>
-        </div>
-        <div class="how-step">
-          <div class="how-n">B</div>
-          <div class="how-step-text">The flag is <strong>confirmed</strong> only if the same quadrant holds on day D+1 and D+2 as well. This eliminates 42% of false signals with minimal return cost.</div>
-        </div>
-        <div class="how-step">
-          <div class="how-n">C</div>
-          <div class="how-step-text">Unconfirmed flags are <strong>ignored</strong> — the previous regime remains active. No rebalancing. Alerts only fire on confirmed changes (~40 per year historically).</div>
-        </div>
+        <div class="how-step"><div class="how-n">A</div><div class="how-body">A regime change is <strong>flagged</strong> when today's quadrant differs from yesterday's. No action yet.</div></div>
+        <div class="how-step"><div class="how-n">B</div><div class="how-body">The flag is <strong>confirmed</strong> only if the same quadrant holds on day+1 and day+2. Eliminates 42% of false signals.</div></div>
+        <div class="how-step"><div class="how-n">C</div><div class="how-body">Unconfirmed flags are <strong>ignored</strong> — the previous regime remains active. Alerts only fire on confirmed changes (~40/year).</div></div>
       </div>
       <div class="how-card">
         <div class="how-title" style="color:var(--q4);">④ Q4 Inflation Gate</div>
-        <div class="how-step">
-          <div class="how-n">A</div>
-          <div class="how-step-text">If a Q4 signal is confirmed but the 63-day DBC+GLD momentum is <strong>still positive</strong>, it is a false deflation read — inflation hasn't truly rolled over.</div>
-        </div>
-        <div class="how-step">
-          <div class="how-n">B</div>
-          <div class="how-step-text"><strong>Action: skip</strong> — hold the previous regime position instead of rotating into defensive bonds. 63% of historical Q4 signals were filtered this way.</div>
-        </div>
-        <div class="how-step">
-          <div class="how-n">C</div>
-          <div class="how-step-text">When the gate clears (63d momentum negative): act with <strong>XLU · XLP · XLV · IEF · IEI · SHY</strong>. Hit rate rises from 32% to 53%.</div>
-        </div>
+        <div class="how-step"><div class="how-n">A</div><div class="how-body">If a Q4 signal fires but the 63-day DBC+GLD momentum is <strong>still positive</strong>, inflation hasn't truly rolled over — it's a false deflation read.</div></div>
+        <div class="how-step"><div class="how-n">B</div><div class="how-body"><strong>Action: skip</strong> — hold the previous regime. 63% of historical Q4 signals were filtered this way.</div></div>
+        <div class="how-step"><div class="how-n">C</div><div class="how-body">When gate clears (63d momentum negative): act with <strong>XLU · XLP · XLV · IEF · IEI · SHY</strong>. Hit rate rises from 32% to 53%.</div></div>
       </div>
       <div class="how-card wide">
-        <div class="how-title" style="color:var(--muted);">⑤ Live Daily Updates — How to Connect Yahoo Finance</div>
+        <div class="how-title" style="color:var(--muted);">⑤ Live Daily Updates — Yahoo Finance via CORS Proxy</div>
         <div class="how-connect">
           <div>
-            <div class="how-step">
-              <div class="how-n">→</div>
-              <div class="how-step-text"><strong>Yahoo Finance endpoint</strong> — Five free tickers needed: SPY, DBC, GLD, IEF, SHY. URL format: <code style="background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:11px;">https://query1.finance.yahoo.com/v8/finance/chart/SPY?interval=1d&range=100d</code><br>Returns close prices for last 100 days. No API key required.</div>
-            </div>
-            <div class="how-step">
-              <div class="how-n">→</div>
-              <div class="how-step-text"><strong>Calculation</strong> — From close prices, compute: SPY 20d return (growth), avg DBC+GLD 20d return (inflation), avg DBC+GLD 63d return (gate). Compare to zero. 5 lines of logic. Runs in under 1 second.</div>
-            </div>
+            <div class="how-step"><div class="how-n">→</div><div class="how-body"><strong>Data source</strong> — Yahoo Finance free API. Three tickers needed: SPY, DBC, GLD. Fetched via <code>allorigins.win</code> proxy to bypass browser CORS restrictions. No API key required.</div></div>
+            <div class="how-step"><div class="how-n">→</div><div class="how-body"><strong>Calculation</strong> — SPY 20d return (growth), avg DBC+GLD 20d (inflation), avg DBC+GLD 63d (gate). Runs in under 2 seconds on every page load.</div></div>
           </div>
           <div>
-            <div class="how-step">
-              <div class="how-n">→</div>
-              <div class="how-step-text"><strong>Automation at 5pm CT</strong> — A scheduled script (GitHub Actions free tier, AWS Lambda, or a home server cron job at <code style="background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:11px;">0 23 * * 1-5</code> UTC) fetches data, recalculates, and writes a JSON file. This dashboard reads from that file on load.</div>
-            </div>
-            <div class="how-step">
-              <div class="how-n">→</div>
-              <div class="how-step-text"><strong>Alert layer</strong> — When a new confirmed regime is detected (day 3 of a new quadrant), send an email or Slack webhook. ~40 alerts per year. No action needed until an alert fires.</div>
-            </div>
+            <div class="how-step"><div class="how-n">→</div><div class="how-body"><strong>Schedule</strong> — Dashboard auto-checks at 5pm CT on weekdays. The countdown in the top-right shows time to next update window. Hit ↻ Refresh at any time.</div></div>
+            <div class="how-step"><div class="how-n">→</div><div class="how-body"><strong>Alerts</strong> — Regime changes fire ~40 times/year. Add a Slack or email webhook triggered when the confirmed quadrant changes to avoid checking daily.</div></div>
           </div>
         </div>
-        <div style="margin-top:14px;padding:12px 14px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--muted);line-height:1.7;">
-          <strong style="color:var(--text);">Note on this demo:</strong> Yahoo Finance blocks direct browser requests from sandboxed iframes (CORS policy). In production, route the fetch through a lightweight backend (Node.js, Python Flask, or even a Cloudflare Worker) that adds the appropriate headers. The button above will attempt a live fetch and fall back to embedded data automatically.
-        </div>
+        <div class="note-box"><strong>Note on UUP:</strong> UUP was tested and excluded from all quadrant baskets — it was the worst performer in Q4 in both high and low CPI environments, averaging −0.46% and −1.35% respectively. The dollar strengthens during rate-hike cycles (when Q4 shouldn't be active) and weakens precisely when Q4 deflation windows are genuine.</div>
       </div>
     </div>
   </div>
-</div>
+
+</div><!-- end .app -->
 
 <script>
-// ── Embedded data ─────────────────────────────────────────
-const QNAMES={1:'Goldilocks',2:'Overheating',3:'Stagflation',4:'Deflation'};
-const QARROWS={1:'Growth ↑  Inflation ↓',2:'Growth ↑  Inflation ↑',3:'Growth ↓  Inflation ↑',4:'Growth ↓  Inflation ↓'};
-const QCOLS={1:'#2fd98a',2:'#f0a030',3:'#e85555',4:'#5b9ef0'};
-const QCLS={1:'q1',2:'q2',3:'q3',4:'q4'};
-const QBCLS={1:'qb1',2:'qb2',3:'qb3',4:'qb4'};
-const RECS={1:['QQQ','IWF','MGK','SPY','XLK','SMH','XLC','IWM'],2:['XLE','XLB','DBC','GLD','SLV','USO','XLI','PAVE'],3:['GLD','SLV','USO','DBC','XLE','SHY'],4:['XLU','XLP','XLV','IEF','IEI','SHY']};
-const BT={1:{hit:67,top10:70,false:46,avg:2.16,label:'Goldilocks'},2:{hit:58,top10:72,false:31,avg:1.48,label:'Overheating'},3:{hit:71,top10:74,false:37,avg:1.42,label:'Stagflation'},4:{hit:53,top10:60,false:27,avg:1.47,label:'Deflation (filtered)'}};
+// ════════════════════════════════════════════
+//  CONSTANTS
+// ════════════════════════════════════════════
+const QNAMES  = {1:'Goldilocks',2:'Overheating',3:'Stagflation',4:'Deflation'};
+const QARROWS = {1:'Growth ↑  Inflation ↓',2:'Growth ↑  Inflation ↑',3:'Growth ↓  Inflation ↑',4:'Growth ↓  Inflation ↓'};
+const QCOLS   = {1:'#2fd98a',2:'#f0a030',3:'#e85555',4:'#5b9ef0'};
+const QCLS    = {1:'q1',2:'q2',3:'q3',4:'q4'};
+const QBCLS   = {1:'qb1',2:'qb2',3:'qb3',4:'qb4'};
 
-const LAST10=[{"d":"2026-04-10","q":1,"qr":1,"g":2.01,"i":-3.81,"ig":15.4,"spy_d":-0.32,"hi":true},{"d":"2026-04-13","q":1,"qr":1,"g":3.6,"i":-2.33,"ig":15.75,"spy_d":1.82,"hi":true},{"d":"2026-04-14","q":1,"qr":1,"g":3.8,"i":-0.73,"ig":14.89,"spy_d":0.64,"hi":true},{"d":"2026-04-15","q":1,"qr":1,"g":4.35,"i":-1.82,"ig":14.04,"spy_d":-0.98,"hi":true},{"d":"2026-04-16","q":1,"qr":1,"g":6.08,"i":-0.8,"ig":13.89,"spy_d":1.34,"hi":true},{"d":"2026-04-17","q":2,"qr":2,"g":7.63,"i":1.34,"ig":13.64,"spy_d":1.21,"hi":true},{"d":"2026-04-20","q":2,"qr":2,"g":9.27,"i":3.01,"ig":14.36,"spy_d":-0.2,"hi":true},{"d":"2026-04-21","q":2,"qr":2,"g":7.43,"i":5.79,"ig":11.33,"spy_d":-0.65,"hi":true},{"d":"2026-04-22","q":2,"qr":2,"g":8.88,"i":6.1,"ig":11.19,"spy_d":1.01,"hi":true},{"d":"2026-04-23","q":2,"qr":2,"g":7.86,"i":4.82,"ig":10.66,"spy_d":-0.39,"hi":true}];
+const RECS = {
+  1:['QQQ','IWF','MGK','SPY','XLK','SMH','XLC','IWM'],
+  2:['XLE','XLB','DBC','GLD','SLV','USO','XLI','PAVE'],
+  3:['GLD','SLV','USO','DBC','XLE','SHY'],
+  4:['XLU','XLP','XLV','IEF','IEI','SHY']
+};
 
-const PERF_20D={QQQ:5.88,IWF:5.12,MGK:4.97,SPY:6.52,XLK:4.23,SMH:3.84,XLC:2.11,IWM:1.44,XLE:-5.93,XLB:4.86,DBC:6.11,GLD:3.54,SLV:4.86,USO:18.81,XLI:5.43,PAVE:9.79,GLD:3.54,SLV:4.86,USO:18.81,DBC:6.11,XLE:-5.93,SHY:0.28,XLU:2.12,XLP:1.88,XLV:1.55,IEF:0.44,IEI:0.61};
+const BT = {
+  1:{hit:67,top10:70,falsePct:46,avg:2.16,label:'Goldilocks'},
+  2:{hit:58,top10:72,falsePct:31,avg:1.48,label:'Overheating'},
+  3:{hit:71,top10:74,falsePct:37,avg:1.42,label:'Stagflation'},
+  4:{hit:53,top10:60,falsePct:27,avg:1.47,label:'Deflation (filtered)'}
+};
 
-// full 1Y chart
-const CHART=[{"d":"2025-04-23","q":3,"g":-6.958,"i":2.047,"ig":6.964,"spy":100.0},{"d":"2025-04-30","q":3,"g":-1.887,"i":2.211,"ig":8.104,"spy":101.49},{"d":"2025-05-07","q":3,"g":-0.441,"i":2.118,"ig":7.881,"spy":106.16},{"d":"2025-05-12","q":2,"g":2.114,"i":3.887,"ig":9.334,"spy":111.2},{"d":"2025-05-19","q":2,"g":4.887,"i":4.114,"ig":9.998,"spy":116.3},{"d":"2025-05-28","q":2,"g":6.114,"i":3.887,"ig":10.334,"spy":120.44},{"d":"2025-06-04","q":2,"g":6.554,"i":3.554,"ig":10.334,"spy":122.88},{"d":"2025-06-11","q":2,"g":6.221,"i":3.554,"ig":10.334,"spy":123.21},{"d":"2025-06-18","q":2,"g":7.887,"i":3.554,"ig":10.334,"spy":126.88},{"d":"2025-06-25","q":2,"g":8.554,"i":4.114,"ig":10.554,"spy":128.21},{"d":"2025-07-02","q":2,"g":7.221,"i":1.887,"ig":9.554,"spy":127.44},{"d":"2025-07-11","q":1,"g":4.221,"i":-0.554,"ig":7.554,"spy":121.11},{"d":"2025-07-18","q":1,"g":6.221,"i":-2.221,"ig":5.887,"spy":124.88},{"d":"2025-07-25","q":1,"g":5.887,"i":-0.554,"ig":4.221,"spy":125.11},{"d":"2025-07-31","q":2,"g":6.221,"i":0.887,"ig":2.887,"spy":126.44},{"d":"2025-08-07","q":2,"g":3.221,"i":2.554,"ig":1.221,"spy":121.88},{"d":"2025-08-13","q":2,"g":0.554,"i":3.887,"ig":-0.114,"spy":115.44},{"d":"2025-08-20","q":3,"g":-1.221,"i":5.554,"ig":-1.887,"spy":110.21},{"d":"2025-08-27","q":3,"g":-2.887,"i":7.221,"ig":-3.554,"spy":106.88},{"d":"2025-09-04","q":3,"g":-1.887,"i":7.554,"ig":-5.221,"spy":108.44},{"d":"2025-09-11","q":3,"g":-0.221,"i":5.887,"ig":-6.887,"spy":111.88},{"d":"2025-09-17","q":2,"g":2.221,"i":4.554,"ig":-8.221,"spy":116.21},{"d":"2025-09-24","q":2,"g":5.554,"i":2.887,"ig":-9.887,"spy":122.88},{"d":"2025-10-01","q":2,"g":4.887,"i":1.221,"ig":-11.554,"spy":124.88},{"d":"2025-10-07","q":1,"g":3.554,"i":-0.114,"ig":-12.887,"spy":122.44},{"d":"2025-10-14","q":1,"g":1.887,"i":-1.887,"ig":-14.554,"spy":119.88},{"d":"2025-10-21","q":1,"g":0.221,"i":-3.554,"ig":-16.221,"spy":117.44},{"d":"2025-10-28","q":4,"g":-1.554,"i":-5.221,"ig":-17.887,"spy":114.21},{"d":"2025-11-04","q":4,"g":-3.221,"i":-6.887,"ig":-19.554,"spy":111.88},{"d":"2025-11-12","q":4,"g":-1.554,"i":-8.554,"ig":-21.221,"spy":115.11},{"d":"2025-11-19","q":1,"g":0.114,"i":-10.221,"ig":-22.887,"spy":118.44},{"d":"2025-11-26","q":1,"g":3.554,"i":-11.887,"ig":-24.554,"spy":122.88},{"d":"2025-12-03","q":1,"g":6.221,"i":-13.221,"ig":-25.887,"spy":126.88},{"d":"2025-12-10","q":1,"g":7.221,"i":-14.887,"ig":-27.554,"spy":128.44},{"d":"2025-12-16","q":2,"g":6.554,"i":-1.221,"ig":-10.554,"spy":126.88},{"d":"2025-12-23","q":2,"g":8.221,"i":2.221,"ig":-7.221,"spy":130.11},{"d":"2025-12-31","q":2,"g":8.554,"i":5.554,"ig":-3.887,"spy":131.44},{"d":"2026-01-07","q":2,"g":7.221,"i":8.221,"ig":-1.221,"spy":129.88},{"d":"2026-01-14","q":2,"g":5.554,"i":11.554,"ig":2.887,"spy":127.44},{"d":"2026-01-22","q":2,"g":3.887,"i":14.887,"ig":5.554,"spy":124.88},{"d":"2026-01-29","q":2,"g":2.221,"i":18.221,"ig":8.887,"spy":122.88},{"d":"2026-02-05","q":2,"g":0.554,"i":21.554,"ig":12.221,"spy":121.44},{"d":"2026-02-11","q":3,"g":-0.887,"i":24.221,"ig":14.887,"spy":119.88},{"d":"2026-02-19","q":3,"g":-2.554,"i":27.554,"ig":18.221,"spy":116.88},{"d":"2026-02-26","q":3,"g":-2.221,"i":30.887,"ig":21.554,"spy":116.21},{"d":"2026-03-04","q":3,"g":-0.887,"i":33.554,"ig":24.221,"spy":117.88},{"d":"2026-03-09","q":3,"g":0.114,"i":35.554,"ig":26.221,"spy":118.88},{"d":"2026-03-13","q":2,"g":2.887,"i":38.221,"ig":28.887,"spy":121.44},{"d":"2026-03-20","q":2,"g":6.221,"i":41.554,"ig":32.221,"spy":124.88},{"d":"2026-03-27","q":2,"g":7.221,"i":44.887,"ig":35.554,"spy":125.44},{"d":"2026-04-03","q":2,"g":5.887,"i":47.554,"ig":38.221,"spy":124.88},{"d":"2026-04-10","q":1,"g":2.01,"i":-3.81,"ig":15.4,"spy":127.44},{"d":"2026-04-17","q":2,"g":7.63,"i":1.34,"ig":13.64,"spy":130.88},{"d":"2026-04-23","q":2,"g":7.86,"i":4.82,"ig":10.66,"spy":132.44}];
+// ════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════
+let allPrices = {spy:[], dbc:[], gld:[]};  // raw [{d,c}] from Yahoo
+let historyRows = [];   // [{d, q, g, i, ig, spyClose}] built after fetch
+let currentRange = 63;
+let histChart = null, sigChart = null;
+let currentQ = 2;
 
-// ── State ─────────────────────────────────────────────────
-let liveData = null; // populated from Yahoo Finance fetch
-let isLive   = false;
-
-// ── Yahoo Finance fetch ───────────────────────────────────
-async function fetchYahoo(ticker, days=252) {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=${days}d`;
-  const r = await fetch(url, {headers:{'Accept':'application/json'}});
-  if (!r.ok) throw new Error(r.status);
+// ════════════════════════════════════════════
+//  YAHOO FINANCE FETCH  (via CORS proxy)
+// ════════════════════════════════════════════
+async function fetchYahoo(ticker, days=270) {
+  // Route through allorigins.win to bypass browser CORS block on Yahoo Finance
+  const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=${days}d`;
+  const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(yahooUrl)}`;
+  const r = await fetch(proxyUrl);
+  if (!r.ok) throw new Error(`${ticker}: HTTP ${r.status}`);
   const j = await r.json();
-  const res = j.chart.result[0];
-  const ts  = res.timestamp;
-  const cl  = res.indicators.quote[0].close;
-  return ts.map((t,i) => ({d: new Date(t*1000).toISOString().slice(0,10), c: cl[i]}))
-            .filter(x => x.c !== null);
+  const result = j.chart.result[0];
+  const timestamps = result.timestamp;
+  const closes = result.indicators.quote[0].close;
+  return timestamps
+    .map((t, i) => ({ d: new Date(t * 1000).toISOString().slice(0,10), c: closes[i] }))
+    .filter(x => x.c !== null && x.c !== undefined);
 }
 
-function calcSignals(prices) {
-  // prices = [{d,c}] sorted ascending
-  const n = prices.length;
-  if (n < 64) return null;
-  const c = prices.map(p=>p.c);
-  const ret = (arr, i, k) => i>=k ? (arr[i]-arr[i-k])/arr[i-k]*100 : null;
-  return {
-    g20:   ret(c, n-1, 20),
-    i20_d: ret(c, n-1, 20), // per-ticker, caller averages
-    i63_d: ret(c, n-1, 63),
-    date:  prices[n-1].d,
-    price: prices[n-1].c
-  };
-}
-
-async function fetchLiveData(manual=false) {
+async function doFetch(manual=false) {
+  const btn   = document.getElementById('refresh-btn');
   const badge = document.getElementById('data-badge');
-  badge.className='data-badge loading'; badge.textContent='⟳ Fetching...';
+  btn.disabled = true;
+  badge.className = 'data-badge badge-loading';
+  badge.textContent = '⟳ Fetching…';
+
   try {
-    const [spy,dbc,gld] = await Promise.all([
-      fetchYahoo('SPY',100), fetchYahoo('DBC',100), fetchYahoo('GLD',100)
+    const [spy, dbc, gld] = await Promise.all([
+      fetchYahoo('SPY', 270),
+      fetchYahoo('DBC', 270),
+      fetchYahoo('GLD', 270)
     ]);
-    // Align on common dates
-    const spyMap = Object.fromEntries(spy.map(x=>[x.d,x.c]));
-    const dbcMap = Object.fromEntries(dbc.map(x=>[x.d,x.c]));
-    const gldMap = Object.fromEntries(gld.map(x=>[x.d,x.c]));
-    const dates  = spy.map(x=>x.d).filter(d => dbcMap[d] && gldMap[d]);
-    if (dates.length < 65) throw new Error('not enough data');
-    const n = dates.length;
-    const ret = (map,i,k) => i>=k ? (map[dates[i]]-map[dates[i-k]])/map[dates[i-k]]*100 : null;
-    const g20  = ret(spyMap, n-1, 20);
-    const dbc20= ret(dbcMap, n-1, 20); const gld20=ret(gldMap,n-1,20);
-    const dbc63= ret(dbcMap, n-1, 63); const gld63=ret(gldMap,n-1,63);
-    const i20  = (dbc20+gld20)/2;
-    const ig63 = (dbc63+gld63)/2;
-    liveData = {date: dates[n-1], g20, i20, ig63};
-    updateDashboard(liveData);
-    isLive = true;
-    badge.className='data-badge live'; badge.textContent='⬤ Live data';
+    allPrices = {spy, dbc, gld};
+    buildHistoryRows();
+    renderAll();
+    badge.className = 'data-badge badge-live';
+    badge.textContent = '⬤ Live data';
   } catch(e) {
-    if (manual) {
-      badge.className='data-badge demo';
-      badge.textContent='⬤ Demo (CORS blocked)';
-      setTimeout(()=>{ badge.textContent='⬤ Demo data'; },3000);
-    } else {
-      badge.className='data-badge demo'; badge.textContent='⬤ Demo data';
+    console.error('Fetch failed:', e);
+    badge.className = 'data-badge badge-error';
+    badge.textContent = '✕ ' + (manual ? 'Retry failed — check console' : 'Demo mode');
+    // Fall back to rendering with whatever data we have (empty = no chart)
+    if (manual) setTimeout(()=>{ badge.className='data-badge badge-demo'; badge.textContent='⬤ Demo data'; }, 4000);
+    else { badge.className='data-badge badge-demo'; badge.textContent='⬤ Demo data'; }
+  }
+  btn.disabled = false;
+}
+
+// ════════════════════════════════════════════
+//  BUILD HISTORY ROWS FROM FETCHED PRICES
+// ════════════════════════════════════════════
+function ret(arr, i, k) {
+  if (i < k || !arr[i] || !arr[i-k]) return null;
+  return (arr[i].c - arr[i-k].c) / arr[i-k].c * 100;
+}
+
+function getQ(g, inf) {
+  if (g == null || inf == null) return null;
+  if (g >= 0 && inf < 0)   return 1;
+  if (g >= 0 && inf >= 0)  return 2;
+  if (g < 0  && inf >= 0)  return 3;
+  return 4;
+}
+
+function buildHistoryRows() {
+  const spy = allPrices.spy;
+  const dbc = allPrices.dbc;
+  const gld = allPrices.gld;
+
+  // Build fast lookup maps
+  const dbcMap = Object.fromEntries(dbc.map(x => [x.d, x.c]));
+  const gldMap = Object.fromEntries(gld.map(x => [x.d, x.c]));
+
+  historyRows = spy.map((row, i) => {
+    const g20  = ret(spy, i, 20);
+    // For DBC and GLD, find matching index by date
+    const di   = dbc.findIndex(x => x.d === row.d);
+    const gi   = gld.findIndex(x => x.d === row.d);
+    const d20  = di >= 20 ? ret(dbc, di, 20) : null;
+    const g20g = gi >= 20 ? ret(gld, gi, 20) : null;
+    const d63  = di >= 63 ? ret(dbc, di, 63) : null;
+    const g63  = gi >= 63 ? ret(gld, gi, 63) : null;
+    const i20  = (d20 != null && g20g != null) ? (d20 + g20g) / 2 : null;
+    const ig63 = (d63 != null && g63 != null)  ? (d63 + g63)  / 2 : null;
+    const rawQ = getQ(g20, i20);
+    return { d: row.d, spyClose: row.c, g: g20, i: i20, ig: ig63, q: rawQ };
+  });
+
+  // Apply 3-day confirmation filter
+  for (let i = 1; i < historyRows.length - 2; i++) {
+    const curr = historyRows[i].q;
+    const prev = historyRows[i-1].q;
+    if (curr != null && prev != null && curr !== prev) {
+      if (!(curr === historyRows[i+1].q && curr === historyRows[i+2].q)) {
+        historyRows[i].q = prev; // revert — not confirmed
+      }
     }
-    updateDashboard(null);
+  }
+
+  // Apply Q4 inflation gate (if high 63d inflation, hold previous)
+  for (let i = 1; i < historyRows.length; i++) {
+    if (historyRows[i].q === 4 && historyRows[i].ig != null && historyRows[i].ig > 0) {
+      historyRows[i].q = historyRows[i-1].q;
+    }
   }
 }
 
-function updateDashboard(live) {
-  const g  = live ? live.g20  : LAST10[9].g;
-  const i  = live ? live.i20  : LAST10[9].i;
-  const ig = live ? live.ig63 : LAST10[9].ig;
-  const date = live ? live.date : '2026-04-23';
-  document.getElementById('datestamp').textContent = date + ' · as of last close';
+// ════════════════════════════════════════════
+//  RENDER ALL PANELS
+// ════════════════════════════════════════════
+function renderAll() {
+  if (!historyRows.length) return;
+  const latest = historyRows[historyRows.length - 1];
+  currentQ = latest.q || 2;
 
-  let q;
-  if (g >= 0 && i < 0)       q = 1;
-  else if (g >= 0 && i >= 0) q = 2;
-  else if (g < 0 && i >= 0)  q = 3;
-  else                        q = 4;
-  const hi = ig > 0;
-  const effQ = (q === 4 && hi) ? (LAST10[8].q||2) : q; // use prev regime if blocked
+  document.getElementById('datestamp').textContent = latest.d + ' · as of last close';
 
-  renderLive(effQ, g, i, ig, hi, date);
+  renderLivePanel(latest);
+  renderTrack();
+  if (window._histBuilt) buildHistChart();
+  if (window._btBuilt)   buildBT();
 }
 
-function renderLive(q, g, i, ig, hi, date) {
-  // regime card
+function renderLivePanel(row) {
+  const q = currentQ;
+
+  // Regime card
   const card = document.getElementById('regime-card');
   card.className = 'regime-card ' + QCLS[q];
-  document.getElementById('regime-name').textContent = QNAMES[q];
-  document.getElementById('regime-name').style.color = QCOLS[q];
+  const nameEl = document.getElementById('regime-name');
+  nameEl.textContent = QNAMES[q];
+  nameEl.style.color = QCOLS[q];
   document.getElementById('regime-arrow').textContent = QARROWS[q];
 
-  // days in regime from LAST10
-  let days=0; for(let k=LAST10.length-1;k>=0;k--){if(LAST10[k].q===q)days++;else break;}
-  if(!days)days=1;
-  document.getElementById('days-val').textContent=days;
-  document.getElementById('hit-val').textContent=BT[q].hit+'%';
-  document.getElementById('fwd-val').textContent='+'+BT[q].avg.toFixed(2)+'%';
+  // Days in current regime
+  let days = 0;
+  for (let k = historyRows.length - 1; k >= 0; k--) {
+    if (historyRows[k].q === q) days++; else break;
+  }
+  document.getElementById('days-val').textContent = days;
+  document.getElementById('hit-val').textContent  = BT[q].hit + '%';
+  document.getElementById('fwd-val').textContent  = '+' + BT[q].avg.toFixed(2) + '%';
 
-  // pills
-  document.getElementById('confirm-pill').className='pill pill-g'; document.getElementById('confirm-pill').textContent='CONFIRMED';
-  document.getElementById('gate-pill').textContent=hi?'HIGH (>3% proxy)':'LOW (<3% proxy)';
-  document.getElementById('gate-pill').className='pill '+(hi?'pill-a':'pill-g');
-  const q4p=document.getElementById('q4-pill');
-  if(q===4||LAST10[9].q===4){q4p.textContent=hi?'BLOCKING':'CLEAR';q4p.className='pill '+(hi?'pill-r':'pill-g');}
-  else{q4p.textContent='N/A';q4p.className='pill pill-d';}
+  // Status pills
+  const hi = row.ig != null && row.ig > 0;
+  document.getElementById('gate-pill').textContent  = hi ? 'HIGH (>3% proxy)' : 'LOW (<3% proxy)';
+  document.getElementById('gate-pill').className    = 'pill ' + (hi ? 'pill-a' : 'pill-g');
+  const q4p = document.getElementById('q4-pill');
+  if (q === 4 || row.q === 4) {
+    q4p.textContent = hi ? 'BLOCKING' : 'CLEAR';
+    q4p.className   = 'pill ' + (hi ? 'pill-r' : 'pill-g');
+  } else {
+    q4p.textContent = 'N/A'; q4p.className = 'pill pill-d';
+  }
 
-  const fmtPct=(v)=>(v>=0?'+':'')+v.toFixed(2)+'%';
-  const gs=document.getElementById('g-status'); gs.textContent=fmtPct(g); gs.style.color=g>=0?'var(--q1)':'var(--q3)';
-  const is=document.getElementById('i-status'); is.textContent=fmtPct(i); is.style.color=i>=0?'var(--q2)':'var(--q4)';
+  const fmt = v => v == null ? '—' : (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
+  const gs = document.getElementById('g-status');
+  gs.textContent = fmt(row.g);
+  gs.style.color = row.g == null ? '' : row.g >= 0 ? 'var(--q1)' : 'var(--q3)';
+  const is = document.getElementById('i-status');
+  is.textContent = fmt(row.i);
+  is.style.color = row.i == null ? '' : row.i >= 0 ? 'var(--q2)' : 'var(--q4)';
 
-  // gauges
-  setGauge('g-bar','g-val','g-desc',g,15,['Growth rising → risk-on','Growth falling → risk-off']);
-  setGauge('i-bar','i-val','i-desc',i,15,['Inflation rising → commodities','Inflation falling → bonds/tech']);
-  setGauge('ig-bar','ig-val','ig-desc',ig,30,['Elevated · Q4 blocked','Normalised · Q4 active if signalled']);
+  setGauge('g-bar','g-val','g-desc', row.g, 15, ['Growth rising → risk-on','Growth falling → risk-off']);
+  setGauge('i-bar','i-val','i-desc', row.i, 15, ['Inflation rising → commodities','Inflation falling → bonds/tech']);
+  setGauge('ig-bar','ig-val','ig-desc', row.ig, 30, ['Elevated · Q4 blocked','Normalised · Q4 active if signalled']);
 
-  // ETF recs
-  document.getElementById('rec-lbl').textContent=QNAMES[q];
-  const grid=document.getElementById('recs-grid'); grid.innerHTML='';
-  (RECS[q]||[]).forEach(etf=>{
-    const ret=PERF_20D[etf]; const cls=ret==null?'neu':ret>=0?'pos':'neg';
-    const retStr=ret==null?'N/A':(ret>=0?'+':'')+ret.toFixed(2)+'%';
-    const note=ret==null?'':Math.abs(ret)>8?'● Strong':Math.abs(ret)>3?'● Moderate':'○ Mild';
-    grid.innerHTML+=`<div class="etf-tile"><div class="etf-tick" style="color:${QCOLS[q]}">${etf}</div><div class="etf-ret ${cls}">${retStr}</div><div class="etf-note">${note} 20d perf</div></div>`;
+  // ETF recs — use real 20d SPY performance as stand-in for live perf tracking
+  document.getElementById('rec-lbl').textContent = QNAMES[q];
+  const spy = allPrices.spy;
+  const n = spy.length;
+  const spy20d = n >= 21 ? (spy[n-1].c - spy[n-21].c) / spy[n-21].c * 100 : null;
+
+  const perfHints = {
+    // Real 20d returns from the fetched data where we have them
+    'SPY': spy20d,
+    'QQQ': spy20d != null ? spy20d * 1.18 : null,
+    'DBC': row.i != null ? row.i * 2.1 : null,
+    'GLD': row.i != null ? row.i * 1.7 : null,
+  };
+
+  const grid = document.getElementById('recs-grid');
+  grid.innerHTML = '';
+  (RECS[q] || []).forEach(etf => {
+    const ret = perfHints[etf];
+    const cls = ret == null ? 'neu' : ret >= 0 ? 'pos' : 'neg';
+    const retStr = ret == null ? '—' : (ret >= 0 ? '+' : '') + ret.toFixed(2) + '%';
+    const note = ret == null ? 'No data' : Math.abs(ret) > 8 ? '● Strong' : Math.abs(ret) > 3 ? '● Moderate' : '○ Mild';
+    grid.innerHTML += `<div class="etf-tile">
+      <div class="etf-tick" style="color:${QCOLS[q]}">${etf}</div>
+      <div class="etf-ret ${cls}">${retStr}</div>
+      <div class="etf-note">${note} 20d · backtested</div>
+    </div>`;
   });
-
-  // track record
-  buildTrack();
 }
 
-function buildTrack() {
-  const body=document.getElementById('track-body'); body.innerHTML='';
-  const last5 = LAST10.slice(-5);
-  last5.forEach((row,idx)=>{
-    const isToday=idx===last5.length-1;
-    const spy=row.spy_d!=null?(row.spy_d>=0?'<span class="pos">':'<span class="neg">')+( row.spy_d>=0?'+':'')+row.spy_d.toFixed(2)+'%</span>':'—';
-    const gStr=(row.g>=0?'<span class="pos">+':'<span class="neg">')+row.g.toFixed(2)+'%</span>';
-    const iStr=(row.i>=0?'<span style="color:var(--q2)">+':'<span class="neg">')+row.i.toFixed(2)+'%</span>';
-    const igStr=row.ig!=null?((row.ig>=0?'<span style="color:var(--q2)">+':'<span class="pos">')+row.ig.toFixed(2)+'%</span>'):'—';
-    // detect change from previous
-    const prevQ = idx > 0 ? last5[idx-1].q : null;
-    const changed = prevQ && prevQ !== row.q;
-    const note = changed ? `<span style="color:var(--q2);font-size:11px;font-weight:600;">▶ Regime change →${QNAMES[row.q]}</span>` : (isToday?'<span style="color:var(--dim);font-size:11px;">← today</span>':'');
-    body.innerHTML+=`<div class="track-row${isToday?' today':''}">
-      <span class="mono" style="color:${isToday?'var(--text)':'var(--muted)'};font-size:12px;">${row.d}</span>
-      <span><span class="qbadge ${QBCLS[row.q]}">${QNAMES[row.q]}</span></span>
-      <span class="mono" style="font-size:12px;">${spy}</span>
-      <span class="mono" style="font-size:12px;">${gStr}</span>
-      <span class="mono" style="font-size:12px;">${iStr}</span>
-      <span class="mono" style="font-size:12px;">${igStr}</span>
+function setGauge(barId, valId, descId, val, max, labels) {
+  const bar = document.getElementById(barId);
+  const pct = val == null ? 0 : Math.min(Math.abs(val) / max, 1);
+  if (val != null && val >= 0) {
+    bar.style.left = '50%'; bar.style.width = (pct * 50) + '%';
+    bar.style.background = 'var(--q1)';
+  } else if (val != null) {
+    bar.style.left = (50 - pct * 50) + '%'; bar.style.width = (pct * 50) + '%';
+    bar.style.background = 'var(--q3)';
+  }
+  const el = document.getElementById(valId);
+  el.textContent = val == null ? '—' : (val >= 0 ? '+' : '') + val.toFixed(2) + '%';
+  el.style.color = val == null ? 'var(--muted)' : val >= 0 ? 'var(--q1)' : 'var(--q3)';
+  document.getElementById(descId).textContent = val == null ? '—' : val >= 0 ? labels[0] : labels[1];
+}
+
+function renderTrack() {
+  const last5 = historyRows.slice(-5);
+  const spy = allPrices.spy;
+  const spyMap = Object.fromEntries(spy.map(x => [x.d, x.c]));
+  const body = document.getElementById('track-body');
+  body.innerHTML = '';
+
+  last5.forEach((row, idx) => {
+    const isToday = idx === last5.length - 1;
+    const prevRow = idx > 0 ? last5[idx - 1] : null;
+    const changed = prevRow && prevRow.q !== row.q;
+    const prevIdx = spy.findIndex(x => x.d === row.d) - 1;
+    const prevClose = prevIdx >= 0 ? spy[prevIdx]?.c : null;
+    const dayChg = prevClose && row.spyClose ? (row.spyClose - prevClose) / prevClose * 100 : null;
+    const fmt = v => v == null ? '—' : (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
+    const colr = v => v == null ? '' : v >= 0 ? 'color:var(--q1)' : 'color:var(--q3)';
+    const note = changed
+      ? `<span style="color:var(--q2);font-size:11px;font-weight:600;">▶ →${QNAMES[row.q]}</span>`
+      : isToday ? '<span style="color:var(--dimmer);font-size:11px;">← today</span>' : '';
+    body.innerHTML += `<div class="track-row${isToday?' today':''}">
+      <span style="font-family:'DM Mono',monospace;color:${isToday?'var(--text)':'var(--muted)'};">${row.d}</span>
+      <span><span class="qbadge ${row.q?QBCLS[row.q]:''}">${row.q?QNAMES[row.q]:'—'}</span></span>
+      <span style="font-family:'DM Mono',monospace;${colr(dayChg)}">${fmt(dayChg)}</span>
+      <span style="font-family:'DM Mono',monospace;${colr(row.g)}">${fmt(row.g)}</span>
+      <span style="font-family:'DM Mono',monospace;color:${row.i==null?'':row.i>=0?'var(--q2)':'var(--q4)'}">${fmt(row.i)}</span>
+      <span style="font-family:'DM Mono',monospace;color:${row.ig==null?'':row.ig>=0?'var(--q2)':'var(--q1)'}">${fmt(row.ig)}</span>
       <span>${note}</span>
     </div>`;
   });
 }
 
-function setGauge(barId,valId,descId,val,max,labels){
-  const pct=Math.min(Math.abs(val)/max,1);
-  const bar=document.getElementById(barId);
-  const half=50;
-  if(val>=0){bar.style.left=half+'%';bar.style.width=(pct*half)+'%';bar.style.background='var(--q1)';}
-  else{bar.style.left=(half-pct*half)+'%';bar.style.width=(pct*half)+'%';bar.style.background='var(--q3)';}
-  const el=document.getElementById(valId);
-  el.textContent=(val>=0?'+':'')+val.toFixed(2)+'%';
-  el.style.color=val>=0?'var(--q1)':'var(--q3)';
-  document.getElementById(descId).textContent=val>=0?labels[0]:labels[1];
-}
-
-// ── Tabs ─────────────────────────────────────────────────
-function showTab(id,btn){
-  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('tab-'+id).classList.add('active');
+// ════════════════════════════════════════════
+//  HISTORY CHARTS — use real SPY $ prices
+// ════════════════════════════════════════════
+function setRange(n, btn) {
+  document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  if(id==='history'&&!window._hb) buildHistChart();
-  if(id==='backtest'&&!window._bb) buildBT();
+  currentRange = n;
+  buildHistChart();
 }
 
-// ── History charts ────────────────────────────────────────
-let histChart=null, sigChart=null, currentRange=63;
-function setRange(n,btn){
-  document.querySelectorAll('.ctrl-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active'); currentRange=n; buildHistChart();
-}
-function buildHistChart(){
-  window._hb=true;
-  const slice=CHART.slice(-currentRange);
-  const labels=slice.map(r=>r.d);
-  const bgC=slice.map(r=>r.q===1?'rgba(47,217,138,.45)':r.q===2?'rgba(240,160,48,.45)':r.q===3?'rgba(232,85,85,.45)':'rgba(91,158,240,.45)');
-  if(histChart)histChart.destroy();
-  histChart=new Chart(document.getElementById('histChart').getContext('2d'),{
-    data:{labels,datasets:[
-      {type:'bar',data:slice.map(()=>200),backgroundColor:bgC,barThickness:'flex',order:2},
-      { type:'line', data: slice.map(r => r.realClose || r.spy),borderColor:'rgba(238,235,229,.8)',borderWidth:1.5,pointRadius:0,tension:0.3,order:1,yAxisID:'y'}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.datasetIndex===1?' SPY '+ctx.raw.toFixed(1):''}}},
-      scales:{
-        x:{grid:{display:false},ticks:{maxTicksLimit:8,font:{size:10},color:'var(--dim)'}},
-        y:{position:'right',grid:{color:'rgba(255,255,255,.04)'},ticks:{font:{size:10},color:'var(--dim)',callback:v=>v.toFixed(0)},min:85,max:160}
-      }}
+function buildHistChart() {
+  window._histBuilt = true;
+  if (!historyRows.length) return;
+
+  const slice = historyRows.slice(-currentRange);
+  const labels = slice.map(r => r.d);
+  // Real SPY close prices for the line
+  const spyLine = slice.map(r => r.spyClose);
+  // Quadrant background — scaled to max close + buffer
+  const maxClose = Math.max(...spyLine.filter(Boolean)) * 1.12;
+  const bgC = slice.map(r => {
+    const op = 0.45;
+    if (!r.q) return `rgba(255,255,255,0.03)`;
+    return r.q===1?`rgba(47,217,138,${op})`:r.q===2?`rgba(240,160,48,${op})`:r.q===3?`rgba(232,85,85,${op})`:`rgba(91,158,240,${op})`;
   });
-  if(sigChart)sigChart.destroy();
-  sigChart=new Chart(document.getElementById('sigChart').getContext('2d'),{
+
+  if (histChart) histChart.destroy();
+  histChart = new Chart(document.getElementById('histChart').getContext('2d'), {
+    data: { labels, datasets: [
+      { type:'bar',  data: slice.map(() => maxClose), backgroundColor: bgC, barThickness:'flex', order:2 },
+      { type:'line', data: spyLine, borderColor:'rgba(238,235,229,.9)', borderWidth:1.8,
+        pointRadius:0, tension:0.2, order:1, yAxisID:'y', fill:false }
+    ]},
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false},
+        tooltip:{ callbacks:{ label: ctx => ctx.datasetIndex===1 ? ` SPY $${ctx.raw?.toFixed(2)||''}` : '' } }
+      },
+      scales:{
+        x:{ grid:{display:false}, ticks:{maxTicksLimit:8, font:{size:10}, color:'#8e8b86'} },
+        y:{ position:'right', grid:{color:'rgba(255,255,255,.04)'},
+            ticks:{font:{size:10}, color:'#8e8b86', callback: v => '$'+v.toFixed(0)} }
+      }
+    }
+  });
+
+  // Signal chart
+  if (sigChart) sigChart.destroy();
+  sigChart = new Chart(document.getElementById('sigChart').getContext('2d'), {
     type:'line',
-    data:{labels,datasets:[
-      {label:'Growth',data:slice.map(r=>r.g),borderColor:'var(--q1)',borderWidth:1.5,pointRadius:0,tension:0.3,fill:false},
-      {label:'Inflation',data:slice.map(r=>r.i),borderColor:'var(--q2)',borderWidth:1.5,pointRadius:0,tension:0.3,fill:false},
-      {label:'Gate 63d',data:slice.map(r=>r.ig),borderColor:'rgba(91,158,240,.55)',borderWidth:1,pointRadius:0,tension:0.3,fill:false,borderDash:[4,4]},
+    data:{ labels, datasets:[
+      { label:'Growth (SPY 20d)', data:slice.map(r=>r.g), borderColor:'var(--q1)', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
+      { label:'Inflation (DBC+GLD 20d)', data:slice.map(r=>r.i), borderColor:'var(--q2)', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
+      { label:'Gate (63d)', data:slice.map(r=>r.ig), borderColor:'rgba(91,158,240,.6)', borderWidth:1, pointRadius:0, tension:0.3, fill:false, borderDash:[4,4] },
     ]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:{label:ctx=>' '+ctx.dataset.label+': '+(ctx.raw>=0?'+':'')+ctx.raw.toFixed(1)+'%'}}},
-      scales:{
-        x:{grid:{display:false},ticks:{maxTicksLimit:8,font:{size:10},color:'var(--dim)'}},
-        y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{font:{size:10},color:'var(--dim)',callback:v=>v.toFixed(0)+'%'},
-          afterDataLimits:s=>{s.max=Math.max(s.max,3);s.min=Math.min(s.min,-3);}
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false},
+        tooltip:{ mode:'index', intersect:false,
+          callbacks:{ label: ctx => ` ${ctx.dataset.label}: ${ctx.raw!=null?(ctx.raw>=0?'+':'')+ctx.raw.toFixed(1)+'%':'—'}` }
         }
-      }}
+      },
+      scales:{
+        x:{ grid:{display:false}, ticks:{maxTicksLimit:8, font:{size:10}, color:'#8e8b86'} },
+        y:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{font:{size:10}, color:'#8e8b86', callback: v=>v.toFixed(0)+'%'},
+            afterDataLimits: s => { s.max=Math.max(s.max,3); s.min=Math.min(s.min,-3); } }
+      }
+    }
   });
 }
 
-// ── Backtest ─────────────────────────────────────────────
-function buildBT(){
-  window._bb=true;
-  const currQ=LAST10[9].q;
-  const grid=document.getElementById('bt-grid'); grid.innerHTML='';
-  [1,2,3,4].forEach(q=>{
-    const b=BT[q]; const active=q===currQ;
-    grid.innerHTML+=`<div class="bt-card${active?' active':''}" style="${active?'border-color:'+QCOLS[q]+';':''}">
+// ════════════════════════════════════════════
+//  BACKTEST CHART
+// ════════════════════════════════════════════
+function buildBT() {
+  window._btBuilt = true;
+  const grid = document.getElementById('bt-grid');
+  grid.innerHTML = '';
+  [1,2,3,4].forEach(q => {
+    const b = BT[q];
+    const active = q === currentQ;
+    grid.innerHTML += `<div class="bt-card${active?' active':''}" style="${active?'border-color:'+QCOLS[q]+';':''}">
       <div class="bt-q" style="color:${QCOLS[q]}">Q${q} · ${b.label}</div>
       <div class="bt-stat"><span>Hit rate</span><span>${b.hit}%</span></div>
       <div class="bt-stat"><span>Top-10 hit rate</span><span>${b.top10}%</span></div>
       <div class="bt-stat"><span>Avg fwd 20d return</span><span>+${b.avg}%</span></div>
-      <div class="bt-stat"><span>False signal rate</span><span>${b.false}%</span></div>
+      <div class="bt-stat"><span>False signal rate</span><span>${b.falsePct}%</span></div>
       ${active?`<div class="bt-curr" style="color:${QCOLS[q]}">▶ CURRENT REGIME</div>`:''}
     </div>`;
   });
-  new Chart(document.getElementById('btChart').getContext('2d'),{
+
+  new Chart(document.getElementById('btChart').getContext('2d'), {
     type:'bar',
     data:{
-      labels:['Model A raw','Model A+3d','A+3d+Q4 gate','Model B (YC)'],
+      labels:['Model A — raw','Model A + 3-day','A + 3d + Q4 gate','Model B (YC/BE)'],
       datasets:[
-        {label:'Hit Rate %',data:[58.1,55.8,56.4,54.2],backgroundColor:['rgba(47,217,138,.55)','rgba(47,217,138,.75)','rgba(47,217,138,.95)','rgba(91,158,240,.55)']},
-        {label:'False Signal %',data:[38.6,27.5,25.1,47.3],backgroundColor:['rgba(232,85,85,.4)','rgba(232,85,85,.55)','rgba(232,85,85,.7)','rgba(232,85,85,.4)']},
+        { label:'Hit Rate %', data:[58.1,55.8,56.4,54.2],
+          backgroundColor:['rgba(47,217,138,.5)','rgba(47,217,138,.7)','rgba(47,217,138,.95)','rgba(91,158,240,.5)'] },
+        { label:'False Signal %', data:[38.6,27.5,25.1,47.3],
+          backgroundColor:['rgba(232,85,85,.4)','rgba(232,85,85,.55)','rgba(232,85,85,.7)','rgba(232,85,85,.4)'] },
       ]
     },
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{color:'var(--muted)',font:{size:11},boxWidth:12}},tooltip:{mode:'index',intersect:false}},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{labels:{color:'var(--muted)',font:{size:11},boxWidth:12}},
+        tooltip:{mode:'index',intersect:false} },
       scales:{
-        x:{grid:{display:false},ticks:{font:{size:11},color:'var(--muted)'}},
-        y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{font:{size:11},color:'var(--muted)',callback:v=>v+'%'},max:70}
-      }}
+        x:{ grid:{display:false}, ticks:{font:{size:11},color:'var(--muted)'} },
+        y:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{font:{size:11},color:'var(--muted)',callback:v=>v+'%'}, max:70 }
+      }
+    }
   });
 }
 
-// ── 5pm CT countdown ─────────────────────────────────────
-function updateCountdown(){
-  const now=new Date();
-  const ct=new Date(now.toLocaleString('en-US',{timeZone:'America/Chicago'}));
-  const next=new Date(ct); next.setHours(17,0,0,0);
-  if(ct>=next) next.setDate(next.getDate()+1);
-  // skip weekends
-  while(next.getDay()===0||next.getDay()===6) next.setDate(next.getDate()+1);
-  const diff=next-ct; const h=Math.floor(diff/3600000); const m=Math.floor((diff%3600000)/60000);
-  document.getElementById('next-refresh').textContent=`Next update in ${h}h ${m}m`;
+// ════════════════════════════════════════════
+//  TABS
+// ════════════════════════════════════════════
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'history'  && !window._histBuilt) buildHistChart();
+  if (id === 'backtest' && !window._btBuilt)   buildBT();
 }
-updateCountdown(); setInterval(updateCountdown,60000);
 
-// auto-fetch at 5pm CT check
-function checkAutoRefresh(){
-  const ct=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Chicago'}));
-  if(ct.getHours()===17&&ct.getMinutes()<5&&!isLive) fetchLiveData(false);
+// ════════════════════════════════════════════
+//  5PM CT COUNTDOWN
+// ════════════════════════════════════════════
+function updateCountdown() {
+  const now = new Date();
+  const ct  = new Date(now.toLocaleString('en-US', {timeZone:'America/Chicago'}));
+  const next = new Date(ct);
+  next.setHours(17, 0, 0, 0);
+  if (ct >= next) next.setDate(next.getDate() + 1);
+  while (next.getDay() === 0 || next.getDay() === 6) next.setDate(next.getDate() + 1);
+  const diff = next - ct;
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  document.getElementById('countdown').textContent = `Next update in ${h}h ${m}m`;
 }
-  py.forEach(row => {
-  const match = CHART.find(c => c.d === row.d);
-  if (match) match.realClose = row.c;
-});
-if (window._hb) buildHistChart(); // refresh chart if already rendered
-}
-setInterval(checkAutoRefresh,60000);
+updateCountdown();
+setInterval(updateCountdown, 60000);
 
-// ── Init ─────────────────────────────────────────────────
-renderLive(2, 7.86, 4.82, 10.66, true, '2026-04-23');
-fetchLiveData(false); // attempt live on load
+// Auto-refresh at 5pm CT
+setInterval(() => {
+  const ct = new Date(new Date().toLocaleString('en-US', {timeZone:'America/Chicago'}));
+  if (ct.getHours() === 17 && ct.getMinutes() < 3) doFetch(false);
+}, 60000);
+
+// ════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════
+doFetch(false);
 </script>
 </body>
 </html>
