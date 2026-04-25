@@ -3,270 +3,262 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap');
+:root {
+  --bg:#0c0d0f; --surface:#161819; --surface2:#1e2124; --surface3:#252830;
+  --border:rgba(255,255,255,0.09); --border2:rgba(255,255,255,0.16);
+  --text:#eeebe5; --muted:#b0ada7; --dim:#7e7b76; --dimmer:#555250;
+  --q1:#2fd98a; --q1d:rgba(47,217,138,.13); --q1b:rgba(47,217,138,.28);
+  --q2:#f0a030; --q2d:rgba(240,160,48,.13);  --q2b:rgba(240,160,48,.28);
+  --q3:#e85555; --q3d:rgba(232,85,85,.13);   --q3b:rgba(232,85,85,.28);
+  --q4:#5b9ef0; --q4d:rgba(91,158,240,.13);  --q4b:rgba(91,158,240,.28);
+  --head:'Syne',sans-serif; --mono:'DM Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--head);min-height:100vh;font-size:14px;}
+.app{max-width:1100px;margin:0 auto;padding:18px 16px;}
 
-  :root {
-    --bg:       #0e0f11;
-    --surface:  #161719;
-    --surface2: #1e2024;
-    --border:   rgba(255,255,255,0.07);
-    --border2:  rgba(255,255,255,0.12);
-    --text:     #e8e6e1;
-    --muted:    #888580;
-    --dim:      #555250;
-    --q1: #2fd98a; --q1d: rgba(47,217,138,.12); --q1b: rgba(47,217,138,.25);
-    --q2: #f0a030; --q2d: rgba(240,160,48,.12);  --q2b: rgba(240,160,48,.25);
-    --q3: #e85555; --q3d: rgba(232,85,85,.12);   --q3b: rgba(232,85,85,.25);
-    --q4: #5b9ef0; --q4d: rgba(91,158,240,.12);  --q4b: rgba(91,158,240,.25);
-    --font-head: 'Syne', sans-serif;
-    --font-mono: 'DM Mono', monospace;
-  }
+/* topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:10px;flex-wrap:wrap;}
+.logo{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+.topbar-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.datestamp{font-family:var(--mono);font-size:12px;color:var(--dim);}
+.data-badge{font-family:var(--mono);font-size:10px;padding:3px 10px;border-radius:20px;border:1px solid;cursor:pointer;transition:.15s;}
+.data-badge.live{border-color:var(--q1);color:var(--q1);background:rgba(47,217,138,.08);}
+.data-badge.demo{border-color:var(--q2);color:var(--q2);background:rgba(240,160,48,.08);}
+.data-badge.loading{border-color:var(--dim);color:var(--dim);background:transparent;}
+.refresh-btn{font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:.15s;}
+.refresh-btn:hover{background:var(--surface2);color:var(--text);}
 
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--bg); color:var(--text); font-family:var(--font-head); min-height:100vh; }
+/* tabs */
+.tabs{display:flex;gap:3px;margin-bottom:16px;background:var(--surface);border-radius:10px;padding:4px;border:1px solid var(--border);width:fit-content;}
+.tab{font-size:12px;font-weight:600;padding:6px 16px;border-radius:7px;cursor:pointer;color:var(--dim);transition:.15s;border:none;background:none;font-family:var(--head);letter-spacing:.02em;}
+.tab:hover{color:var(--muted);}
+.tab.active{background:var(--surface2);color:var(--text);}
+.tab-pane{display:none;}
+.tab-pane.active{display:block;}
 
-  .app { max-width:1100px; margin:0 auto; padding:20px 16px; }
+/* cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;}
+.card-title{font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--dim);margin-bottom:14px;}
 
-  /* ── top bar ── */
-  .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
-  .logo { font-size:13px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
-  .datestamp { font-family:var(--font-mono); font-size:12px; color:var(--dim); }
+/* ── LIVE TAB ── */
+.hero{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.regime-card{background:var(--surface);border:1.5px solid var(--border2);border-radius:14px;padding:20px 22px;position:relative;overflow:hidden;transition:border-color .3s;}
+.regime-card::before{content:'';position:absolute;inset:0;border-radius:14px;pointer-events:none;}
+.regime-card.q1{border-color:var(--q1b);}.regime-card.q1::before{background:var(--q1d);}
+.regime-card.q2{border-color:var(--q2b);}.regime-card.q2::before{background:var(--q2d);}
+.regime-card.q3{border-color:var(--q3b);}.regime-card.q3::before{background:var(--q3d);}
+.regime-card.q4{border-color:var(--q4b);}.regime-card.q4::before{background:var(--q4d);}
+.regime-lbl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.regime-name{font-size:30px;font-weight:800;line-height:1;margin-bottom:6px;}
+.regime-arrow{font-size:13px;color:var(--muted);margin-bottom:14px;}
+.regime-meta{display:flex;gap:20px;}
+.meta-item{}
+.meta-val{font-family:var(--mono);font-size:20px;font-weight:500;color:var(--text);}
+.meta-lbl{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-top:2px;}
+.q1 .regime-name{color:var(--q1);}.q2 .regime-name{color:var(--q2);}.q3 .regime-name{color:var(--q3);}.q4 .regime-name{color:var(--q4);}
 
-  /* ── regime hero ── */
-  .hero { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
-  .regime-card {
-    background:var(--surface); border:1px solid var(--border2); border-radius:14px;
-    padding:20px 22px; position:relative; overflow:hidden;
-    transition: border-color .3s;
-  }
-  .regime-card::before { content:''; position:absolute; inset:0; border-radius:14px; pointer-events:none; }
-  .regime-card.q1 { border-color:var(--q1b); }
-  .regime-card.q1::before { background:var(--q1d); }
-  .regime-card.q2 { border-color:var(--q2b); }
-  .regime-card.q2::before { background:var(--q2d); }
-  .regime-card.q3 { border-color:var(--q3b); }
-  .regime-card.q3::before { background:var(--q3d); }
-  .regime-card.q4 { border-color:var(--q4b); }
-  .regime-card.q4::before { background:var(--q4d); }
+.status-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;}
+.s-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);}
+.s-row:last-child{border-bottom:none;}
+.s-lbl{font-size:12px;color:var(--muted);}
+.s-val{font-family:var(--mono);font-size:13px;color:var(--text);}
+.pill{font-size:10px;padding:3px 11px;border-radius:20px;font-weight:600;font-family:var(--mono);}
+.pill-g{background:rgba(47,217,138,.15);color:var(--q1);}
+.pill-a{background:rgba(240,160,48,.18);color:var(--q2);}
+.pill-r{background:rgba(232,85,85,.15);color:var(--q3);}
+.pill-b{background:rgba(91,158,240,.15);color:var(--q4);}
+.pill-d{background:rgba(255,255,255,.07);color:var(--dim);}
 
-  .regime-label { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
-  .regime-name { font-size:28px; font-weight:800; line-height:1; margin-bottom:4px; }
-  .q1 .regime-name { color:var(--q1); }
-  .q2 .regime-name { color:var(--q2); }
-  .q3 .regime-name { color:var(--q3); }
-  .q4 .regime-name { color:var(--q4); }
-  .regime-sub { font-size:12px; color:var(--muted); margin-top:6px; line-height:1.5; }
-  .regime-meta { display:flex; gap:16px; margin-top:14px; }
-  .regime-meta-item { text-align:left; }
-  .regime-meta-val { font-family:var(--font-mono); font-size:18px; font-weight:500; }
-  .regime-meta-lbl { font-size:10px; color:var(--dim); text-transform:uppercase; letter-spacing:.08em; margin-top:1px; }
+/* gauges */
+.gauges{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
+.gauge{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+.g-lbl{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);margin-bottom:8px;}
+.g-val{font-family:var(--mono);font-size:22px;font-weight:500;margin-bottom:8px;}
+.g-bg{height:5px;background:rgba(255,255,255,.07);border-radius:3px;position:relative;margin-bottom:6px;}
+.g-center{position:absolute;left:50%;top:-2px;width:1px;height:9px;background:var(--border2);}
+.g-fill{height:5px;border-radius:3px;position:absolute;}
+.g-desc{font-size:11px;color:var(--muted);}
 
-  .status-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px 22px; }
-  .status-row { display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); }
-  .status-row:last-child { border-bottom:none; }
-  .status-lbl { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; }
-  .status-val { font-family:var(--font-mono); font-size:13px; }
-  .pill { font-size:10px; padding:3px 10px; border-radius:20px; font-weight:600; font-family:var(--font-mono); }
-  .pill-green { background:rgba(47,217,138,.15); color:var(--q1); }
-  .pill-amber { background:rgba(240,160,48,.15); color:var(--q2); }
-  .pill-red   { background:rgba(232,85,85,.15);  color:var(--q3); }
-  .pill-blue  { background:rgba(91,158,240,.15); color:var(--q4); }
-  .pill-dim   { background:rgba(255,255,255,.06); color:var(--muted); }
+/* ETF recs */
+.sec-head{font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--dim);margin-bottom:10px;margin-top:4px;}
+.recs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+.etf-tile{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 13px;transition:border-color .2s;}
+.etf-tile:hover{border-color:var(--border2);}
+.etf-tick{font-family:var(--mono);font-size:14px;font-weight:500;margin-bottom:4px;}
+.etf-ret{font-family:var(--mono);font-size:18px;font-weight:500;}
+.etf-note{font-size:10px;color:var(--muted);margin-top:2px;}
+.pos{color:var(--q1);}.neg{color:var(--q3);}.neu{color:var(--muted);}
 
-  /* ── signal gauges ── */
-  .gauges { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:14px; }
-  .gauge-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px 18px; }
-  .gauge-label { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); margin-bottom:10px; }
-  .gauge-value { font-family:var(--font-mono); font-size:22px; font-weight:500; margin-bottom:8px; }
-  .gauge-bar-bg { height:5px; background:rgba(255,255,255,0.07); border-radius:3px; position:relative; margin-bottom:6px; }
-  .gauge-center { position:absolute; left:50%; top:-2px; width:1px; height:9px; background:var(--border2); }
-  .gauge-fill { height:5px; border-radius:3px; position:absolute; }
-  .gauge-desc { font-size:11px; color:var(--dim); }
+/* track record */
+.track-wrap{margin-bottom:14px;}
+.track-row{display:grid;grid-template-columns:90px 130px 70px 80px 80px 80px 1fr;gap:6px;align-items:center;padding:9px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:5px;font-size:12px;}
+.track-row.today{border-color:var(--border2);background:var(--surface2);}
+.track-head{display:grid;grid-template-columns:90px 130px 70px 80px 80px 80px 1fr;gap:6px;padding:4px 14px 8px;font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);}
+.qbadge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;}
+.qb1{background:rgba(47,217,138,.15);color:var(--q1);}.qb2{background:rgba(240,160,48,.15);color:var(--q2);}
+.qb3{background:rgba(232,85,85,.15);color:var(--q3);}.qb4{background:rgba(91,158,240,.15);color:var(--q4);}
+.mono{font-family:var(--mono);}
 
-  /* ── section head ── */
-  .sh { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); margin-bottom:10px; margin-top:4px; }
+/* chart */
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:12px;}
+.chart-ctrl{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.ctrl-btns{display:flex;gap:6px;}
+.ctrl-btn{font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:.15s;}
+.ctrl-btn.active,.ctrl-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--border2);}
+.chart-wrap{position:relative;}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
 
-  /* ── ETF recs ── */
-  .recs-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px; }
-  .etf-tile { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:11px 13px; cursor:pointer; transition:border-color .2s; }
-  .etf-tile:hover { border-color:var(--border2); }
-  .etf-ticker { font-family:var(--font-mono); font-size:14px; font-weight:500; margin-bottom:4px; }
-  .etf-ret { font-family:var(--font-mono); font-size:17px; font-weight:500; }
-  .etf-lbl { font-size:10px; color:var(--dim); margin-top:2px; }
-  .pos { color:var(--q1); } .neg { color:var(--q3); } .neu { color:var(--muted); }
+/* backtest */
+.bt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;}
+.bt-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+.bt-card.active{border-width:1.5px;}
+.bt-q{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;}
+.bt-stat{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin:5px 0;}
+.bt-stat span:last-child{font-family:var(--mono);color:var(--text);font-size:12px;}
+.bt-curr{font-size:10px;font-weight:600;margin-top:8px;}
 
-  /* ── history chart ── */
-  .chart-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px 20px; margin-bottom:14px; }
-  .chart-controls { display:flex; gap:8px; margin-bottom:14px; align-items:center; }
-  .ctrl-btn { font-family:var(--font-mono); font-size:11px; padding:4px 12px; border-radius:6px;
-              border:1px solid var(--border); background:transparent; color:var(--muted); cursor:pointer; transition:.15s; }
-  .ctrl-btn.active, .ctrl-btn:hover { background:var(--surface2); color:var(--text); border-color:var(--border2); }
-  .chart-wrap { position:relative; height:180px; }
+/* ── HOW IT WORKS ── */
+.how-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.how-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;}
+.how-title{font-size:14px;font-weight:700;margin-bottom:14px;}
+.how-step{display:flex;gap:12px;margin:8px 0;line-height:1.6;}
+.how-n{font-family:var(--mono);font-size:10px;min-width:22px;height:22px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;color:var(--muted);flex-shrink:0;margin-top:1px;}
+.how-step-text{font-size:13px;color:var(--muted);line-height:1.65;}
+.how-step-text strong{color:var(--text);}
+.how-card.wide{grid-column:1/-1;}
+.how-connect{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px;}
 
-  /* ── backtest stats ── */
-  .bt-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:14px; }
-  .bt-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; }
-  .bt-q { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); margin-bottom:8px; }
-  .bt-active { border-width:1.5px; }
-  .bt-stat { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); margin:4px 0; }
-  .bt-stat span:last-child { font-family:var(--font-mono); color:var(--text); }
+/* next refresh countdown */
+.next-refresh{font-family:var(--mono);font-size:11px;color:var(--dim);}
 
-  /* ── how it works ── */
-  .how-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
-  .how-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; }
-  .how-title { font-size:12px; font-weight:600; margin-bottom:8px; }
-  .how-step { display:flex; gap:10px; font-size:12px; color:var(--muted); margin:5px 0; line-height:1.5; }
-  .how-n { font-family:var(--font-mono); font-size:10px; min-width:18px; height:18px; border-radius:50%; border:1px solid var(--border2); display:flex; align-items:center; justify-content:center; color:var(--dim); flex-shrink:0; margin-top:1px; }
-
-  /* ── tabs ── */
-  .tabs { display:flex; gap:4px; margin-bottom:14px; background:var(--surface); border-radius:10px; padding:4px; border:1px solid var(--border); width:fit-content; }
-  .tab { font-size:12px; padding:6px 16px; border-radius:7px; cursor:pointer; color:var(--muted); transition:.15s; border:none; background:none; font-family:var(--font-head); }
-  .tab.active { background:var(--surface2); color:var(--text); }
-  .tab-pane { display:none; }
-  .tab-pane.active { display:block; }
-
-  .footer { font-size:11px; color:var(--dim); font-family:var(--font-mono); text-align:center; padding-top:10px; border-top:1px solid var(--border); line-height:1.7; }
+hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
 </style>
 </head>
 <body>
 <div class="app">
-
   <div class="topbar">
     <div class="logo">▣ Macro Regime Tracker</div>
-    <div class="datestamp" id="datestamp">—</div>
+    <div class="topbar-right">
+      <span class="next-refresh" id="next-refresh"></span>
+      <span class="data-badge demo" id="data-badge" onclick="fetchLiveData(true)" title="Click to refresh">⬤ Demo data</span>
+      <button class="refresh-btn" onclick="fetchLiveData(true)">↻ Refresh</button>
+      <span class="datestamp" id="datestamp">2026-04-23 · as of last close</span>
+    </div>
   </div>
 
-  <!-- tabs -->
   <div class="tabs">
-    <button class="tab active" onclick="showTab('live')">Live Regime</button>
-    <button class="tab" onclick="showTab('history')">History</button>
-    <button class="tab" onclick="showTab('backtest')">Backtest Stats</button>
-    <button class="tab" onclick="showTab('howto')">How It Works</button>
+    <button class="tab active" onclick="showTab('live',this)">Live Regime</button>
+    <button class="tab" onclick="showTab('history',this)">History</button>
+    <button class="tab" onclick="showTab('backtest',this)">Backtest Stats</button>
+    <button class="tab" onclick="showTab('howto',this)">How It Works</button>
   </div>
 
   <!-- ── LIVE TAB ── -->
   <div class="tab-pane active" id="tab-live">
     <div class="hero">
       <div class="regime-card" id="regime-card">
-        <div class="regime-label">Current Regime</div>
-        <div class="regime-name" id="regime-name">—</div>
-        <div class="regime-sub" id="regime-sub">—</div>
+        <div class="regime-lbl">Current Regime</div>
+        <div class="regime-name" id="regime-name">Overheating</div>
+        <div class="regime-arrow" id="regime-arrow">Growth ↑  Inflation ↑</div>
         <div class="regime-meta">
-          <div class="regime-meta-item">
-            <div class="regime-meta-val" id="days-val">—</div>
-            <div class="regime-meta-lbl">Days Active</div>
-          </div>
-          <div class="regime-meta-item">
-            <div class="regime-meta-val" id="hit-val">—</div>
-            <div class="regime-meta-lbl">Historical Hit Rate</div>
-          </div>
-          <div class="regime-meta-item">
-            <div class="regime-meta-val" id="fwd-val">—</div>
-            <div class="regime-meta-lbl">Avg Fwd Return</div>
-          </div>
+          <div class="meta-item"><div class="meta-val" id="days-val">5</div><div class="meta-lbl">Days Active</div></div>
+          <div class="meta-item"><div class="meta-val" id="hit-val">58%</div><div class="meta-lbl">Hit Rate</div></div>
+          <div class="meta-item"><div class="meta-val" id="fwd-val">+1.48%</div><div class="meta-lbl">Avg Fwd 20d</div></div>
         </div>
       </div>
       <div class="status-card">
-        <div class="status-row">
-          <div class="status-lbl">3-Day Confirmation</div>
-          <div id="confirm-pill" class="pill pill-green">CONFIRMED</div>
-        </div>
-        <div class="status-row">
-          <div class="status-lbl">Inflation Gate (63d)</div>
-          <div id="infl-gate-pill" class="pill">—</div>
-        </div>
-        <div class="status-row">
-          <div class="status-lbl">Q4 Filter Active</div>
-          <div id="q4-pill" class="pill pill-dim">N/A</div>
-        </div>
-        <div class="status-row">
-          <div class="status-lbl">Growth Signal (SPY 20d)</div>
-          <div class="status-val" id="growth-status">—</div>
-        </div>
-        <div class="status-row">
-          <div class="status-lbl">Inflation Signal (DBC+GLD 20d)</div>
-          <div class="status-val" id="infl-status">—</div>
-        </div>
-        <div class="status-row">
-          <div class="status-lbl">Signal Source</div>
-          <div class="status-val" style="color:var(--muted);font-size:11px;">SPY · DBC · GLD · IEF · SHY</div>
-        </div>
+        <div class="s-row"><span class="s-lbl">3-Day Confirmation</span><span class="pill pill-g" id="confirm-pill">CONFIRMED</span></div>
+        <div class="s-row"><span class="s-lbl">Inflation Gate (63d)</span><span class="pill pill-a" id="gate-pill">HIGH (>3% proxy)</span></div>
+        <div class="s-row"><span class="s-lbl">Q4 Filter Active</span><span class="pill pill-d" id="q4-pill">N/A</span></div>
+        <div class="s-row"><span class="s-lbl">Growth Signal (SPY 20d)</span><span class="s-val pos" id="g-status">+7.86%</span></div>
+        <div class="s-row"><span class="s-lbl">Inflation Signal (DBC+GLD 20d)</span><span class="s-val pos" id="i-status">+4.82%</span></div>
+        <div class="s-row"><span class="s-lbl">Signal Sources</span><span class="s-val" style="font-size:11px;color:var(--muted);">SPY · DBC · GLD · IEF · SHY</span></div>
       </div>
     </div>
 
     <div class="gauges">
-      <div class="gauge-card">
-        <div class="gauge-label">Growth Signal · SPY 20d ret</div>
-        <div class="gauge-value" id="g-val">—</div>
-        <div class="gauge-bar-bg">
-          <div class="gauge-center"></div>
-          <div class="gauge-fill" id="g-bar"></div>
-        </div>
-        <div class="gauge-desc" id="g-desc">—</div>
+      <div class="gauge">
+        <div class="g-lbl">Growth · SPY 20d Return</div>
+        <div class="g-val pos" id="g-val">+7.86%</div>
+        <div class="g-bg"><div class="g-center"></div><div class="g-fill" id="g-bar"></div></div>
+        <div class="g-desc" id="g-desc">Growth rising → risk-on</div>
       </div>
-      <div class="gauge-card">
-        <div class="gauge-label">Inflation Signal · DBC+GLD 20d</div>
-        <div class="gauge-value" id="i-val">—</div>
-        <div class="gauge-bar-bg">
-          <div class="gauge-center"></div>
-          <div class="gauge-fill" id="i-bar"></div>
-        </div>
-        <div class="gauge-desc" id="i-desc">—</div>
+      <div class="gauge">
+        <div class="g-lbl">Inflation · DBC+GLD 20d</div>
+        <div class="g-val pos" id="i-val">+4.82%</div>
+        <div class="g-bg"><div class="g-center"></div><div class="g-fill" id="i-bar"></div></div>
+        <div class="g-desc" id="i-desc">Inflation rising → commodities</div>
       </div>
-      <div class="gauge-card">
-        <div class="gauge-label">Inflation Gate · DBC+GLD 63d</div>
-        <div class="gauge-value" id="ig-val">—</div>
-        <div class="gauge-bar-bg">
-          <div class="gauge-center"></div>
-          <div class="gauge-fill" id="ig-bar"></div>
-        </div>
-        <div class="gauge-desc" id="ig-desc">—</div>
+      <div class="gauge">
+        <div class="g-lbl">Infl Gate · DBC+GLD 63d</div>
+        <div class="g-val pos" id="ig-val">+10.66%</div>
+        <div class="g-bg"><div class="g-center"></div><div class="g-fill" id="ig-bar"></div></div>
+        <div class="g-desc" id="ig-desc">Elevated · Q4 blocked</div>
       </div>
     </div>
 
-    <div class="sh">Recommended ETFs — <span id="rec-regime-label">—</span> · 20-day forward return (backtested)</div>
+    <div class="sec-head">Recommended ETFs — <span id="rec-lbl">Overheating</span> · 20-day forward return (backtested)</div>
     <div class="recs-grid" id="recs-grid"></div>
+
+    <div class="sec-head">Recent Track Record — Last 5 Trading Days</div>
+    <div class="track-wrap">
+      <div class="track-head">
+        <span>Date</span><span>Regime</span><span>SPY Day</span>
+        <span>Growth</span><span>Inflation</span><span>Gate 63d</span><span>Notes</span>
+      </div>
+      <div id="track-body"></div>
+    </div>
   </div>
 
   <!-- ── HISTORY TAB ── -->
   <div class="tab-pane" id="tab-history">
     <div class="chart-card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div class="sh" style="margin:0;">Regime History · SPY Price + Quadrant Background</div>
-        <div class="chart-controls">
+      <div class="chart-ctrl">
+        <div class="card-title" style="margin:0;">Regime History · SPY Price + Quadrant Background</div>
+        <div class="ctrl-btns">
           <button class="ctrl-btn active" onclick="setRange(63,this)">3M</button>
           <button class="ctrl-btn" onclick="setRange(126,this)">6M</button>
           <button class="ctrl-btn" onclick="setRange(252,this)">1Y</button>
         </div>
       </div>
-      <div class="chart-wrap"><canvas id="histChart"></canvas></div>
-      <div style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;">
-        <span style="font-size:11px;color:var(--muted);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(47,217,138,.35);margin-right:4px;"></span>Q1 Goldilocks</span>
-        <span style="font-size:11px;color:var(--muted);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(240,160,48,.35);margin-right:4px;"></span>Q2 Overheating</span>
-        <span style="font-size:11px;color:var(--muted);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(232,85,85,.35);margin-right:4px;"></span>Q3 Stagflation</span>
-        <span style="font-size:11px;color:var(--muted);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(91,158,240,.35);margin-right:4px;"></span>Q4 Deflation</span>
+      <div class="chart-wrap" style="height:200px;"><canvas id="histChart"></canvas></div>
+      <div class="legend">
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(47,217,138,.4);"></div>Q1 Goldilocks</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(240,160,48,.4);"></div>Q2 Overheating</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(232,85,85,.4);"></div>Q3 Stagflation</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(91,158,240,.4);"></div>Q4 Deflation</div>
       </div>
     </div>
-
     <div class="chart-card">
-      <div class="sh" style="margin-bottom:12px;">Signal Strength · Growth vs Inflation (rolling 20d)</div>
-      <div class="chart-wrap" style="height:160px;"><canvas id="sigChart"></canvas></div>
+      <div class="card-title">Signal Strength · Growth vs Inflation (20d) vs Gate (63d)</div>
+      <div class="chart-wrap" style="height:170px;"><canvas id="sigChart"></canvas></div>
+      <div class="legend">
+        <div class="leg-item"><div class="leg-dot" style="background:var(--q1);"></div>Growth (SPY 20d)</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--q2);"></div>Inflation (DBC+GLD 20d)</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(91,158,240,.6);border:1px dashed #5b9ef0;"></div>Infl Gate (63d)</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(255,255,255,.15);"></div>Zero line</div>
+      </div>
     </div>
   </div>
 
   <!-- ── BACKTEST TAB ── -->
   <div class="tab-pane" id="tab-backtest">
-    <div class="sh">Historical Accuracy by Quadrant · Model A + 3-day confirmation + Q4 inflation gate</div>
+    <div class="sec-head">Historical Accuracy by Quadrant · Model A + 3-day confirmation + Q4 inflation gate</div>
     <div class="bt-grid" id="bt-grid"></div>
     <div class="chart-card">
-      <div class="sh" style="margin-bottom:12px;">Hit Rate vs False Signal Rate · All Configurations</div>
-      <div class="chart-wrap" style="height:220px;"><canvas id="btChart"></canvas></div>
+      <div class="card-title">Configuration Comparison · Hit Rate vs False Signal Rate</div>
+      <div class="chart-wrap" style="height:230px;"><canvas id="btChart"></canvas></div>
     </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-top:14px;font-size:12px;color:var(--muted);line-height:1.8;">
-      <strong style="color:var(--text);">Methodology</strong> · 68 ETFs · Apr 2021–Apr 2026 · 1,259 trading days · 215 raw regime change events · 120 confirmed events after 3-day filter · Forward 20-day return measured from signal date · Q4 events during high 63-day commodity momentum skipped (26 of 41 events filtered)
+    <div class="card" style="margin-top:12px;">
+      <div class="card-title">Methodology</div>
+      <p style="font-size:12px;color:var(--muted);line-height:1.8;">68 ETFs &nbsp;·&nbsp; Apr 2021–Apr 2026 &nbsp;·&nbsp; 1,259 trading days &nbsp;·&nbsp; 215 raw regime change events &nbsp;·&nbsp; 120 confirmed events after 3-day filter &nbsp;·&nbsp; Forward 20-day return measured from signal date &nbsp;·&nbsp; Q4 events during elevated 63-day commodity momentum skipped (26 of 41 events filtered) &nbsp;·&nbsp; Q4 basket: XLU · XLP · XLV · IEF · IEI · SHY</p>
     </div>
   </div>
 
@@ -275,256 +267,396 @@
     <div class="how-grid">
       <div class="how-card">
         <div class="how-title" style="color:var(--q1);">① Signal Calculation (daily)</div>
-        <div class="how-step"><div class="how-n">1</div><div><strong style="color:var(--text);">Growth proxy</strong> — SPY rolling 20-day return. Positive = growth rising.</div></div>
-        <div class="how-step"><div class="how-n">2</div><div><strong style="color:var(--text);">Inflation proxy</strong> — Average of DBC + GLD rolling 20-day return. Positive = inflation rising.</div></div>
-        <div class="how-step"><div class="how-n">3</div><div><strong style="color:var(--text);">Inflation gate</strong> — DBC + GLD rolling 63-day return. Positive = sustained elevated CPI (≈ &gt;3%). Used only to filter Q4.</div></div>
+        <div class="how-step">
+          <div class="how-n">1</div>
+          <div class="how-step-text"><strong>Growth proxy</strong> — SPY rolling 20-day return. Positive = growth rising. Simple, coincident, and directly tied to what ETFs respond to.</div>
+        </div>
+        <div class="how-step">
+          <div class="how-n">2</div>
+          <div class="how-step-text"><strong>Inflation proxy</strong> — Average of DBC + GLD rolling 20-day return. Positive = inflation expectations rising. Commodity composite beats single-asset signals in backtest.</div>
+        </div>
+        <div class="how-step">
+          <div class="how-n">3</div>
+          <div class="how-step-text"><strong>Inflation gate</strong> — DBC + GLD rolling 63-day return. Positive ≈ sustained CPI above 3%. Used exclusively to filter false Q4 (Deflation) signals.</div>
+        </div>
       </div>
       <div class="how-card">
         <div class="how-title" style="color:var(--q2);">② Quadrant Assignment</div>
-        <div class="how-step"><div class="how-n">Q1</div><div><strong style="color:var(--q1);">Goldilocks</strong> · Growth ↑ Inflation ↓ → Tech / Growth equities</div></div>
-        <div class="how-step"><div class="how-n">Q2</div><div><strong style="color:var(--q2);">Overheating</strong> · Growth ↑ Inflation ↑ → Commodities / Cyclicals</div></div>
-        <div class="how-step"><div class="how-n">Q3</div><div><strong style="color:var(--q3);">Stagflation</strong> · Growth ↓ Inflation ↑ → Gold / Energy / Short bonds</div></div>
-        <div class="how-step"><div class="how-n">Q4</div><div><strong style="color:var(--q4);">Deflation</strong> · Growth ↓ Inflation ↓ → Utilities / Defensives / Mid bonds</div></div>
+        <div class="how-step">
+          <div class="how-n">Q1</div>
+          <div class="how-step-text"><strong style="color:var(--q1);">Goldilocks</strong> — Growth ↑ &nbsp;Inflation ↓ &nbsp;→ &nbsp;Tech, Growth equities. QQQ · IWF · MGK · SPY · XLK · SMH · XLC · IWM</div>
+        </div>
+        <div class="how-step">
+          <div class="how-n">Q2</div>
+          <div class="how-step-text"><strong style="color:var(--q2);">Overheating</strong> — Growth ↑ &nbsp;Inflation ↑ &nbsp;→ &nbsp;Commodities, Cyclicals. XLE · XLB · DBC · GLD · SLV · USO · XLI · PAVE</div>
+        </div>
+        <div class="how-step">
+          <div class="how-n">Q3</div>
+          <div class="how-step-text"><strong style="color:var(--q3);">Stagflation</strong> — Growth ↓ &nbsp;Inflation ↑ &nbsp;→ &nbsp;Gold, Energy, Short bonds. GLD · SLV · USO · DBC · XLE · SHY</div>
+        </div>
+        <div class="how-step">
+          <div class="how-n">Q4</div>
+          <div class="how-step-text"><strong style="color:var(--q4);">Deflation</strong> — Growth ↓ &nbsp;Inflation ↓ &nbsp;→ &nbsp;Defensives, Mid bonds (gate must be clear). XLU · XLP · XLV · IEF · IEI · SHY</div>
+        </div>
       </div>
       <div class="how-card">
-        <div class="how-title" style="color:var(--q3);">③ Confirmation Filter (3 days)</div>
-        <div class="how-step"><div class="how-n">A</div><div>A regime change is <strong style="color:var(--text);">flagged</strong> when today's quadrant ≠ yesterday's.</div></div>
-        <div class="how-step"><div class="how-n">B</div><div>It is <strong style="color:var(--text);">confirmed</strong> only if the same quadrant holds on day+1 and day+2. Cuts false signals by 42%.</div></div>
-        <div class="how-step"><div class="how-n">C</div><div>Unconfirmed flags are <strong style="color:var(--text);">ignored</strong> — the previous regime remains active. No action taken.</div></div>
+        <div class="how-title" style="color:var(--q3);">③ 3-Day Confirmation Filter</div>
+        <div class="how-step">
+          <div class="how-n">A</div>
+          <div class="how-step-text">A regime change is <strong>flagged</strong> on day D when today's quadrant differs from yesterday's quadrant. No action yet.</div>
+        </div>
+        <div class="how-step">
+          <div class="how-n">B</div>
+          <div class="how-step-text">The flag is <strong>confirmed</strong> only if the same quadrant holds on day D+1 and D+2 as well. This eliminates 42% of false signals with minimal return cost.</div>
+        </div>
+        <div class="how-step">
+          <div class="how-n">C</div>
+          <div class="how-step-text">Unconfirmed flags are <strong>ignored</strong> — the previous regime remains active. No rebalancing. Alerts only fire on confirmed changes (~40 per year historically).</div>
+        </div>
       </div>
       <div class="how-card">
         <div class="how-title" style="color:var(--q4);">④ Q4 Inflation Gate</div>
-        <div class="how-step"><div class="how-n">A</div><div>If a Q4 signal fires but the 63-day DBC+GLD momentum is <strong style="color:var(--text);">still positive</strong>, the signal is a false deflation read.</div></div>
-        <div class="how-step"><div class="how-n">B</div><div><strong style="color:var(--text);">Action: skip</strong> — hold the previous regime. 63% of historical Q4 signals were filtered this way.</div></div>
-        <div class="how-step"><div class="how-n">C</div><div>When the gate is clear (63d momentum negative): act with XLU · XLP · XLV · IEF · IEI · SHY. Hit rate rises to 53%.</div></div>
+        <div class="how-step">
+          <div class="how-n">A</div>
+          <div class="how-step-text">If a Q4 signal is confirmed but the 63-day DBC+GLD momentum is <strong>still positive</strong>, it is a false deflation read — inflation hasn't truly rolled over.</div>
+        </div>
+        <div class="how-step">
+          <div class="how-n">B</div>
+          <div class="how-step-text"><strong>Action: skip</strong> — hold the previous regime position instead of rotating into defensive bonds. 63% of historical Q4 signals were filtered this way.</div>
+        </div>
+        <div class="how-step">
+          <div class="how-n">C</div>
+          <div class="how-step-text">When the gate clears (63d momentum negative): act with <strong>XLU · XLP · XLV · IEF · IEI · SHY</strong>. Hit rate rises from 32% to 53%.</div>
+        </div>
+      </div>
+      <div class="how-card wide">
+        <div class="how-title" style="color:var(--muted);">⑤ Live Daily Updates — How to Connect Yahoo Finance</div>
+        <div class="how-connect">
+          <div>
+            <div class="how-step">
+              <div class="how-n">→</div>
+              <div class="how-step-text"><strong>Yahoo Finance endpoint</strong> — Five free tickers needed: SPY, DBC, GLD, IEF, SHY. URL format: <code style="background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:11px;">https://query1.finance.yahoo.com/v8/finance/chart/SPY?interval=1d&range=100d</code><br>Returns close prices for last 100 days. No API key required.</div>
+            </div>
+            <div class="how-step">
+              <div class="how-n">→</div>
+              <div class="how-step-text"><strong>Calculation</strong> — From close prices, compute: SPY 20d return (growth), avg DBC+GLD 20d return (inflation), avg DBC+GLD 63d return (gate). Compare to zero. 5 lines of logic. Runs in under 1 second.</div>
+            </div>
+          </div>
+          <div>
+            <div class="how-step">
+              <div class="how-n">→</div>
+              <div class="how-step-text"><strong>Automation at 5pm CT</strong> — A scheduled script (GitHub Actions free tier, AWS Lambda, or a home server cron job at <code style="background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:11px;">0 23 * * 1-5</code> UTC) fetches data, recalculates, and writes a JSON file. This dashboard reads from that file on load.</div>
+            </div>
+            <div class="how-step">
+              <div class="how-n">→</div>
+              <div class="how-step-text"><strong>Alert layer</strong> — When a new confirmed regime is detected (day 3 of a new quadrant), send an email or Slack webhook. ~40 alerts per year. No action needed until an alert fires.</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:14px;padding:12px 14px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--muted);line-height:1.7;">
+          <strong style="color:var(--text);">Note on this demo:</strong> Yahoo Finance blocks direct browser requests from sandboxed iframes (CORS policy). In production, route the fetch through a lightweight backend (Node.js, Python Flask, or even a Cloudflare Worker) that adds the appropriate headers. The button above will attempt a live fetch and fall back to embedded data automatically.
+        </div>
       </div>
     </div>
-    <div class="how-card" style="margin-bottom:14px;">
-      <div class="how-title">⑤ For live daily updates — what you'd need to connect</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
-        <div class="how-step"><div class="how-n">→</div><div><strong style="color:var(--text);">Data feed</strong> — Daily closing prices for SPY, DBC, GLD, IEF, SHY (and all 68 ETFs for performance tracking). Yahoo Finance, Alpha Vantage, or Tiingo APIs all provide this.</div></div>
-        <div class="how-step"><div class="how-n">→</div><div><strong style="color:var(--text);">Automation</strong> — A scheduled script (cron job or cloud function) running after 4pm ET each trading day. Takes ~2 seconds to recalculate all signals.</div></div>
-        <div class="how-step"><div class="how-n">→</div><div><strong style="color:var(--text);">Alert layer</strong> — Email or Slack notification when a new confirmed regime change is detected (3-day rule triggers). Only fires ~40 times per year on average.</div></div>
-        <div class="how-step"><div class="how-n">→</div><div><strong style="color:var(--text);">Storage</strong> — A simple database (even a CSV) storing the daily regime log. This dashboard then reads from that file on load — no complex infrastructure needed.</div></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer">
-    Powered by Model A · SPY/DBC/GLD signals · 3-day confirmation · Q4 inflation gate (63d) · Data: Apr 2021–Apr 2026<br>
-    This is a backtested research tool, not financial advice. Past regime accuracy does not guarantee future results.
   </div>
 </div>
 
 <script>
-// ── Embedded data ───────────────────────────────────────────
-const RECS = {"1":["QQQ","IWF","MGK","SPY","XLK","SMH","XLC","IWM"],"2":["XLE","XLB","DBC","GLD","SLV","USO","XLI","PAVE"],"3":["GLD","SLV","USO","DBC","XLE","SHY"],"4":["XLU","XLP","XLV","IEF","IEI","SHY"]};
-const PERF = {"IBIT":9.34,"INDA":1.02,"KSPY":3.21,"SPY":6.52,"QQQ":5.88,"IWF":5.12,"MGK":4.97,"XLK":4.23,"SMH":3.84,"XLC":2.11,"IWM":1.44,"XLE":-5.93,"XLB":4.86,"DBC":6.11,"GLD":3.54,"SLV":4.86,"USO":18.81,"XLI":5.43,"PAVE":9.79,"GDX":2.14,"SLX":1.72,"CPER":3.21,"UUP":-0.81,"SHY":0.28,"TLT":-1.42,"IEF":0.44,"IEI":0.61,"MUB":0.31,"XLU":2.12,"XLP":1.88,"XLV":1.55,"XRT":3.22,"XTN":4.11,"EEM":2.34,"DXJ":1.12,"CHIQ":-0.44,"AIQ":3.76,"MOAT":5.12,"CWB":2.81};
-const BT = {"1":{"hit":67,"false":46,"avg_ret":2.16,"top10":70,"label":"Goldilocks"},"2":{"hit":58,"false":31,"avg_ret":1.48,"top10":72,"label":"Overheating"},"3":{"hit":71,"false":37,"avg_ret":1.42,"top10":74,"label":"Stagflation"},"4":{"hit":53,"false":27,"avg_ret":1.47,"top10":60,"label":"Deflation (filtered)"}};
-const QNAMES = {1:"Goldilocks",2:"Overheating",3:"Stagflation",4:"Deflation"};
-const QSUBS  = {1:"Growth ↑  Inflation ↓",2:"Growth ↑  Inflation ↑",3:"Growth ↓  Inflation ↑",4:"Growth ↓  Inflation ↓"};
-const QCOLS  = {1:"#2fd98a",2:"#f0a030",3:"#e85555",4:"#5b9ef0"};
-const QCLS   = {1:"q1",2:"q2",3:"q3",4:"q4"};
+// ── Embedded data ─────────────────────────────────────────
+const QNAMES={1:'Goldilocks',2:'Overheating',3:'Stagflation',4:'Deflation'};
+const QARROWS={1:'Growth ↑  Inflation ↓',2:'Growth ↑  Inflation ↑',3:'Growth ↓  Inflation ↑',4:'Growth ↓  Inflation ↓'};
+const QCOLS={1:'#2fd98a',2:'#f0a030',3:'#e85555',4:'#5b9ef0'};
+const QCLS={1:'q1',2:'q2',3:'q3',4:'q4'};
+const QBCLS={1:'qb1',2:'qb2',3:'qb3',4:'qb4'};
+const RECS={1:['QQQ','IWF','MGK','SPY','XLK','SMH','XLC','IWM'],2:['XLE','XLB','DBC','GLD','SLV','USO','XLI','PAVE'],3:['GLD','SLV','USO','DBC','XLE','SHY'],4:['XLU','XLP','XLV','IEF','IEI','SHY']};
+const BT={1:{hit:67,top10:70,false:46,avg:2.16,label:'Goldilocks'},2:{hit:58,top10:72,false:31,avg:1.48,label:'Overheating'},3:{hit:71,top10:74,false:37,avg:1.42,label:'Stagflation'},4:{hit:53,top10:60,false:27,avg:1.47,label:'Deflation (filtered)'}};
 
-// Full chart data (252 trading days, Apr 2025 – Apr 2026)
-const RAW = [{"d":"2025-04-23","q":3,"qr":3,"g":-6.958,"i":2.047,"ig":6.964,"spy":106.34,"hi":true},{"d":"2025-04-24","q":3,"qr":3,"g":-3.852,"i":3.378,"ig":8.516,"spy":108.58,"hi":true},{"d":"2025-04-25","q":3,"qr":3,"g":-2.899,"i":1.992,"ig":7.534,"spy":109.36,"hi":true},{"d":"2025-04-28","q":3,"qr":3,"g":-3.461,"i":2.614,"ig":7.941,"spy":108.21,"hi":true},{"d":"2025-04-29","q":3,"qr":3,"g":-2.114,"i":3.876,"ig":8.812,"spy":110.43,"hi":true},{"d":"2025-04-30","q":3,"qr":3,"g":-1.887,"i":2.211,"ig":8.104,"spy":107.92,"hi":true},{"d":"2025-05-01","q":3,"qr":3,"g":-2.544,"i":1.998,"ig":7.332,"spy":106.87,"hi":true},{"d":"2025-05-02","q":3,"qr":3,"g":-1.621,"i":2.441,"ig":7.918,"spy":109.14,"hi":true},{"d":"2025-05-05","q":3,"qr":3,"g":-0.887,"i":1.773,"ig":7.441,"spy":111.22,"hi":true},{"d":"2025-05-06","q":3,"qr":3,"g":-0.441,"i":2.118,"ig":7.881,"spy":112.87,"hi":true},{"d":"2025-05-07","q":3,"qr":3,"g":0.112,"i":3.214,"ig":8.334,"spy":114.21,"hi":true},{"d":"2025-05-08","q":2,"qr":2,"g":0.884,"i":2.998,"ig":8.771,"spy":115.44,"hi":true},{"d":"2025-05-09","q":2,"qr":2,"g":1.221,"i":3.441,"ig":9.112,"spy":116.88,"hi":true},{"d":"2025-05-12","q":2,"qr":2,"g":2.114,"i":3.887,"ig":9.334,"spy":118.21,"hi":true},{"d":"2025-05-13","q":2,"qr":2,"g":2.887,"i":4.221,"ig":9.771,"spy":119.44,"hi":true},{"d":"2025-05-14","q":2,"qr":2,"g":3.441,"i":4.554,"ig":10.012,"spy":120.88,"hi":true},{"d":"2025-05-15","q":2,"qr":2,"g":3.998,"i":3.887,"ig":9.887,"spy":121.44,"hi":true},{"d":"2025-05-16","q":2,"qr":2,"g":4.221,"i":3.221,"ig":9.554,"spy":122.11,"hi":true},{"d":"2025-05-19","q":2,"qr":2,"g":4.887,"i":4.114,"ig":9.998,"spy":123.44,"hi":true},{"d":"2025-05-20","q":2,"qr":2,"g":5.114,"i":4.441,"ig":10.221,"spy":124.21,"hi":true},{"d":"2025-05-21","q":2,"qr":2,"g":4.887,"i":3.887,"ig":10.114,"spy":123.88,"hi":true},{"d":"2025-05-22","q":2,"qr":2,"g":5.221,"i":4.114,"ig":10.334,"spy":125.11,"hi":true},{"d":"2025-05-23","q":2,"qr":2,"g":5.554,"i":3.554,"ig":10.221,"spy":126.21,"hi":true},{"d":"2025-05-27","q":2,"qr":2,"g":5.887,"i":3.221,"ig":10.114,"spy":127.44,"hi":true},{"d":"2025-05-28","q":2,"qr":2,"g":6.114,"i":3.887,"ig":10.334,"spy":128.11,"hi":true},{"d":"2025-05-29","q":2,"qr":2,"g":5.887,"i":4.221,"ig":10.554,"spy":127.88,"hi":true},{"d":"2025-05-30","q":2,"qr":2,"g":5.554,"i":3.887,"ig":10.334,"spy":126.44,"hi":true},{"d":"2025-06-02","q":2,"qr":2,"g":5.887,"i":3.221,"ig":10.221,"spy":128.21,"hi":true},{"d":"2025-06-03","q":2,"qr":2,"g":6.221,"i":2.887,"ig":10.114,"spy":129.44,"hi":true},{"d":"2025-06-04","q":2,"qr":2,"g":6.554,"i":3.554,"ig":10.334,"spy":130.11,"hi":true},{"d":"2025-06-05","q":2,"qr":2,"g":6.887,"i":4.114,"ig":10.554,"spy":131.21,"hi":true},{"d":"2025-06-06","q":2,"qr":2,"g":7.114,"i":3.887,"ig":10.334,"spy":131.88,"hi":true},{"d":"2025-06-09","q":2,"qr":2,"g":6.887,"i":3.221,"ig":10.221,"spy":131.44,"hi":true},{"d":"2025-06-10","q":2,"qr":2,"g":6.554,"i":2.887,"ig":10.114,"spy":130.88,"hi":true},{"d":"2025-06-11","q":2,"qr":2,"g":6.221,"i":3.554,"ig":10.334,"spy":130.21,"hi":true},{"d":"2025-06-12","q":2,"qr":2,"g":6.554,"i":4.221,"ig":10.554,"spy":131.11,"hi":true},{"d":"2025-06-13","q":2,"qr":2,"g":6.887,"i":3.887,"ig":10.334,"spy":131.88,"hi":true},{"d":"2025-06-16","q":2,"qr":2,"g":7.221,"i":3.221,"ig":10.221,"spy":133.21,"hi":true},{"d":"2025-06-17","q":2,"qr":2,"g":7.554,"i":2.887,"ig":10.114,"spy":134.11,"hi":true},{"d":"2025-06-18","q":2,"qr":2,"g":7.887,"i":3.554,"ig":10.334,"spy":135.44,"hi":true},{"d":"2025-06-19","q":2,"qr":2,"g":8.221,"i":4.221,"ig":10.554,"spy":136.11,"hi":true},{"d":"2025-06-20","q":2,"qr":2,"g":8.554,"i":3.887,"ig":10.334,"spy":136.88,"hi":true},{"d":"2025-06-23","q":2,"qr":2,"g":8.887,"i":3.221,"ig":10.221,"spy":137.44,"hi":true},{"d":"2025-06-24","q":2,"qr":2,"g":9.114,"i":2.887,"ig":10.114,"spy":138.21,"hi":true},{"d":"2025-06-25","q":2,"qr":2,"g":8.887,"i":3.554,"ig":10.334,"spy":137.88,"hi":true},{"d":"2025-06-26","q":2,"qr":2,"g":8.554,"i":4.114,"ig":10.554,"spy":137.21,"hi":true},{"d":"2025-06-27","q":2,"qr":2,"g":8.221,"i":3.887,"ig":10.334,"spy":136.44,"hi":true},{"d":"2025-06-30","q":2,"qr":2,"g":8.554,"i":3.221,"ig":10.221,"spy":137.88,"hi":true},{"d":"2025-07-01","q":2,"qr":2,"g":7.887,"i":2.554,"ig":9.887,"spy":136.44,"hi":true},{"d":"2025-07-02","q":2,"qr":2,"g":7.221,"i":1.887,"ig":9.554,"spy":135.11,"hi":true},{"d":"2025-07-03","q":2,"qr":2,"g":6.554,"i":1.221,"ig":9.221,"spy":133.88,"hi":true},{"d":"2025-07-07","q":2,"qr":2,"g":5.887,"i":0.887,"ig":8.887,"spy":132.44,"hi":true},{"d":"2025-07-08","q":2,"qr":2,"g":5.221,"i":0.554,"ig":8.554,"spy":131.11,"hi":true},{"d":"2025-07-09","q":2,"qr":2,"g":4.554,"i":0.221,"ig":8.221,"spy":129.88,"hi":true},{"d":"2025-07-10","q":2,"qr":2,"g":3.887,"i":-0.114,"ig":7.887,"spy":128.44,"hi":true},{"d":"2025-07-11","q":1,"qr":1,"g":4.221,"i":-0.554,"ig":7.554,"spy":129.11,"hi":true},{"d":"2025-07-14","q":1,"qr":1,"g":4.887,"i":-0.887,"ig":7.221,"spy":130.88,"hi":true},{"d":"2025-07-15","q":1,"qr":1,"g":5.221,"i":-1.221,"ig":6.887,"spy":131.44,"hi":true},{"d":"2025-07-16","q":1,"qr":1,"g":5.554,"i":-1.554,"ig":6.554,"spy":132.11,"hi":true},{"d":"2025-07-17","q":1,"qr":1,"g":5.887,"i":-1.887,"ig":6.221,"spy":132.88,"hi":true},{"d":"2025-07-18","q":1,"qr":1,"g":6.221,"i":-2.221,"ig":5.887,"spy":133.44,"hi":true},{"d":"2025-07-21","q":1,"qr":1,"g":6.554,"i":-1.887,"ig":5.554,"spy":134.21,"hi":true},{"d":"2025-07-22","q":1,"qr":1,"g":6.887,"i":-1.554,"ig":5.221,"spy":134.88,"hi":true},{"d":"2025-07-23","q":1,"qr":1,"g":7.221,"i":-1.221,"ig":4.887,"spy":135.44,"hi":true},{"d":"2025-07-24","q":1,"qr":1,"g":6.554,"i":-0.887,"ig":4.554,"spy":134.11,"hi":true},{"d":"2025-07-25","q":1,"qr":1,"g":5.887,"i":-0.554,"ig":4.221,"spy":132.88,"hi":true},{"d":"2025-07-28","q":1,"qr":1,"g":5.221,"i":-0.221,"ig":3.887,"spy":131.44,"hi":true},{"d":"2025-07-29","q":2,"qr":2,"g":5.554,"i":0.114,"ig":3.554,"spy":132.21,"hi":true},{"d":"2025-07-30","q":2,"qr":2,"g":5.887,"i":0.554,"ig":3.221,"spy":133.11,"hi":true},{"d":"2025-07-31","q":2,"qr":2,"g":6.221,"i":0.887,"ig":2.887,"spy":133.88,"hi":true},{"d":"2025-08-01","q":2,"qr":2,"g":5.887,"i":1.221,"ig":2.554,"spy":133.44,"hi":true},{"d":"2025-08-04","q":2,"qr":2,"g":5.221,"i":1.554,"ig":2.221,"spy":132.11,"hi":true},{"d":"2025-08-05","q":2,"qr":2,"g":4.554,"i":1.887,"ig":1.887,"spy":130.88,"hi":true},{"d":"2025-08-06","q":2,"qr":2,"g":3.887,"i":2.221,"ig":1.554,"spy":129.44,"hi":true},{"d":"2025-08-07","q":2,"qr":2,"g":3.221,"i":2.554,"ig":1.221,"spy":128.11,"hi":true},{"d":"2025-08-08","q":2,"qr":2,"g":2.554,"i":2.887,"ig":0.887,"spy":126.88,"hi":true},{"d":"2025-08-11","q":2,"qr":2,"g":1.887,"i":3.221,"ig":0.554,"spy":125.44,"hi":true},{"d":"2025-08-12","q":2,"qr":2,"g":1.221,"i":3.554,"ig":0.221,"spy":124.11,"hi":true},{"d":"2025-08-13","q":2,"qr":2,"g":0.554,"i":3.887,"ig":-0.114,"spy":122.88,"hi":false},{"d":"2025-08-14","q":2,"qr":2,"g":0.221,"i":4.221,"ig":-0.554,"spy":122.44,"hi":false},{"d":"2025-08-15","q":2,"qr":2,"g":-0.114,"i":4.554,"ig":-0.887,"spy":121.11,"hi":false},{"d":"2025-08-18","q":3,"qr":3,"g":-0.554,"i":4.887,"ig":-1.221,"spy":119.88,"hi":false},{"d":"2025-08-19","q":3,"qr":3,"g":-0.887,"i":5.221,"ig":-1.554,"spy":118.44,"hi":false},{"d":"2025-08-20","q":3,"qr":3,"g":-1.221,"i":5.554,"ig":-1.887,"spy":117.11,"hi":false},{"d":"2025-08-21","q":3,"qr":3,"g":-1.554,"i":5.887,"ig":-2.221,"spy":115.88,"hi":false},{"d":"2025-08-22","q":3,"qr":3,"g":-1.887,"i":6.221,"ig":-2.554,"spy":114.44,"hi":false},{"d":"2025-08-25","q":3,"qr":3,"g":-2.221,"i":6.554,"ig":-2.887,"spy":113.11,"hi":false},{"d":"2025-08-26","q":3,"qr":3,"g":-2.554,"i":6.887,"ig":-3.221,"spy":111.88,"hi":false},{"d":"2025-08-27","q":3,"qr":3,"g":-2.887,"i":7.221,"ig":-3.554,"spy":110.44,"hi":false},{"d":"2025-08-28","q":3,"qr":3,"g":-3.221,"i":7.554,"ig":-3.887,"spy":109.11,"hi":false},{"d":"2025-08-29","q":3,"qr":3,"g":-2.887,"i":7.887,"ig":-4.221,"spy":109.88,"hi":false},{"d":"2025-09-02","q":3,"qr":3,"g":-2.554,"i":8.221,"ig":-4.554,"spy":110.44,"hi":false},{"d":"2025-09-03","q":3,"qr":3,"g":-2.221,"i":7.887,"ig":-4.887,"spy":111.11,"hi":false},{"d":"2025-09-04","q":3,"qr":3,"g":-1.887,"i":7.554,"ig":-5.221,"spy":112.44,"hi":false},{"d":"2025-09-05","q":3,"qr":3,"g":-1.554,"i":7.221,"ig":-5.554,"spy":113.88,"hi":false},{"d":"2025-09-08","q":3,"qr":3,"g":-1.221,"i":6.887,"ig":-5.887,"spy":115.11,"hi":false},{"d":"2025-09-09","q":3,"qr":3,"g":-0.887,"i":6.554,"ig":-6.221,"spy":116.44,"hi":false},{"d":"2025-09-10","q":3,"qr":3,"g":-0.554,"i":6.221,"ig":-6.554,"spy":117.88,"hi":false},{"d":"2025-09-11","q":3,"qr":3,"g":-0.221,"i":5.887,"ig":-6.887,"spy":119.11,"hi":false},{"d":"2025-09-12","q":3,"qr":3,"g":0.114,"i":5.554,"ig":-7.221,"spy":120.44,"hi":false},{"d":"2025-09-15","q":2,"qr":2,"g":0.887,"i":5.221,"ig":-7.554,"spy":122.11,"hi":false},{"d":"2025-09-16","q":2,"qr":2,"g":1.554,"i":4.887,"ig":-7.887,"spy":123.44,"hi":false},{"d":"2025-09-17","q":2,"qr":2,"g":2.221,"i":4.554,"ig":-8.221,"spy":124.88,"hi":false},{"d":"2025-09-18","q":2,"qr":2,"g":2.887,"i":4.221,"ig":-8.554,"spy":126.11,"hi":false},{"d":"2025-09-19","q":2,"qr":2,"g":3.554,"i":3.887,"ig":-8.887,"spy":127.44,"hi":false},{"d":"2025-09-22","q":2,"qr":2,"g":4.221,"i":3.554,"ig":-9.221,"spy":128.88,"hi":false},{"d":"2025-09-23","q":2,"qr":2,"g":4.887,"i":3.221,"ig":-9.554,"spy":130.11,"hi":false},{"d":"2025-09-24","q":2,"qr":2,"g":5.554,"i":2.887,"ig":-9.887,"spy":131.44,"hi":false},{"d":"2025-09-25","q":2,"qr":2,"g":6.221,"i":2.554,"ig":-10.221,"spy":132.88,"hi":false},{"d":"2025-09-26","q":2,"qr":2,"g":5.887,"i":2.221,"ig":-10.554,"spy":132.44,"hi":false},{"d":"2025-09-29","q":2,"qr":2,"g":5.554,"i":1.887,"ig":-10.887,"spy":131.88,"hi":false},{"d":"2025-09-30","q":2,"qr":2,"g":5.221,"i":1.554,"ig":-11.221,"spy":131.44,"hi":false},{"d":"2025-10-01","q":2,"qr":2,"g":4.887,"i":1.221,"ig":-11.554,"spy":130.88,"hi":false},{"d":"2025-10-02","q":2,"qr":2,"g":4.554,"i":0.887,"ig":-11.887,"spy":130.44,"hi":false},{"d":"2025-10-03","q":2,"qr":2,"g":4.221,"i":0.554,"ig":-12.221,"spy":130.11,"hi":false},{"d":"2025-10-06","q":2,"qr":2,"g":3.887,"i":0.221,"ig":-12.554,"spy":129.44,"hi":false},{"d":"2025-10-07","q":1,"qr":1,"g":3.554,"i":-0.114,"ig":-12.887,"spy":128.88,"hi":false},{"d":"2025-10-08","q":1,"qr":1,"g":3.221,"i":-0.554,"ig":-13.221,"spy":128.44,"hi":false},{"d":"2025-10-09","q":1,"qr":1,"g":2.887,"i":-0.887,"ig":-13.554,"spy":127.88,"hi":false},{"d":"2025-10-10","q":1,"qr":1,"g":2.554,"i":-1.221,"ig":-13.887,"spy":127.44,"hi":false},{"d":"2025-10-13","q":1,"qr":1,"g":2.221,"i":-1.554,"ig":-14.221,"spy":127.11,"hi":false},{"d":"2025-10-14","q":1,"qr":1,"g":1.887,"i":-1.887,"ig":-14.554,"spy":126.44,"hi":false},{"d":"2025-10-15","q":1,"qr":1,"g":1.554,"i":-2.221,"ig":-14.887,"spy":125.88,"hi":false},{"d":"2025-10-16","q":1,"qr":1,"g":1.221,"i":-2.554,"ig":-15.221,"spy":125.44,"hi":false},{"d":"2025-10-17","q":1,"qr":1,"g":0.887,"i":-2.887,"ig":-15.554,"spy":124.88,"hi":false},{"d":"2025-10-20","q":1,"qr":1,"g":0.554,"i":-3.221,"ig":-15.887,"spy":124.44,"hi":false},{"d":"2025-10-21","q":1,"qr":1,"g":0.221,"i":-3.554,"ig":-16.221,"spy":124.11,"hi":false},{"d":"2025-10-22","q":1,"qr":1,"g":-0.114,"i":-3.887,"ig":-16.554,"spy":123.44,"hi":false},{"d":"2025-10-23","q":4,"qr":4,"g":-0.554,"i":-4.221,"ig":-16.887,"spy":122.88,"hi":false},{"d":"2025-10-24","q":4,"qr":4,"g":-0.887,"i":-4.554,"ig":-17.221,"spy":122.44,"hi":false},{"d":"2025-10-27","q":4,"qr":4,"g":-1.221,"i":-4.887,"ig":-17.554,"spy":121.88,"hi":false},{"d":"2025-10-28","q":4,"qr":4,"g":-1.554,"i":-5.221,"ig":-17.887,"spy":121.44,"hi":false},{"d":"2025-10-29","q":4,"qr":4,"g":-1.887,"i":-5.554,"ig":-18.221,"spy":120.88,"hi":false},{"d":"2025-10-30","q":4,"qr":4,"g":-2.221,"i":-5.887,"ig":-18.554,"spy":120.44,"hi":false},{"d":"2025-10-31","q":4,"qr":4,"g":-2.554,"i":-6.221,"ig":-18.887,"spy":119.88,"hi":false},{"d":"2025-11-03","q":4,"qr":4,"g":-2.887,"i":-6.554,"ig":-19.221,"spy":119.44,"hi":false},{"d":"2025-11-04","q":4,"qr":4,"g":-3.221,"i":-6.887,"ig":-19.554,"spy":118.88,"hi":false},{"d":"2025-11-05","q":4,"qr":4,"g":-2.887,"i":-7.221,"ig":-19.887,"spy":119.44,"hi":false},{"d":"2025-11-06","q":4,"qr":4,"g":-2.554,"i":-7.554,"ig":-20.221,"spy":120.11,"hi":false},{"d":"2025-11-07","q":4,"qr":4,"g":-2.221,"i":-7.887,"ig":-20.554,"spy":120.88,"hi":false},{"d":"2025-11-10","q":4,"qr":4,"g":-1.887,"i":-8.221,"ig":-20.887,"spy":121.44,"hi":false},{"d":"2025-11-12","q":4,"qr":4,"g":-1.554,"i":-8.554,"ig":-21.221,"spy":122.11,"hi":false},{"d":"2025-11-13","q":4,"qr":4,"g":-1.221,"i":-8.887,"ig":-21.554,"spy":122.88,"hi":false},{"d":"2025-11-14","q":4,"qr":4,"g":-0.887,"i":-9.221,"ig":-21.887,"spy":123.44,"hi":false},{"d":"2025-11-17","q":4,"qr":4,"g":-0.554,"i":-9.554,"ig":-22.221,"spy":124.11,"hi":false},{"d":"2025-11-18","q":4,"qr":4,"g":-0.221,"i":-9.887,"ig":-22.554,"spy":124.88,"hi":false},{"d":"2025-11-19","q":1,"qr":1,"g":0.114,"i":-10.221,"ig":-22.887,"spy":125.44,"hi":false},{"d":"2025-11-20","q":1,"qr":1,"g":0.887,"i":-10.554,"ig":-23.221,"spy":126.11,"hi":false},{"d":"2025-11-21","q":1,"qr":1,"g":1.554,"i":-10.887,"ig":-23.554,"spy":127.44,"hi":false},{"d":"2025-11-24","q":1,"qr":1,"g":2.221,"i":-11.221,"ig":-23.887,"spy":128.11,"hi":false},{"d":"2025-11-25","q":1,"qr":1,"g":2.887,"i":-11.554,"ig":-24.221,"spy":129.44,"hi":false},{"d":"2025-11-26","q":1,"qr":1,"g":3.554,"i":-11.887,"ig":-24.554,"spy":130.11,"hi":false},{"d":"2025-11-28","q":1,"qr":1,"g":4.221,"i":-12.221,"ig":-24.887,"spy":131.44,"hi":false},{"d":"2025-12-01","q":1,"qr":1,"g":4.887,"i":-12.554,"ig":-25.221,"spy":132.88,"hi":false},{"d":"2025-12-02","q":1,"qr":1,"g":5.554,"i":-12.887,"ig":-25.554,"spy":133.44,"hi":false},{"d":"2025-12-03","q":1,"qr":1,"g":6.221,"i":-13.221,"ig":-25.887,"spy":134.11,"hi":false},{"d":"2025-12-04","q":1,"qr":1,"g":6.887,"i":-13.554,"ig":-26.221,"spy":134.88,"hi":false},{"d":"2025-12-05","q":1,"qr":1,"g":7.554,"i":-13.887,"ig":-26.554,"spy":135.44,"hi":false},{"d":"2025-12-08","q":1,"qr":1,"g":7.887,"i":-14.221,"ig":-26.887,"spy":136.11,"hi":false},{"d":"2025-12-09","q":1,"qr":1,"g":7.554,"i":-14.554,"ig":-27.221,"spy":135.88,"hi":false},{"d":"2025-12-10","q":1,"qr":1,"g":7.221,"i":-14.887,"ig":-27.554,"spy":135.44,"hi":false},{"d":"2025-12-11","q":1,"qr":1,"g":6.887,"i":-15.221,"ig":-27.887,"spy":134.88,"hi":false},{"d":"2025-12-12","q":1,"qr":1,"g":6.554,"i":-15.554,"ig":-28.221,"spy":134.11,"hi":false},{"d":"2025-12-15","q":1,"qr":1,"g":6.221,"i":-15.887,"ig":-28.554,"spy":133.44,"hi":false},{"d":"2025-12-16","q":2,"qr":2,"g":6.554,"i":-1.221,"ig":-10.554,"spy":134.11,"hi":false},{"d":"2025-12-17","q":2,"qr":2,"g":6.887,"i":-0.554,"ig":-9.887,"spy":134.88,"hi":false},{"d":"2025-12-18","q":2,"qr":2,"g":7.221,"i":0.221,"ig":-9.221,"spy":135.44,"hi":false},{"d":"2025-12-19","q":2,"qr":2,"g":7.554,"i":0.887,"ig":-8.554,"spy":136.11,"hi":false},{"d":"2025-12-22","q":2,"qr":2,"g":7.887,"i":1.554,"ig":-7.887,"spy":136.88,"hi":false},{"d":"2025-12-23","q":2,"qr":2,"g":8.221,"i":2.221,"ig":-7.221,"spy":137.44,"hi":false},{"d":"2025-12-24","q":2,"qr":2,"g":8.554,"i":2.887,"ig":-6.554,"spy":138.11,"hi":false},{"d":"2025-12-26","q":2,"qr":2,"g":8.887,"i":3.554,"ig":-5.887,"spy":138.88,"hi":false},{"d":"2025-12-29","q":2,"qr":2,"g":9.221,"i":4.221,"ig":-5.221,"spy":139.44,"hi":false},{"d":"2025-12-30","q":2,"qr":2,"g":8.887,"i":4.887,"ig":-4.554,"spy":139.11,"hi":false},{"d":"2025-12-31","q":2,"qr":2,"g":8.554,"i":5.554,"ig":-3.887,"spy":138.44,"hi":false},{"d":"2026-01-02","q":2,"qr":2,"g":8.221,"i":6.221,"ig":-3.221,"spy":138.11,"hi":false},{"d":"2026-01-05","q":2,"qr":2,"g":7.887,"i":6.887,"ig":-2.554,"spy":137.44,"hi":false},{"d":"2026-01-06","q":2,"qr":2,"g":7.554,"i":7.554,"ig":-1.887,"spy":136.88,"hi":false},{"d":"2026-01-07","q":2,"qr":2,"g":7.221,"i":8.221,"ig":-1.221,"spy":136.44,"hi":false},{"d":"2026-01-08","q":2,"qr":2,"g":6.887,"i":8.887,"ig":-0.554,"spy":135.88,"hi":false},{"d":"2026-01-09","q":2,"qr":2,"g":6.554,"i":9.554,"ig":0.114,"spy":135.44,"hi":true},{"d":"2026-01-12","q":2,"qr":2,"g":6.221,"i":10.221,"ig":0.887,"spy":134.88,"hi":true},{"d":"2026-01-13","q":2,"qr":2,"g":5.887,"i":10.887,"ig":1.554,"spy":134.44,"hi":true},{"d":"2026-01-14","q":2,"qr":2,"g":5.554,"i":11.554,"ig":2.221,"spy":133.88,"hi":true},{"d":"2026-01-15","q":2,"qr":2,"g":5.221,"i":12.221,"ig":2.887,"spy":133.44,"hi":true},{"d":"2026-01-16","q":2,"qr":2,"g":4.887,"i":12.887,"ig":3.554,"spy":132.88,"hi":true},{"d":"2026-01-20","q":2,"qr":2,"g":4.554,"i":13.554,"ig":4.221,"spy":132.44,"hi":true},{"d":"2026-01-21","q":2,"qr":2,"g":4.221,"i":14.221,"ig":4.887,"spy":131.88,"hi":true},{"d":"2026-01-22","q":2,"qr":2,"g":3.887,"i":14.887,"ig":5.554,"spy":131.44,"hi":true},{"d":"2026-01-23","q":2,"qr":2,"g":3.554,"i":15.554,"ig":6.221,"spy":130.88,"hi":true},{"d":"2026-01-26","q":2,"qr":2,"g":3.221,"i":16.221,"ig":6.887,"spy":130.44,"hi":true},{"d":"2026-01-27","q":2,"qr":2,"g":2.887,"i":16.887,"ig":7.554,"spy":129.88,"hi":true},{"d":"2026-01-28","q":2,"qr":2,"g":2.554,"i":17.554,"ig":8.221,"spy":129.44,"hi":true},{"d":"2026-01-29","q":2,"qr":2,"g":2.221,"i":18.221,"ig":8.887,"spy":128.88,"hi":true},{"d":"2026-01-30","q":2,"qr":2,"g":1.887,"i":18.887,"ig":9.554,"spy":128.44,"hi":true},{"d":"2026-02-02","q":2,"qr":2,"g":1.554,"i":19.554,"ig":10.221,"spy":127.88,"hi":true},{"d":"2026-02-03","q":2,"qr":2,"g":1.221,"i":20.221,"ig":10.887,"spy":127.44,"hi":true},{"d":"2026-02-04","q":2,"qr":2,"g":0.887,"i":20.887,"ig":11.554,"spy":126.88,"hi":true},{"d":"2026-02-05","q":2,"qr":2,"g":0.554,"i":21.554,"ig":12.221,"spy":126.44,"hi":true},{"d":"2026-02-06","q":2,"qr":2,"g":0.221,"i":22.221,"ig":12.887,"spy":125.88,"hi":true},{"d":"2026-02-09","q":2,"qr":2,"g":-0.114,"i":22.887,"ig":13.554,"spy":125.44,"hi":true},{"d":"2026-02-10","q":3,"qr":3,"g":-0.554,"i":23.554,"ig":14.221,"spy":124.88,"hi":true},{"d":"2026-02-11","q":3,"qr":3,"g":-0.887,"i":24.221,"ig":14.887,"spy":124.44,"hi":true},{"d":"2026-02-12","q":3,"qr":3,"g":-1.221,"i":24.887,"ig":15.554,"spy":123.88,"hi":true},{"d":"2026-02-13","q":3,"qr":3,"g":-1.554,"i":25.554,"ig":16.221,"spy":123.44,"hi":true},{"d":"2026-02-17","q":3,"qr":3,"g":-1.887,"i":26.221,"ig":16.887,"spy":122.88,"hi":true},{"d":"2026-02-18","q":3,"qr":3,"g":-2.221,"i":26.887,"ig":17.554,"spy":122.44,"hi":true},{"d":"2026-02-19","q":3,"qr":3,"g":-2.554,"i":27.554,"ig":18.221,"spy":121.88,"hi":true},{"d":"2026-02-20","q":3,"qr":3,"g":-2.887,"i":28.221,"ig":18.887,"spy":121.44,"hi":true},{"d":"2026-02-23","q":3,"qr":3,"g":-3.221,"i":28.887,"ig":19.554,"spy":120.88,"hi":true},{"d":"2026-02-24","q":3,"qr":3,"g":-2.887,"i":29.554,"ig":20.221,"spy":121.44,"hi":true},{"d":"2026-02-25","q":3,"qr":3,"g":-2.554,"i":30.221,"ig":20.887,"spy":121.88,"hi":true},{"d":"2026-02-26","q":3,"qr":3,"g":-2.221,"i":30.887,"ig":21.554,"spy":122.44,"hi":true},{"d":"2026-02-27","q":3,"qr":3,"g":-1.887,"i":31.554,"ig":22.221,"spy":122.88,"hi":true},{"d":"2026-03-02","q":3,"qr":3,"g":-1.554,"i":32.221,"ig":22.887,"spy":123.44,"hi":true},{"d":"2026-03-03","q":3,"qr":3,"g":-1.221,"i":32.887,"ig":23.554,"spy":123.88,"hi":true},{"d":"2026-03-04","q":3,"qr":3,"g":-0.887,"i":33.554,"ig":24.221,"spy":124.44,"hi":true},{"d":"2026-03-05","q":3,"qr":3,"g":-0.554,"i":34.221,"ig":24.887,"spy":124.88,"hi":true},{"d":"2026-03-06","q":3,"qr":3,"g":-0.221,"i":34.887,"ig":25.554,"spy":125.44,"hi":true},{"d":"2026-03-09","q":3,"qr":3,"g":0.114,"i":35.554,"ig":26.221,"spy":125.88,"hi":true},{"d":"2026-03-10","q":2,"qr":2,"g":0.887,"i":36.221,"ig":26.887,"spy":126.44,"hi":true},{"d":"2026-03-11","q":2,"qr":2,"g":1.554,"i":36.887,"ig":27.554,"spy":127.11,"hi":true},{"d":"2026-03-12","q":2,"qr":2,"g":2.221,"i":37.554,"ig":28.221,"spy":127.88,"hi":true},{"d":"2026-03-13","q":2,"qr":2,"g":2.887,"i":38.221,"ig":28.887,"spy":128.44,"hi":true},{"d":"2026-03-16","q":2,"qr":2,"g":3.554,"i":38.887,"ig":29.554,"spy":129.11,"hi":true},{"d":"2026-03-17","q":2,"qr":2,"g":4.221,"i":39.554,"ig":30.221,"spy":129.88,"hi":true},{"d":"2026-03-18","q":2,"qr":2,"g":4.887,"i":40.221,"ig":30.887,"spy":130.44,"hi":true},{"d":"2026-03-19","q":2,"qr":2,"g":5.554,"i":40.887,"ig":31.554,"spy":131.11,"hi":true},{"d":"2026-03-20","q":2,"qr":2,"g":6.221,"i":41.554,"ig":32.221,"spy":131.88,"hi":true},{"d":"2026-03-23","q":2,"qr":2,"g":6.887,"i":42.221,"ig":32.887,"spy":132.44,"hi":true},{"d":"2026-03-24","q":2,"qr":2,"g":7.554,"i":42.887,"ig":33.554,"spy":133.11,"hi":true},{"d":"2026-03-25","q":2,"qr":2,"g":7.887,"i":43.554,"ig":34.221,"spy":133.88,"hi":true},{"d":"2026-03-26","q":2,"qr":2,"g":7.554,"i":44.221,"ig":34.887,"spy":133.44,"hi":true},{"d":"2026-03-27","q":2,"qr":2,"g":7.221,"i":44.887,"ig":35.554,"spy":132.88,"hi":true},{"d":"2026-03-31","q":2,"qr":2,"g":6.887,"i":45.554,"ig":36.221,"spy":132.44,"hi":true},{"d":"2026-04-01","q":2,"qr":2,"g":6.554,"i":46.221,"ig":36.887,"spy":131.88,"hi":true},{"d":"2026-04-02","q":2,"qr":2,"g":6.221,"i":46.887,"ig":37.554,"spy":131.44,"hi":true},{"d":"2026-04-03","q":2,"qr":2,"g":5.887,"i":47.554,"ig":38.221,"spy":130.88,"hi":true},{"d":"2026-04-04","q":2,"qr":2,"g":5.554,"i":48.221,"ig":38.887,"spy":130.44,"hi":true},{"d":"2026-04-07","q":2,"qr":2,"g":5.221,"i":48.887,"ig":39.554,"spy":129.88,"hi":true},{"d":"2026-04-08","q":2,"qr":2,"g":4.887,"i":49.554,"ig":40.221,"spy":129.44,"hi":true},{"d":"2026-04-09","q":2,"qr":2,"g":4.554,"i":50.221,"ig":40.887,"spy":128.88,"hi":true},{"d":"2026-04-10","q":2,"qr":2,"g":4.221,"i":50.887,"ig":41.554,"spy":128.44,"hi":true},{"d":"2026-04-11","q":2,"qr":2,"g":3.887,"i":51.554,"ig":42.221,"spy":127.88,"hi":true},{"d":"2026-04-14","q":2,"qr":2,"g":6.221,"i":5.221,"ig":11.554,"spy":135.44,"hi":true},{"d":"2026-04-15","q":2,"qr":2,"g":6.887,"i":5.554,"ig":11.887,"spy":136.11,"hi":true},{"d":"2026-04-16","q":2,"qr":2,"g":7.221,"i":4.887,"ig":11.221,"spy":137.44,"hi":true},{"d":"2026-04-17","q":2,"qr":2,"g":7.554,"i":4.554,"ig":10.887,"spy":138.11,"hi":true},{"d":"2026-04-21","q":2,"qr":2,"g":7.887,"i":4.221,"ig":10.554,"spy":138.88,"hi":true},{"d":"2026-04-22","q":2,"qr":2,"g":7.554,"i":4.887,"ig":10.221,"spy":139.44,"hi":true},{"d":"2026-04-23","q":2,"qr":2,"g":7.861,"i":4.824,"ig":10.656,"spy":140.71,"hi":true}];
+const LAST10=[{"d":"2026-04-10","q":1,"qr":1,"g":2.01,"i":-3.81,"ig":15.4,"spy_d":-0.32,"hi":true},{"d":"2026-04-13","q":1,"qr":1,"g":3.6,"i":-2.33,"ig":15.75,"spy_d":1.82,"hi":true},{"d":"2026-04-14","q":1,"qr":1,"g":3.8,"i":-0.73,"ig":14.89,"spy_d":0.64,"hi":true},{"d":"2026-04-15","q":1,"qr":1,"g":4.35,"i":-1.82,"ig":14.04,"spy_d":-0.98,"hi":true},{"d":"2026-04-16","q":1,"qr":1,"g":6.08,"i":-0.8,"ig":13.89,"spy_d":1.34,"hi":true},{"d":"2026-04-17","q":2,"qr":2,"g":7.63,"i":1.34,"ig":13.64,"spy_d":1.21,"hi":true},{"d":"2026-04-20","q":2,"qr":2,"g":9.27,"i":3.01,"ig":14.36,"spy_d":-0.2,"hi":true},{"d":"2026-04-21","q":2,"qr":2,"g":7.43,"i":5.79,"ig":11.33,"spy_d":-0.65,"hi":true},{"d":"2026-04-22","q":2,"qr":2,"g":8.88,"i":6.1,"ig":11.19,"spy_d":1.01,"hi":true},{"d":"2026-04-23","q":2,"qr":2,"g":7.86,"i":4.82,"ig":10.66,"spy_d":-0.39,"hi":true}];
 
-const CURR = RAW[RAW.length - 1];
-const CURR_Q = CURR.q;
+const PERF_20D={QQQ:5.88,IWF:5.12,MGK:4.97,SPY:6.52,XLK:4.23,SMH:3.84,XLC:2.11,IWM:1.44,XLE:-5.93,XLB:4.86,DBC:6.11,GLD:3.54,SLV:4.86,USO:18.81,XLI:5.43,PAVE:9.79,GLD:3.54,SLV:4.86,USO:18.81,DBC:6.11,XLE:-5.93,SHY:0.28,XLU:2.12,XLP:1.88,XLV:1.55,IEF:0.44,IEI:0.61};
 
-// ── Tab logic ──────────────────────────────────────────────
-function showTab(id) {
-  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + id).classList.add('active');
-  event.target.classList.add('active');
-  if (id === 'history' && !window._histBuilt) buildHistChart();
-  if (id === 'backtest' && !window._btBuilt) buildBTChart();
+// full 1Y chart
+const CHART=[{"d":"2025-04-23","q":3,"g":-6.958,"i":2.047,"ig":6.964,"spy":100.0},{"d":"2025-04-30","q":3,"g":-1.887,"i":2.211,"ig":8.104,"spy":101.49},{"d":"2025-05-07","q":3,"g":-0.441,"i":2.118,"ig":7.881,"spy":106.16},{"d":"2025-05-12","q":2,"g":2.114,"i":3.887,"ig":9.334,"spy":111.2},{"d":"2025-05-19","q":2,"g":4.887,"i":4.114,"ig":9.998,"spy":116.3},{"d":"2025-05-28","q":2,"g":6.114,"i":3.887,"ig":10.334,"spy":120.44},{"d":"2025-06-04","q":2,"g":6.554,"i":3.554,"ig":10.334,"spy":122.88},{"d":"2025-06-11","q":2,"g":6.221,"i":3.554,"ig":10.334,"spy":123.21},{"d":"2025-06-18","q":2,"g":7.887,"i":3.554,"ig":10.334,"spy":126.88},{"d":"2025-06-25","q":2,"g":8.554,"i":4.114,"ig":10.554,"spy":128.21},{"d":"2025-07-02","q":2,"g":7.221,"i":1.887,"ig":9.554,"spy":127.44},{"d":"2025-07-11","q":1,"g":4.221,"i":-0.554,"ig":7.554,"spy":121.11},{"d":"2025-07-18","q":1,"g":6.221,"i":-2.221,"ig":5.887,"spy":124.88},{"d":"2025-07-25","q":1,"g":5.887,"i":-0.554,"ig":4.221,"spy":125.11},{"d":"2025-07-31","q":2,"g":6.221,"i":0.887,"ig":2.887,"spy":126.44},{"d":"2025-08-07","q":2,"g":3.221,"i":2.554,"ig":1.221,"spy":121.88},{"d":"2025-08-13","q":2,"g":0.554,"i":3.887,"ig":-0.114,"spy":115.44},{"d":"2025-08-20","q":3,"g":-1.221,"i":5.554,"ig":-1.887,"spy":110.21},{"d":"2025-08-27","q":3,"g":-2.887,"i":7.221,"ig":-3.554,"spy":106.88},{"d":"2025-09-04","q":3,"g":-1.887,"i":7.554,"ig":-5.221,"spy":108.44},{"d":"2025-09-11","q":3,"g":-0.221,"i":5.887,"ig":-6.887,"spy":111.88},{"d":"2025-09-17","q":2,"g":2.221,"i":4.554,"ig":-8.221,"spy":116.21},{"d":"2025-09-24","q":2,"g":5.554,"i":2.887,"ig":-9.887,"spy":122.88},{"d":"2025-10-01","q":2,"g":4.887,"i":1.221,"ig":-11.554,"spy":124.88},{"d":"2025-10-07","q":1,"g":3.554,"i":-0.114,"ig":-12.887,"spy":122.44},{"d":"2025-10-14","q":1,"g":1.887,"i":-1.887,"ig":-14.554,"spy":119.88},{"d":"2025-10-21","q":1,"g":0.221,"i":-3.554,"ig":-16.221,"spy":117.44},{"d":"2025-10-28","q":4,"g":-1.554,"i":-5.221,"ig":-17.887,"spy":114.21},{"d":"2025-11-04","q":4,"g":-3.221,"i":-6.887,"ig":-19.554,"spy":111.88},{"d":"2025-11-12","q":4,"g":-1.554,"i":-8.554,"ig":-21.221,"spy":115.11},{"d":"2025-11-19","q":1,"g":0.114,"i":-10.221,"ig":-22.887,"spy":118.44},{"d":"2025-11-26","q":1,"g":3.554,"i":-11.887,"ig":-24.554,"spy":122.88},{"d":"2025-12-03","q":1,"g":6.221,"i":-13.221,"ig":-25.887,"spy":126.88},{"d":"2025-12-10","q":1,"g":7.221,"i":-14.887,"ig":-27.554,"spy":128.44},{"d":"2025-12-16","q":2,"g":6.554,"i":-1.221,"ig":-10.554,"spy":126.88},{"d":"2025-12-23","q":2,"g":8.221,"i":2.221,"ig":-7.221,"spy":130.11},{"d":"2025-12-31","q":2,"g":8.554,"i":5.554,"ig":-3.887,"spy":131.44},{"d":"2026-01-07","q":2,"g":7.221,"i":8.221,"ig":-1.221,"spy":129.88},{"d":"2026-01-14","q":2,"g":5.554,"i":11.554,"ig":2.887,"spy":127.44},{"d":"2026-01-22","q":2,"g":3.887,"i":14.887,"ig":5.554,"spy":124.88},{"d":"2026-01-29","q":2,"g":2.221,"i":18.221,"ig":8.887,"spy":122.88},{"d":"2026-02-05","q":2,"g":0.554,"i":21.554,"ig":12.221,"spy":121.44},{"d":"2026-02-11","q":3,"g":-0.887,"i":24.221,"ig":14.887,"spy":119.88},{"d":"2026-02-19","q":3,"g":-2.554,"i":27.554,"ig":18.221,"spy":116.88},{"d":"2026-02-26","q":3,"g":-2.221,"i":30.887,"ig":21.554,"spy":116.21},{"d":"2026-03-04","q":3,"g":-0.887,"i":33.554,"ig":24.221,"spy":117.88},{"d":"2026-03-09","q":3,"g":0.114,"i":35.554,"ig":26.221,"spy":118.88},{"d":"2026-03-13","q":2,"g":2.887,"i":38.221,"ig":28.887,"spy":121.44},{"d":"2026-03-20","q":2,"g":6.221,"i":41.554,"ig":32.221,"spy":124.88},{"d":"2026-03-27","q":2,"g":7.221,"i":44.887,"ig":35.554,"spy":125.44},{"d":"2026-04-03","q":2,"g":5.887,"i":47.554,"ig":38.221,"spy":124.88},{"d":"2026-04-10","q":1,"g":2.01,"i":-3.81,"ig":15.4,"spy":127.44},{"d":"2026-04-17","q":2,"g":7.63,"i":1.34,"ig":13.64,"spy":130.88},{"d":"2026-04-23","q":2,"g":7.86,"i":4.82,"ig":10.66,"spy":132.44}];
+
+// ── State ─────────────────────────────────────────────────
+let liveData = null; // populated from Yahoo Finance fetch
+let isLive   = false;
+
+// ── Yahoo Finance fetch ───────────────────────────────────
+async function fetchYahoo(ticker, days=100) {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=${days}d`;
+  const r = await fetch(url, {headers:{'Accept':'application/json'}});
+  if (!r.ok) throw new Error(r.status);
+  const j = await r.json();
+  const res = j.chart.result[0];
+  const ts  = res.timestamp;
+  const cl  = res.indicators.quote[0].close;
+  return ts.map((t,i) => ({d: new Date(t*1000).toISOString().slice(0,10), c: cl[i]}))
+            .filter(x => x.c !== null);
 }
 
-// ── Gauge bar ──────────────────────────────────────────────
-function setGauge(barId, valId, descId, val, max, labels) {
-  const pct = Math.min(Math.abs(val) / max, 1);
-  const bar = document.getElementById(barId);
-  const half = 50;
-  if (val >= 0) {
-    bar.style.left = half + '%';
-    bar.style.width = (pct * half) + '%';
-    bar.style.background = '#2fd98a';
-  } else {
-    bar.style.left = (half - pct * half) + '%';
-    bar.style.width = (pct * half) + '%';
-    bar.style.background = '#e85555';
+function calcSignals(prices) {
+  // prices = [{d,c}] sorted ascending
+  const n = prices.length;
+  if (n < 64) return null;
+  const c = prices.map(p=>p.c);
+  const ret = (arr, i, k) => i>=k ? (arr[i]-arr[i-k])/arr[i-k]*100 : null;
+  return {
+    g20:   ret(c, n-1, 20),
+    i20_d: ret(c, n-1, 20), // per-ticker, caller averages
+    i63_d: ret(c, n-1, 63),
+    date:  prices[n-1].d,
+    price: prices[n-1].c
+  };
+}
+
+async function fetchLiveData(manual=false) {
+  const badge = document.getElementById('data-badge');
+  badge.className='data-badge loading'; badge.textContent='⟳ Fetching...';
+  try {
+    const [spy,dbc,gld] = await Promise.all([
+      fetchYahoo('SPY',100), fetchYahoo('DBC',100), fetchYahoo('GLD',100)
+    ]);
+    // Align on common dates
+    const spyMap = Object.fromEntries(spy.map(x=>[x.d,x.c]));
+    const dbcMap = Object.fromEntries(dbc.map(x=>[x.d,x.c]));
+    const gldMap = Object.fromEntries(gld.map(x=>[x.d,x.c]));
+    const dates  = spy.map(x=>x.d).filter(d => dbcMap[d] && gldMap[d]);
+    if (dates.length < 65) throw new Error('not enough data');
+    const n = dates.length;
+    const ret = (map,i,k) => i>=k ? (map[dates[i]]-map[dates[i-k]])/map[dates[i-k]]*100 : null;
+    const g20  = ret(spyMap, n-1, 20);
+    const dbc20= ret(dbcMap, n-1, 20); const gld20=ret(gldMap,n-1,20);
+    const dbc63= ret(dbcMap, n-1, 63); const gld63=ret(gldMap,n-1,63);
+    const i20  = (dbc20+gld20)/2;
+    const ig63 = (dbc63+gld63)/2;
+    liveData = {date: dates[n-1], g20, i20, ig63};
+    updateDashboard(liveData);
+    isLive = true;
+    badge.className='data-badge live'; badge.textContent='⬤ Live data';
+  } catch(e) {
+    if (manual) {
+      badge.className='data-badge demo';
+      badge.textContent='⬤ Demo (CORS blocked)';
+      setTimeout(()=>{ badge.textContent='⬤ Demo data'; },3000);
+    } else {
+      badge.className='data-badge demo'; badge.textContent='⬤ Demo data';
+    }
+    updateDashboard(null);
   }
-  const el = document.getElementById(valId);
-  el.textContent = (val >= 0 ? '+' : '') + val.toFixed(2) + '%';
-  el.style.color = val >= 0 ? '#2fd98a' : '#e85555';
-  document.getElementById(descId).textContent = val >= 0 ? labels[0] : labels[1];
 }
 
-// ── Build live panel ───────────────────────────────────────
-function buildLive() {
-  document.getElementById('datestamp').textContent = CURR.d + '  ·  as of last close';
-  const q = CURR_Q;
+function updateDashboard(live) {
+  const g  = live ? live.g20  : LAST10[9].g;
+  const i  = live ? live.i20  : LAST10[9].i;
+  const ig = live ? live.ig63 : LAST10[9].ig;
+  const date = live ? live.date : '2026-04-23';
+  document.getElementById('datestamp').textContent = date + ' · as of last close';
+
+  let q;
+  if (g >= 0 && i < 0)       q = 1;
+  else if (g >= 0 && i >= 0) q = 2;
+  else if (g < 0 && i >= 0)  q = 3;
+  else                        q = 4;
+  const hi = ig > 0;
+  const effQ = (q === 4 && hi) ? (LAST10[8].q||2) : q; // use prev regime if blocked
+
+  renderLive(effQ, g, i, ig, hi, date);
+}
+
+function renderLive(q, g, i, ig, hi, date) {
+  // regime card
   const card = document.getElementById('regime-card');
   card.className = 'regime-card ' + QCLS[q];
   document.getElementById('regime-name').textContent = QNAMES[q];
-  document.getElementById('regime-sub').textContent = QSUBS[q];
+  document.getElementById('regime-name').style.color = QCOLS[q];
+  document.getElementById('regime-arrow').textContent = QARROWS[q];
 
-  // days in current regime
-  let days = 0;
-  for (let i = RAW.length-1; i >= 0; i--) { if (RAW[i].q === q) days++; else break; }
-  document.getElementById('days-val').textContent = days;
-  const bt = BT[q];
-  document.getElementById('hit-val').textContent  = bt.hit + '%';
-  document.getElementById('fwd-val').textContent  = '+' + bt.avg_ret.toFixed(2) + '%';
+  // days in regime from LAST10
+  let days=0; for(let k=LAST10.length-1;k>=0;k--){if(LAST10[k].q===q)days++;else break;}
+  if(!days)days=1;
+  document.getElementById('days-val').textContent=days;
+  document.getElementById('hit-val').textContent=BT[q].hit+'%';
+  document.getElementById('fwd-val').textContent='+'+BT[q].avg.toFixed(2)+'%';
 
-  // status pills
-  const isHi = CURR.hi;
-  document.getElementById('infl-gate-pill').textContent = isHi ? 'HIGH (>3% proxy)' : 'LOW (<3% proxy)';
-  document.getElementById('infl-gate-pill').className = 'pill ' + (isHi ? 'pill-amber' : 'pill-green');
-  const q4pill = document.getElementById('q4-pill');
-  if (q === 4) {
-    q4pill.textContent = isHi ? 'BLOCKING (skip)' : 'CLEAR (act)';
-    q4pill.className = 'pill ' + (isHi ? 'pill-red' : 'pill-green');
-  } else {
-    q4pill.textContent = 'N/A'; q4pill.className = 'pill pill-dim';
-  }
-  document.getElementById('growth-status').textContent = (CURR.g >= 0 ? '+' : '') + CURR.g.toFixed(2) + '%';
-  document.getElementById('growth-status').style.color = CURR.g >= 0 ? '#2fd98a' : '#e85555';
-  document.getElementById('infl-status').textContent = (CURR.i >= 0 ? '+' : '') + CURR.i.toFixed(2) + '%';
-  document.getElementById('infl-status').style.color = CURR.i >= 0 ? '#f0a030' : '#5b9ef0';
+  // pills
+  document.getElementById('confirm-pill').className='pill pill-g'; document.getElementById('confirm-pill').textContent='CONFIRMED';
+  document.getElementById('gate-pill').textContent=hi?'HIGH (>3% proxy)':'LOW (<3% proxy)';
+  document.getElementById('gate-pill').className='pill '+(hi?'pill-a':'pill-g');
+  const q4p=document.getElementById('q4-pill');
+  if(q===4||LAST10[9].q===4){q4p.textContent=hi?'BLOCKING':'CLEAR';q4p.className='pill '+(hi?'pill-r':'pill-g');}
+  else{q4p.textContent='N/A';q4p.className='pill pill-d';}
 
-  setGauge('g-bar','g-val','g-desc', CURR.g, 15, ['Growth rising → risk-on', 'Growth falling → risk-off']);
-  setGauge('i-bar','i-val','i-desc', CURR.i, 15, ['Inflation rising → commodities', 'Inflation falling → bonds/tech']);
-  setGauge('ig-bar','ig-val','ig-desc', CURR.ig, 30, ['Elevated (>3% CPI proxy)', 'Normalised (<3% CPI proxy)']);
+  const fmtPct=(v)=>(v>=0?'+':'')+v.toFixed(2)+'%';
+  const gs=document.getElementById('g-status'); gs.textContent=fmtPct(g); gs.style.color=g>=0?'var(--q1)':'var(--q3)';
+  const is=document.getElementById('i-status'); is.textContent=fmtPct(i); is.style.color=i>=0?'var(--q2)':'var(--q4)';
+
+  // gauges
+  setGauge('g-bar','g-val','g-desc',g,15,['Growth rising → risk-on','Growth falling → risk-off']);
+  setGauge('i-bar','i-val','i-desc',i,15,['Inflation rising → commodities','Inflation falling → bonds/tech']);
+  setGauge('ig-bar','ig-val','ig-desc',ig,30,['Elevated · Q4 blocked','Normalised · Q4 active if signalled']);
 
   // ETF recs
-  document.getElementById('rec-regime-label').textContent = QNAMES[q];
-  const recs = RECS[q] || [];
-  const grid = document.getElementById('recs-grid');
-  grid.innerHTML = '';
-  recs.forEach(etf => {
-    const ret = PERF[etf];
-    const cls = ret == null ? 'neu' : ret >= 0 ? 'pos' : 'neg';
-    const retStr = ret == null ? 'N/A' : (ret >= 0 ? '+' : '') + ret.toFixed(2) + '%';
-    const note = ret == null ? '' : Math.abs(ret) > 5 ? '● Strong signal' : Math.abs(ret) > 2 ? '● Moderate' : '○ Mild';
-    grid.innerHTML += `<div class="etf-tile"><div class="etf-ticker ${QCLS[q]}" style="color:${QCOLS[q]}">${etf}</div><div class="etf-ret ${cls}">${retStr}</div><div class="etf-lbl">20d perf · ${note}</div></div>`;
+  document.getElementById('rec-lbl').textContent=QNAMES[q];
+  const grid=document.getElementById('recs-grid'); grid.innerHTML='';
+  (RECS[q]||[]).forEach(etf=>{
+    const ret=PERF_20D[etf]; const cls=ret==null?'neu':ret>=0?'pos':'neg';
+    const retStr=ret==null?'N/A':(ret>=0?'+':'')+ret.toFixed(2)+'%';
+    const note=ret==null?'':Math.abs(ret)>8?'● Strong':Math.abs(ret)>3?'● Moderate':'○ Mild';
+    grid.innerHTML+=`<div class="etf-tile"><div class="etf-tick" style="color:${QCOLS[q]}">${etf}</div><div class="etf-ret ${cls}">${retStr}</div><div class="etf-note">${note} 20d perf</div></div>`;
+  });
+
+  // track record
+  buildTrack();
+}
+
+function buildTrack() {
+  const body=document.getElementById('track-body'); body.innerHTML='';
+  const last5 = LAST10.slice(-5);
+  last5.forEach((row,idx)=>{
+    const isToday=idx===last5.length-1;
+    const spy=row.spy_d!=null?(row.spy_d>=0?'<span class="pos">':'<span class="neg">')+( row.spy_d>=0?'+':'')+row.spy_d.toFixed(2)+'%</span>':'—';
+    const gStr=(row.g>=0?'<span class="pos">+':'<span class="neg">')+row.g.toFixed(2)+'%</span>';
+    const iStr=(row.i>=0?'<span style="color:var(--q2)">+':'<span class="neg">')+row.i.toFixed(2)+'%</span>';
+    const igStr=row.ig!=null?((row.ig>=0?'<span style="color:var(--q2)">+':'<span class="pos">')+row.ig.toFixed(2)+'%</span>'):'—';
+    // detect change from previous
+    const prevQ = idx > 0 ? last5[idx-1].q : null;
+    const changed = prevQ && prevQ !== row.q;
+    const note = changed ? `<span style="color:var(--q2);font-size:11px;font-weight:600;">▶ Regime change →${QNAMES[row.q]}</span>` : (isToday?'<span style="color:var(--dim);font-size:11px;">← today</span>':'');
+    body.innerHTML+=`<div class="track-row${isToday?' today':''}">
+      <span class="mono" style="color:${isToday?'var(--text)':'var(--muted)'};font-size:12px;">${row.d}</span>
+      <span><span class="qbadge ${QBCLS[row.q]}">${QNAMES[row.q]}</span></span>
+      <span class="mono" style="font-size:12px;">${spy}</span>
+      <span class="mono" style="font-size:12px;">${gStr}</span>
+      <span class="mono" style="font-size:12px;">${iStr}</span>
+      <span class="mono" style="font-size:12px;">${igStr}</span>
+      <span>${note}</span>
+    </div>`;
   });
 }
 
-// ── History chart ──────────────────────────────────────────
-let histChart = null;
-let currentRange = 63;
-function setRange(n, btn) {
-  document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active'));
+function setGauge(barId,valId,descId,val,max,labels){
+  const pct=Math.min(Math.abs(val)/max,1);
+  const bar=document.getElementById(barId);
+  const half=50;
+  if(val>=0){bar.style.left=half+'%';bar.style.width=(pct*half)+'%';bar.style.background='var(--q1)';}
+  else{bar.style.left=(half-pct*half)+'%';bar.style.width=(pct*half)+'%';bar.style.background='var(--q3)';}
+  const el=document.getElementById(valId);
+  el.textContent=(val>=0?'+':'')+val.toFixed(2)+'%';
+  el.style.color=val>=0?'var(--q1)':'var(--q3)';
+  document.getElementById(descId).textContent=val>=0?labels[0]:labels[1];
+}
+
+// ── Tabs ─────────────────────────────────────────────────
+function showTab(id,btn){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
-  currentRange = n;
-  buildHistChart();
+  if(id==='history'&&!window._hb) buildHistChart();
+  if(id==='backtest'&&!window._bb) buildBT();
 }
 
-function buildHistChart() {
-  window._histBuilt = true;
-  const slice = RAW.slice(-currentRange);
-  const labels = slice.map(r => r.d);
-  const spyVals = slice.map(r => r.spy);
-
-  const bgColors = slice.map(r => {
-    if (r.q === 1) return 'rgba(47,217,138,0.18)';
-    if (r.q === 2) return 'rgba(240,160,48,0.18)';
-    if (r.q === 3) return 'rgba(232,85,85,0.18)';
-    return 'rgba(91,158,240,0.18)';
-  });
-
-  if (histChart) histChart.destroy();
-  const ctx = document.getElementById('histChart').getContext('2d');
-  histChart = new Chart(ctx, {
-    data: {
-      labels,
-      datasets: [
-        { type:'bar', data: slice.map(() => 200), backgroundColor: bgColors, barThickness:'flex', order:2 },
-        { type:'line', data: spyVals, borderColor:'rgba(232,220,200,0.85)', borderWidth:1.5,
-          pointRadius:0, tension:0.3, order:1, yAxisID:'y' }
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false}, tooltip:{
-        callbacks:{ label: ctx => ctx.datasetIndex===1 ? ' SPY ' + ctx.raw.toFixed(2) : '' }
-      }},
+// ── History charts ────────────────────────────────────────
+let histChart=null, sigChart=null, currentRange=63;
+function setRange(n,btn){
+  document.querySelectorAll('.ctrl-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); currentRange=n; buildHistChart();
+}
+function buildHistChart(){
+  window._hb=true;
+  const slice=CHART.slice(-currentRange);
+  const labels=slice.map(r=>r.d);
+  const bgC=slice.map(r=>r.q===1?'rgba(47,217,138,.22)':r.q===2?'rgba(240,160,48,.22)':r.q===3?'rgba(232,85,85,.22)':'rgba(91,158,240,.22)');
+  if(histChart)histChart.destroy();
+  histChart=new Chart(document.getElementById('histChart').getContext('2d'),{
+    data:{labels,datasets:[
+      {type:'bar',data:slice.map(()=>200),backgroundColor:bgC,barThickness:'flex',order:2},
+      {type:'line',data:slice.map(r=>r.spy),borderColor:'rgba(238,235,229,.8)',borderWidth:1.5,pointRadius:0,tension:0.3,order:1,yAxisID:'y'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.datasetIndex===1?' SPY '+ctx.raw.toFixed(1):''}}},
       scales:{
-        x:{ grid:{display:false}, ticks:{maxTicksLimit:8, font:{size:10}, color:'#555'} },
-        y:{ position:'right', grid:{color:'rgba(255,255,255,0.05)'}, ticks:{font:{size:10},color:'#555',callback:v=>v.toFixed(0)}, min:90, max:160 }
-      }
-    }
+        x:{grid:{display:false},ticks:{maxTicksLimit:8,font:{size:10},color:'var(--dim)'}},
+        y:{position:'right',grid:{color:'rgba(255,255,255,.04)'},ticks:{font:{size:10},color:'var(--dim)',callback:v=>v.toFixed(0)},min:85,max:160}
+      }}
   });
-
-  // Signal chart
-  const sigCtx = document.getElementById('sigChart').getContext('2d');
-  if (window._sigChart) window._sigChart.destroy();
-  window._sigChart = new Chart(sigCtx, {
+  if(sigChart)sigChart.destroy();
+  sigChart=new Chart(document.getElementById('sigChart').getContext('2d'),{
     type:'line',
-    data:{
-      labels,
-      datasets:[
-        { label:'Growth (SPY 20d)', data:slice.map(r=>r.g), borderColor:'#2fd98a', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
-        { label:'Inflation (DBC+GLD 20d)', data:slice.map(r=>r.i), borderColor:'#f0a030', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
-        { label:'Infl Gate (63d)', data:slice.map(r=>r.ig), borderColor:'rgba(91,158,240,0.5)', borderWidth:1, pointRadius:0, tension:0.3, fill:false, borderDash:[3,3] },
-      ]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ labels:{ color:'#888', font:{size:11}, boxWidth:12 } }, tooltip:{mode:'index',intersect:false} },
+    data:{labels,datasets:[
+      {label:'Growth',data:slice.map(r=>r.g),borderColor:'var(--q1)',borderWidth:1.5,pointRadius:0,tension:0.3,fill:false},
+      {label:'Inflation',data:slice.map(r=>r.i),borderColor:'var(--q2)',borderWidth:1.5,pointRadius:0,tension:0.3,fill:false},
+      {label:'Gate 63d',data:slice.map(r=>r.ig),borderColor:'rgba(91,158,240,.55)',borderWidth:1,pointRadius:0,tension:0.3,fill:false,borderDash:[4,4]},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:{label:ctx=>' '+ctx.dataset.label+': '+(ctx.raw>=0?'+':'')+ctx.raw.toFixed(1)+'%'}}},
       scales:{
-        x:{ grid:{display:false}, ticks:{maxTicksLimit:8,font:{size:10},color:'#555'} },
-        y:{ grid:{color:'rgba(255,255,255,0.05)'}, ticks:{font:{size:10},color:'#555',callback:v=>v.toFixed(0)+'%'},
-            afterDataLimits: scale => { scale.max = Math.max(scale.max, 2); scale.min = Math.min(scale.min, -2); } }
-      }
-    }
+        x:{grid:{display:false},ticks:{maxTicksLimit:8,font:{size:10},color:'var(--dim)'}},
+        y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{font:{size:10},color:'var(--dim)',callback:v=>v.toFixed(0)+'%'},
+          afterDataLimits:s=>{s.max=Math.max(s.max,3);s.min=Math.min(s.min,-3);}
+        }
+      }}
   });
 }
 
-// ── Backtest chart ─────────────────────────────────────────
-function buildBTChart() {
-  window._btBuilt = true;
-  const btGrid = document.getElementById('bt-grid');
-  btGrid.innerHTML = '';
-  [1,2,3,4].forEach(q => {
-    const b = BT[q];
-    const isActive = q === CURR_Q;
-    btGrid.innerHTML += `<div class="bt-card ${isActive?'bt-active':''}" style="${isActive?'border-color:'+QCOLS[q]+';':''}" >
+// ── Backtest ─────────────────────────────────────────────
+function buildBT(){
+  window._bb=true;
+  const currQ=LAST10[9].q;
+  const grid=document.getElementById('bt-grid'); grid.innerHTML='';
+  [1,2,3,4].forEach(q=>{
+    const b=BT[q]; const active=q===currQ;
+    grid.innerHTML+=`<div class="bt-card${active?' active':''}" style="${active?'border-color:'+QCOLS[q]+';':''}">
       <div class="bt-q" style="color:${QCOLS[q]}">Q${q} · ${b.label}</div>
       <div class="bt-stat"><span>Hit rate</span><span>${b.hit}%</span></div>
       <div class="bt-stat"><span>Top-10 hit rate</span><span>${b.top10}%</span></div>
-      <div class="bt-stat"><span>Avg fwd 20d return</span><span>+${b.avg_ret}%</span></div>
+      <div class="bt-stat"><span>Avg fwd 20d return</span><span>+${b.avg}%</span></div>
       <div class="bt-stat"><span>False signal rate</span><span>${b.false}%</span></div>
-      ${isActive ? '<div style="font-size:10px;color:'+QCOLS[q]+';margin-top:6px;font-weight:600;">▶ CURRENT REGIME</div>' : ''}
+      ${active?`<div class="bt-curr" style="color:${QCOLS[q]}">▶ CURRENT REGIME</div>`:''}
     </div>`;
   });
-
-  const ctx = document.getElementById('btChart').getContext('2d');
-  new Chart(ctx, {
+  new Chart(document.getElementById('btChart').getContext('2d'),{
     type:'bar',
     data:{
-      labels:['Model A — raw','Model A+3d','Model A+3d Q4 gated','Model B — YC/BE'],
+      labels:['Model A raw','Model A+3d','A+3d+Q4 gate','Model B (YC)'],
       datasets:[
-        { label:'Hit Rate %', data:[58.1,55.8,56.4,54.2], backgroundColor:['rgba(47,217,138,.7)','rgba(47,217,138,.9)','rgba(47,217,138,1)','rgba(91,158,240,.7)'] },
-        { label:'False Signal %', data:[38.6,27.5,25.1,47.3], backgroundColor:['rgba(232,85,85,.5)','rgba(232,85,85,.65)','rgba(232,85,85,.8)','rgba(232,85,85,.5)'] },
+        {label:'Hit Rate %',data:[58.1,55.8,56.4,54.2],backgroundColor:['rgba(47,217,138,.55)','rgba(47,217,138,.75)','rgba(47,217,138,.95)','rgba(91,158,240,.55)']},
+        {label:'False Signal %',data:[38.6,27.5,25.1,47.3],backgroundColor:['rgba(232,85,85,.4)','rgba(232,85,85,.55)','rgba(232,85,85,.7)','rgba(232,85,85,.4)']},
       ]
     },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ labels:{ color:'#888', font:{size:11}, boxWidth:12 } }, tooltip:{mode:'index',intersect:false} },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'var(--muted)',font:{size:11},boxWidth:12}},tooltip:{mode:'index',intersect:false}},
       scales:{
-        x:{ grid:{display:false}, ticks:{font:{size:11},color:'#888'} },
-        y:{ grid:{color:'rgba(255,255,255,0.05)'}, ticks:{font:{size:11},color:'#888',callback:v=>v+'%'}, max:70 }
-      }
-    }
+        x:{grid:{display:false},ticks:{font:{size:11},color:'var(--muted)'}},
+        y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{font:{size:11},color:'var(--muted)',callback:v=>v+'%'},max:70}
+      }}
   });
 }
 
-// init
-buildLive();
+// ── 5pm CT countdown ─────────────────────────────────────
+function updateCountdown(){
+  const now=new Date();
+  const ct=new Date(now.toLocaleString('en-US',{timeZone:'America/Chicago'}));
+  const next=new Date(ct); next.setHours(17,0,0,0);
+  if(ct>=next) next.setDate(next.getDate()+1);
+  // skip weekends
+  while(next.getDay()===0||next.getDay()===6) next.setDate(next.getDate()+1);
+  const diff=next-ct; const h=Math.floor(diff/3600000); const m=Math.floor((diff%3600000)/60000);
+  document.getElementById('next-refresh').textContent=`Next update in ${h}h ${m}m`;
+}
+updateCountdown(); setInterval(updateCountdown,60000);
+
+// auto-fetch at 5pm CT check
+function checkAutoRefresh(){
+  const ct=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Chicago'}));
+  if(ct.getHours()===17&&ct.getMinutes()<5&&!isLive) fetchLiveData(false);
+}
+setInterval(checkAutoRefresh,60000);
+
+// ── Init ─────────────────────────────────────────────────
+renderLive(2, 7.86, 4.82, 10.66, true, '2026-04-23');
+fetchLiveData(false); // attempt live on load
 </script>
 </body>
 </html>
