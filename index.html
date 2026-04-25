@@ -11,10 +11,10 @@
   --bg:#0c0d0f; --surface:#161819; --surface2:#1e2124; --surface3:#252830;
   --border:rgba(255,255,255,0.09); --border2:rgba(255,255,255,0.16);
   --text:#eeebe5; --muted:#b0ada7; --dim:#7e7b76; --dimmer:#555250;
-  --q1:#2fd98a; --q1d:rgba(47,217,138,.13); --q1b:rgba(47,217,138,.28);
-  --q2:#f0a030; --q2d:rgba(240,160,48,.13);  --q2b:rgba(240,160,48,.28);
-  --q3:#e85555; --q3d:rgba(232,85,85,.13);   --q3b:rgba(232,85,85,.28);
-  --q4:#5b9ef0; --q4d:rgba(91,158,240,.13);  --q4b:rgba(91,158,240,.28);
+  --q1:#2fd98a; --q1d:rgba(47,217,138,.13); --q1b:rgba(47,217,138,.45);
+  --q2:#f0a030; --q2d:rgba(240,160,48,.13);  --q2b:rgba(240,160,48,.45);
+  --q3:#e85555; --q3d:rgba(232,85,85,.13);   --q3b:rgba(232,85,85,.45);
+  --q4:#5b9ef0; --q4d:rgba(91,158,240,.13);  --q4b:rgba(91,158,240,.45);
   --head:'Syne',sans-serif; --mono:'DM Mono',monospace;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -68,10 +68,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--head);min-height:1
 .s-lbl{font-size:12px;color:var(--muted);}
 .s-val{font-family:var(--mono);font-size:13px;color:var(--text);}
 .pill{font-size:10px;padding:3px 11px;border-radius:20px;font-weight:600;font-family:var(--mono);}
-.pill-g{background:rgba(47,217,138,.15);color:var(--q1);}
-.pill-a{background:rgba(240,160,48,.18);color:var(--q2);}
-.pill-r{background:rgba(232,85,85,.15);color:var(--q3);}
-.pill-b{background:rgba(91,158,240,.15);color:var(--q4);}
+.pill-g{background:rgba(47,217,138,.4);color:var(--q1);}
+.pill-a{background:rgba(240,160,48,.4);color:var(--q2);}
+.pill-r{background:rgba(232,85,85,.4);color:var(--q3);}
+.pill-b{background:rgba(91,158,240,.4);color:var(--q4);}
 .pill-d{background:rgba(255,255,255,.07);color:var(--dim);}
 
 /* gauges */
@@ -100,8 +100,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--head);min-height:1
 .track-row.today{border-color:var(--border2);background:var(--surface2);}
 .track-head{display:grid;grid-template-columns:90px 130px 70px 80px 80px 80px 1fr;gap:6px;padding:4px 14px 8px;font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);}
 .qbadge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;}
-.qb1{background:rgba(47,217,138,.15);color:var(--q1);}.qb2{background:rgba(240,160,48,.15);color:var(--q2);}
-.qb3{background:rgba(232,85,85,.15);color:var(--q3);}.qb4{background:rgba(91,158,240,.15);color:var(--q4);}
+.qb1{background:rgba(47,217,138,.25);color:var(--q1);}.qb2{background:rgba(240,160,48,.25);color:var(--q2);}
+.qb3{background:rgba(232,85,85,.25);color:var(--q3);}.qb4{background:rgba(91,158,240,.25);color:var(--q4);}
 .mono{font-family:var(--mono);}
 
 /* chart */
@@ -230,10 +230,10 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
       </div>
       <div class="chart-wrap" style="height:200px;"><canvas id="histChart"></canvas></div>
       <div class="legend">
-        <div class="leg-item"><div class="leg-dot" style="background:rgba(47,217,138,.4);"></div>Q1 Goldilocks</div>
-        <div class="leg-item"><div class="leg-dot" style="background:rgba(240,160,48,.4);"></div>Q2 Overheating</div>
-        <div class="leg-item"><div class="leg-dot" style="background:rgba(232,85,85,.4);"></div>Q3 Stagflation</div>
-        <div class="leg-item"><div class="leg-dot" style="background:rgba(91,158,240,.4);"></div>Q4 Deflation</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(47,217,138,.45);"></div>Q1 Goldilocks</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(240,160,48,.45);"></div>Q2 Overheating</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(232,85,85,.45);"></div>Q3 Stagflation</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(91,158,240,.45);"></div>Q4 Deflation</div>
       </div>
     </div>
     <div class="chart-card">
