@@ -1,0 +1,358 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700&display=swap');
+  :root {
+    --bg:#0c0d0f; --surface:#161819; --surface2:#1e2124;
+    --border:rgba(255,255,255,0.09); --border2:rgba(255,255,255,0.16);
+    --text:#eeebe5; --muted:#b0ada7; --dim:#7e7b76;
+    --q1:#2fd98a; --q2:#f0a030; --q3:#e85555; --q4:#5b9ef0;
+    --mono:'DM Mono',monospace; --head:'Syne',sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:var(--head); padding:18px 16px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px 20px; margin-bottom:14px; }
+  .card-title { font-size:10px; font-weight:700; letter-spacing:.11em; text-transform:uppercase; color:var(--dim); margin-bottom:14px; }
+  .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:10px; }
+  .logo { font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+  .badge { font-family:var(--mono); font-size:11px; padding:4px 12px; border-radius:20px; border:1px solid; }
+  .badge-live { border-color:var(--q1); color:var(--q1); background:rgba(47,217,138,.08); }
+  .badge-demo { border-color:var(--q2); color:var(--q2); background:rgba(240,160,48,.08); }
+  .badge-loading { border-color:var(--dim); color:var(--dim); background:transparent; }
+  .badge-error { border-color:var(--q3); color:var(--q3); background:rgba(232,85,85,.08); }
+  .btn { font-family:var(--mono); font-size:12px; padding:7px 18px; border-radius:8px; border:1px solid var(--border2); background:var(--surface2); color:var(--text); cursor:pointer; transition:.15s; }
+  .btn:hover { background:rgba(255,255,255,.1); }
+  .btn:disabled { opacity:.4; cursor:default; }
+
+  /* signal cards */
+  .sig-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px; }
+  .sig-card { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:13px 15px; }
+  .sig-lbl { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); margin-bottom:6px; }
+  .sig-val { font-family:var(--mono); font-size:22px; font-weight:500; }
+  .sig-sub { font-size:11px; color:var(--muted); margin-top:4px; }
+  .pos { color:var(--q1); } .neg { color:var(--q3); } .amb { color:var(--q2); }
+
+  /* price table */
+  .price-table { width:100%; border-collapse:collapse; font-size:12px; }
+  .price-table th { font-family:var(--mono); font-size:10px; font-weight:500; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); padding:6px 10px; text-align:left; border-bottom:1px solid var(--border); }
+  .price-table td { font-family:var(--mono); padding:7px 10px; border-bottom:1px solid rgba(255,255,255,.04); color:var(--muted); }
+  .price-table tr:last-child td { border-bottom:none; }
+  .price-table td:first-child { color:var(--text); }
+  .price-table td.pos { color:var(--q1); } .price-table td.neg { color:var(--q3); }
+
+  /* chart */
+  .chart-wrap { position:relative; height:200px; margin-bottom:8px; }
+  .chart-ctrl { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; flex-wrap:wrap; gap:8px; }
+  .ctrl-btns { display:flex; gap:6px; }
+  .ctrl-btn { font-family:var(--mono); font-size:11px; padding:4px 12px; border-radius:6px; border:1px solid var(--border); background:transparent; color:var(--muted); cursor:pointer; }
+  .ctrl-btn.active { background:var(--surface2); color:var(--text); border-color:var(--border2); }
+  .legend { display:flex; flex-wrap:wrap; gap:14px; margin-top:10px; }
+  .leg-item { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--muted); }
+  .leg-dot { width:10px; height:10px; border-radius:2px; }
+
+  /* status log */
+  .log { font-family:var(--mono); font-size:11px; background:var(--surface2); border-radius:8px; padding:12px 14px; color:var(--dim); line-height:1.9; min-height:60px; }
+  .log .ok { color:var(--q1); } .log .err { color:var(--q3); } .log .info { color:var(--q2); }
+
+  /* code block */
+  .code-block { background:var(--surface2); border-radius:8px; padding:14px 16px; font-family:var(--mono); font-size:12px; color:var(--muted); line-height:1.9; margin-top:8px; overflow-x:auto; }
+  .code-block .hl { color:var(--q1); } .code-block .co { color:var(--dim); }
+  .issue-row { display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-bottom:1px solid var(--border); }
+  .issue-row:last-child { border-bottom:none; }
+  .issue-n { font-family:var(--mono); font-size:10px; min-width:22px; height:22px; border-radius:50%; border:1px solid var(--border2); display:flex; align-items:center; justify-content:center; color:var(--q3); flex-shrink:0; margin-top:1px; }
+  .issue-body { font-size:13px; color:var(--muted); line-height:1.65; }
+  .issue-body strong { color:var(--text); }
+</style>
+
+<div style="max-width:860px;margin:0 auto;">
+
+  <div class="topbar">
+    <div class="logo">▣ Data Connector · Live Fix</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span id="badge" class="badge badge-loading">⟳ Connecting...</span>
+      <button class="btn" id="refresh-btn" onclick="doFetch()">↻ Refresh Now</button>
+    </div>
+  </div>
+
+  <!-- Root cause explainer -->
+  <div class="card">
+    <div class="card-title">Root Cause Diagnosis</div>
+    <div class="issue-row">
+      <div class="issue-n">1</div>
+      <div class="issue-body">
+        <strong>SPY history shows wrong prices</strong> — The <code style="background:var(--surface2);padding:1px 6px;border-radius:4px;">CHART</code> array in the dashboard is hardcoded synthetic data where the <code style="background:var(--surface2);padding:1px 6px;border-radius:4px;">spy</code> field is an index normalised to 100, not actual dollar prices. Real SPY closed at ~$536 on 2025-04-23, not $100. The fix is to replace this array with live-fetched price data on every load.
+      </div>
+    </div>
+    <div class="issue-row">
+      <div class="issue-n">2</div>
+      <div class="issue-body">
+        <strong>Refresh shows demo data</strong> — <code style="background:var(--surface2);padding:1px 6px;border-radius:4px;">fetchLiveData()</code> calls Yahoo Finance directly from the browser. Yahoo Finance blocks all cross-origin browser requests (CORS). The fix is a one-line change: route through a free CORS proxy (<code style="background:var(--surface2);padding:1px 6px;border-radius:4px;">api.allorigins.win</code>) that adds the necessary headers. No API key, no backend needed.
+      </div>
+    </div>
+  </div>
+
+  <!-- Live signals -->
+  <div class="card">
+    <div class="card-title">Live Signals — fetched right now via proxy</div>
+    <div class="sig-grid">
+      <div class="sig-card">
+        <div class="sig-lbl">Growth · SPY 20d</div>
+        <div class="sig-val" id="g-val">—</div>
+        <div class="sig-sub" id="g-sub">—</div>
+      </div>
+      <div class="sig-card">
+        <div class="sig-lbl">Inflation · DBC+GLD 20d</div>
+        <div class="sig-val" id="i-val">—</div>
+        <div class="sig-sub" id="i-sub">—</div>
+      </div>
+      <div class="sig-card">
+        <div class="sig-lbl">Infl Gate · DBC+GLD 63d</div>
+        <div class="sig-val" id="ig-val">—</div>
+        <div class="sig-sub" id="ig-sub">—</div>
+      </div>
+    </div>
+    <div class="log" id="log">Initialising…</div>
+  </div>
+
+  <!-- Real SPY price chart -->
+  <div class="card">
+    <div class="chart-ctrl">
+      <div class="card-title" style="margin:0;">SPY Price · Real Closing Prices (from Yahoo Finance)</div>
+      <div class="ctrl-btns">
+        <button class="ctrl-btn active" onclick="setRange(63,this)">3M</button>
+        <button class="ctrl-btn" onclick="setRange(126,this)">6M</button>
+        <button class="ctrl-btn" onclick="setRange(252,this)">1Y</button>
+      </div>
+    </div>
+    <div class="chart-wrap"><canvas id="priceChart"></canvas></div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:rgba(47,217,138,.45);"></div>Q1 Goldilocks</div>
+      <div class="leg-item"><div class="leg-dot" style="background:rgba(240,160,48,.45);"></div>Q2 Overheating</div>
+      <div class="leg-item"><div class="leg-dot" style="background:rgba(232,85,85,.45);"></div>Q3 Stagflation</div>
+      <div class="leg-item"><div class="leg-dot" style="background:rgba(91,158,240,.45);"></div>Q4 Deflation</div>
+    </div>
+  </div>
+
+  <!-- Recent prices table -->
+  <div class="card">
+    <div class="card-title">Recent Closes · Last 7 Trading Days</div>
+    <table class="price-table">
+      <thead><tr><th>Date</th><th>SPY Close</th><th>Day Chg</th><th>DBC</th><th>GLD</th><th>Growth 20d</th><th>Infl 20d</th></tr></thead>
+      <tbody id="price-table-body"><tr><td colspan="7" style="color:var(--dim);padding:14px 10px;">Loading…</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- Code fix -->
+  <div class="card">
+    <div class="card-title">The One-Line Fix — copy into your dashboard's fetchYahoo()</div>
+    <div class="code-block">
+<span class="co">// BEFORE — fails due to CORS:</span>
+<span style="color:var(--q3);">const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=${days}d`;</span>
+<span style="color:var(--q3);">const r = await fetch(url, {headers:{'Accept':'application/json'}});</span>
+
+<span class="co">// AFTER — works in any browser via free proxy (no key needed):</span>
+<span class="hl">const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=${days}d`;</span>
+<span class="hl">const proxy  = `https://api.allorigins.win/raw?url=${encodeURIComponent(yahooUrl)}`;</span>
+<span class="hl">const r = await fetch(proxy);</span>
+    </div>
+    <div style="margin-top:10px;font-size:12px;color:var(--muted);line-height:1.7;">
+      Also replace the hardcoded <code style="background:var(--surface2);padding:1px 6px;border-radius:4px;">CHART</code> array with the real prices returned by <code style="background:var(--surface2);padding:1px 6px;border-radius:4px;">fetchYahoo('SPY', 252)</code> — that gives you a full year of real closing prices to drive the history chart at actual dollar values (e.g. $480–$570), not a synthetic index.
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+let allPrices = { spy:[], dbc:[], gld:[] };
+let currentRange = 63;
+let priceChart = null;
+
+function log(msg, cls='') {
+  const el = document.getElementById('log');
+  const time = new Date().toLocaleTimeString();
+  el.innerHTML += `<span class="${cls}">[${time}] ${msg}</span>\n`;
+  el.scrollTop = el.scrollHeight;
+}
+
+async function fetchYahoo(ticker, days=260) {
+  const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=${days}d`;
+  const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(yahooUrl)}`;
+  const r = await fetch(proxy);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const j = await r.json();
+  const res = j.chart.result[0];
+  const ts  = res.timestamp;
+  const cl  = res.indicators.quote[0].close;
+  return ts.map((t,i) => ({ d: new Date(t*1000).toISOString().slice(0,10), c: cl[i] }))
+           .filter(x => x.c !== null && x.c !== undefined);
+}
+
+function ret(prices, idx, k) {
+  if (idx < k) return null;
+  return (prices[idx].c - prices[idx-k].c) / prices[idx-k].c * 100;
+}
+
+function getQuadrant(g, inf) {
+  if (g == null || inf == null) return null;
+  if (g >= 0 && inf < 0)   return 1;
+  if (g >= 0 && inf >= 0)  return 2;
+  if (g < 0  && inf >= 0)  return 3;
+  return 4;
+}
+
+async function doFetch() {
+  const btn = document.getElementById('refresh-btn');
+  const badge = document.getElementById('badge');
+  btn.disabled = true;
+  badge.className = 'badge badge-loading'; badge.textContent = '⟳ Fetching…';
+  document.getElementById('log').innerHTML = '';
+  log('Connecting to Yahoo Finance via allorigins.win proxy…', 'info');
+
+  try {
+    log('Fetching SPY (260d)…', 'info');
+    allPrices.spy = await fetchYahoo('SPY', 260);
+    log(`✓ SPY — ${allPrices.spy.length} days · latest: $${allPrices.spy.at(-1).c.toFixed(2)} on ${allPrices.spy.at(-1).d}`, 'ok');
+
+    log('Fetching DBC (260d)…', 'info');
+    allPrices.dbc = await fetchYahoo('DBC', 260);
+    log(`✓ DBC — ${allPrices.dbc.length} days · latest: $${allPrices.dbc.at(-1).c.toFixed(2)} on ${allPrices.dbc.at(-1).d}`, 'ok');
+
+    log('Fetching GLD (260d)…', 'info');
+    allPrices.gld = await fetchYahoo('GLD', 260);
+    log(`✓ GLD — ${allPrices.gld.length} days · latest: $${allPrices.gld.at(-1).c.toFixed(2)} on ${allPrices.gld.at(-1).d}`, 'ok');
+
+    computeAndRender();
+    badge.className = 'badge badge-live'; badge.textContent = '⬤ Live data';
+    log('All signals updated from live market data.', 'ok');
+  } catch(e) {
+    badge.className = 'badge badge-error'; badge.textContent = '✕ Fetch failed';
+    log(`Error: ${e.message} — check console for details.`, 'err');
+    log('Tip: allorigins.win may be temporarily unavailable. Try again or use corsproxy.io.', 'info');
+  }
+  btn.disabled = false;
+}
+
+function computeAndRender() {
+  const spy = allPrices.spy;
+  const dbc = allPrices.dbc;
+  const gld = allPrices.gld;
+  if (!spy.length) return;
+
+  const n = spy.length;
+  const spyMap = Object.fromEntries(spy.map(x=>[x.d,x.c]));
+  const dbcMap = Object.fromEntries(dbc.map(x=>[x.d,x.c]));
+  const gldMap = Object.fromEntries(gld.map(x=>[x.d,x.c]));
+
+  // Compute signals on latest date
+  const g20  = ret(spy, n-1, 20);
+  const dbc20 = ret(dbc, dbc.length-1, 20);
+  const gld20 = ret(gld, gld.length-1, 20);
+  const dbc63 = ret(dbc, dbc.length-1, 63);
+  const gld63 = ret(gld, gld.length-1, 63);
+  const i20  = (dbc20 + gld20) / 2;
+  const ig63 = (dbc63 + gld63) / 2;
+  const q = getQuadrant(g20, i20);
+  const QNAMES={1:'Goldilocks',2:'Overheating',3:'Stagflation',4:'Deflation'};
+  const QCOLS={1:'#2fd98a',2:'#f0a030',3:'#e85555',4:'#5b9ef0'};
+
+  const fmt = v => v==null?'—':(v>=0?'+':'')+v.toFixed(2)+'%';
+  const cls = v => v==null?'':'pos'?v>=0:'neg';
+
+  document.getElementById('g-val').textContent  = fmt(g20);
+  document.getElementById('g-val').className     = 'sig-val ' + (g20>=0?'pos':'neg');
+  document.getElementById('g-sub').textContent  = `SPY: $${spy.at(-1).c.toFixed(2)} on ${spy.at(-1).d}`;
+  document.getElementById('i-val').textContent  = fmt(i20);
+  document.getElementById('i-val').className     = 'sig-val ' + (i20>=0?'amb':'pos');
+  document.getElementById('i-sub').textContent  = `DBC 20d: ${fmt(dbc20)} · GLD 20d: ${fmt(gld20)}`;
+  document.getElementById('ig-val').textContent = fmt(ig63);
+  document.getElementById('ig-val').className    = 'sig-val ' + (ig63>=0?'amb':'pos');
+  document.getElementById('ig-sub').textContent = `DBC 63d: ${fmt(dbc63)} · GLD 63d: ${fmt(gld63)}`;
+
+  // Build price table (last 7 days)
+  const last7 = spy.slice(-7);
+  const tbody = document.getElementById('price-table-body');
+  tbody.innerHTML = '';
+  last7.reverse().forEach((row, idx) => {
+    const prev = spy[n - 2 - idx];
+    const dayChg = prev ? (row.c - prev.c)/prev.c*100 : null;
+    const dbcC = dbcMap[row.d]; const gldC = gldMap[row.d];
+    // signals for this date
+    const spyIdx = spy.findIndex(x=>x.d===row.d);
+    const g = ret(spy, spyIdx, 20);
+    const d20 = ret(dbc, dbc.findIndex(x=>x.d===row.d), 20);
+    const g20_ = ret(gld, gld.findIndex(x=>x.d===row.d), 20);
+    const inf = (d20+g20_)/2;
+    const isToday = idx===0;
+    tbody.innerHTML += `<tr style="${isToday?'background:rgba(255,255,255,.03);':''}">
+      <td>${row.d}${isToday?' <span style="color:var(--q1);font-size:10px;">←latest</span>':''}</td>
+      <td>$${row.c.toFixed(2)}</td>
+      <td class="${dayChg==null?'':dayChg>=0?'pos':'neg'}">${dayChg==null?'—':(dayChg>=0?'+':'')+dayChg.toFixed(2)+'%'}</td>
+      <td>${dbcC?'$'+dbcC.toFixed(2):'—'}</td>
+      <td>${gldC?'$'+gldC.toFixed(2):'—'}</td>
+      <td class="${g==null?'':g>=0?'pos':'neg'}">${g==null?'—':(g>=0?'+':'')+g.toFixed(2)+'%'}</td>
+      <td class="${inf==null?'':inf>=0?'amb':'pos'}">${inf==null?'—':(inf>=0?'+':'')+inf.toFixed(2)+'%'}</td>
+    </tr>`;
+  });
+
+  // Build chart
+  buildChart();
+}
+
+function buildChart() {
+  const spy = allPrices.spy;
+  const dbc = allPrices.dbc;
+  const gld = allPrices.gld;
+  if (!spy.length) return;
+
+  const dbcMap = Object.fromEntries(dbc.map(x=>[x.d,x.c]));
+  const gldMap = Object.fromEntries(gld.map(x=>[x.d,x.c]));
+
+  const slice = spy.slice(-currentRange);
+
+  // Compute quadrant per day
+  const bgC = slice.map((row, idx) => {
+    const si = spy.findIndex(x=>x.d===row.d);
+    if (si < 20) return 'rgba(255,255,255,.05)';
+    const g  = ret(spy, si, 20);
+    const dbcI = dbc.findIndex(x=>x.d===row.d);
+    const gldI = gld.findIndex(x=>x.d===row.d);
+    const d20 = dbcI >= 20 ? ret(dbc,dbcI,20) : null;
+    const g20 = gldI >= 20 ? ret(gld,gldI,20) : null;
+    if (d20==null||g20==null) return 'rgba(255,255,255,.05)';
+    const inf = (d20+g20)/2;
+    const q = getQuadrant(g, inf);
+    const op = 0.45;
+    return q===1?`rgba(47,217,138,${op})`:q===2?`rgba(240,160,48,${op})`:q===3?`rgba(232,85,85,${op})`:`rgba(91,158,240,${op})`;
+  });
+
+  if (priceChart) priceChart.destroy();
+  priceChart = new Chart(document.getElementById('priceChart').getContext('2d'), {
+    data: { labels: slice.map(r=>r.d), datasets: [
+      { type:'bar',  data: slice.map(r => r.c * 1.15), backgroundColor: bgC, barThickness:'flex', order:2 },
+      { type:'line', data: slice.map(r => r.c), borderColor:'rgba(238,235,229,.9)',
+        borderWidth:1.8, pointRadius:0, tension:0.2, order:1, yAxisID:'y', fill:false }
+    ]},
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{
+        callbacks:{ label: ctx => ctx.datasetIndex===1 ? ` SPY $${ctx.raw.toFixed(2)}` : '' }
+      }},
+      scales:{
+        x:{ grid:{display:false}, ticks:{maxTicksLimit:8,font:{size:10},color:'#7e7b76'} },
+        y:{ position:'right', grid:{color:'rgba(255,255,255,.04)'},
+            ticks:{font:{size:10},color:'#7e7b76',callback:v=>'$'+v.toFixed(0)} }
+      }
+    }
+  });
+}
+
+function setRange(n, btn) {
+  document.querySelectorAll('.ctrl-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentRange = n;
+  if (allPrices.spy.length) buildChart();
+}
+
+// Auto-fetch on load
+doFetch();
+</script>
