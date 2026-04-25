@@ -338,7 +338,7 @@ const BT = {
 let allPrices = {spy:[], dbc:[], gld:[]};  // raw [{d,c}] from Yahoo
 let historyRows = [];   // [{d, q, g, i, ig, spyClose}] built after fetch
 let currentRange = 63;
-let histChart = null, sigChart = null;
+let histChart = null, sigChart = null, btChartInst = null;
 let currentQ = 2;
 
 // ════════════════════════════════════════════
@@ -459,8 +459,8 @@ function renderAll() {
 
   renderLivePanel(latest);
   renderTrack();
-  if (window._histBuilt) buildHistChart();
-  if (window._btBuilt)   buildBT();
+  buildHistChart();
+  buildBT();
 }
 
 function renderLivePanel(row) {
@@ -674,7 +674,8 @@ function buildBT() {
     </div>`;
   });
 
-  new Chart(document.getElementById('btChart').getContext('2d'), {
+  if (btChartInst) { btChartInst.destroy(); btChartInst = null; }
+  btChartInst = new Chart(document.getElementById('btChart').getContext('2d'), {
     type:'bar',
     data:{
       labels:['Model A — raw','Model A + 3-day','A + 3d + Q4 gate','Model B (YC/BE)'],
