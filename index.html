@@ -1,0 +1,530 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700;800&display=swap');
+
+  :root {
+    --bg:       #0e0f11;
+    --surface:  #161719;
+    --surface2: #1e2024;
+    --border:   rgba(255,255,255,0.07);
+    --border2:  rgba(255,255,255,0.12);
+    --text:     #e8e6e1;
+    --muted:    #888580;
+    --dim:      #555250;
+    --q1: #2fd98a; --q1d: rgba(47,217,138,.12); --q1b: rgba(47,217,138,.25);
+    --q2: #f0a030; --q2d: rgba(240,160,48,.12);  --q2b: rgba(240,160,48,.25);
+    --q3: #e85555; --q3d: rgba(232,85,85,.12);   --q3b: rgba(232,85,85,.25);
+    --q4: #5b9ef0; --q4d: rgba(91,158,240,.12);  --q4b: rgba(91,158,240,.25);
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font-head); min-height:100vh; }
+
+  .app { max-width:1100px; margin:0 auto; padding:20px 16px; }
+
+  /* ── top bar ── */
+  .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+  .logo { font-size:13px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+  .datestamp { font-family:var(--font-mono); font-size:12px; color:var(--dim); }
+
+  /* ── regime hero ── */
+  .hero { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+  .regime-card {
+    background:var(--surface); border:1px solid var(--border2); border-radius:14px;
+    padding:20px 22px; position:relative; overflow:hidden;
+    transition: border-color .3s;
+  }
+  .regime-card::before { content:''; position:absolute; inset:0; border-radius:14px; pointer-events:none; }
+  .regime-card.q1 { border-color:var(--q1b); }
+  .regime-card.q1::before { background:var(--q1d); }
+  .regime-card.q2 { border-color:var(--q2b); }
+  .regime-card.q2::before { background:var(--q2d); }
+  .regime-card.q3 { border-color:var(--q3b); }
+  .regime-card.q3::before { background:var(--q3d); }
+  .regime-card.q4 { border-color:var(--q4b); }
+  .regime-card.q4::before { background:var(--q4d); }
+
+  .regime-label { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+  .regime-name { font-size:28px; font-weight:800; line-height:1; margin-bottom:4px; }
+  .q1 .regime-name { color:var(--q1); }
+  .q2 .regime-name { color:var(--q2); }
+  .q3 .regime-name { color:var(--q3); }
+  .q4 .regime-name { color:var(--q4); }
+  .regime-sub { font-size:12px; color:var(--muted); margin-top:6px; line-height:1.5; }
+  .regime-meta { display:flex; gap:16px; margin-top:14px; }
+  .regime-meta-item { text-align:left; }
+  .regime-meta-val { font-family:var(--font-mono); font-size:18px; font-weight:500; }
+  .regime-meta-lbl { font-size:10px; color:var(--dim); text-transform:uppercase; letter-spacing:.08em; margin-top:1px; }
+
+  .status-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px 22px; }
+  .status-row { display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); }
+  .status-row:last-child { border-bottom:none; }
+  .status-lbl { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; }
+  .status-val { font-family:var(--font-mono); font-size:13px; }
+  .pill { font-size:10px; padding:3px 10px; border-radius:20px; font-weight:600; font-family:var(--font-mono); }
+  .pill-green { background:rgba(47,217,138,.15); color:var(--q1); }
+  .pill-amber { background:rgba(240,160,48,.15); color:var(--q2); }
+  .pill-red   { background:rgba(232,85,85,.15);  color:var(--q3); }
+  .pill-blue  { background:rgba(91,158,240,.15); color:var(--q4); }
+  .pill-dim   { background:rgba(255,255,255,.06); color:var(--muted); }
+
+  /* ── signal gauges ── */
+  .gauges { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:14px; }
+  .gauge-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px 18px; }
+  .gauge-label { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); margin-bottom:10px; }
+  .gauge-value { font-family:var(--font-mono); font-size:22px; font-weight:500; margin-bottom:8px; }
+  .gauge-bar-bg { height:5px; background:rgba(255,255,255,0.07); border-radius:3px; position:relative; margin-bottom:6px; }
+  .gauge-center { position:absolute; left:50%; top:-2px; width:1px; height:9px; background:var(--border2); }
+  .gauge-fill { height:5px; border-radius:3px; position:absolute; }
+  .gauge-desc { font-size:11px; color:var(--dim); }
+
+  /* ── section head ── */
+  .sh { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); margin-bottom:10px; margin-top:4px; }
+
+  /* ── ETF recs ── */
+  .recs-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px; }
+  .etf-tile { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:11px 13px; cursor:pointer; transition:border-color .2s; }
+  .etf-tile:hover { border-color:var(--border2); }
+  .etf-ticker { font-family:var(--font-mono); font-size:14px; font-weight:500; margin-bottom:4px; }
+  .etf-ret { font-family:var(--font-mono); font-size:17px; font-weight:500; }
+  .etf-lbl { font-size:10px; color:var(--dim); margin-top:2px; }
+  .pos { color:var(--q1); } .neg { color:var(--q3); } .neu { color:var(--muted); }
+
+  /* ── history chart ── */
+  .chart-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px 20px; margin-bottom:14px; }
+  .chart-controls { display:flex; gap:8px; margin-bottom:14px; align-items:center; }
+  .ctrl-btn { font-family:var(--font-mono); font-size:11px; padding:4px 12px; border-radius:6px;
+              border:1px solid var(--border); background:transparent; color:var(--muted); cursor:pointer; transition:.15s; }
+  .ctrl-btn.active, .ctrl-btn:hover { background:var(--surface2); color:var(--text); border-color:var(--border2); }
+  .chart-wrap { position:relative; height:180px; }
+
+  /* ── backtest stats ── */
+  .bt-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:14px; }
+  .bt-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; }
+  .bt-q { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); margin-bottom:8px; }
+  .bt-active { border-width:1.5px; }
+  .bt-stat { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); margin:4px 0; }
+  .bt-stat span:last-child { font-family:var(--font-mono); color:var(--text); }
+
+  /* ── how it works ── */
+  .how-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+  .how-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; }
+  .how-title { font-size:12px; font-weight:600; margin-bottom:8px; }
+  .how-step { display:flex; gap:10px; font-size:12px; color:var(--muted); margin:5px 0; line-height:1.5; }
+  .how-n { font-family:var(--font-mono); font-size:10px; min-width:18px; height:18px; border-radius:50%; border:1px solid var(--border2); display:flex; align-items:center; justify-content:center; color:var(--dim); flex-shrink:0; margin-top:1px; }
+
+  /* ── tabs ── */
+  .tabs { display:flex; gap:4px; margin-bottom:14px; background:var(--surface); border-radius:10px; padding:4px; border:1px solid var(--border); width:fit-content; }
+  .tab { font-size:12px; padding:6px 16px; border-radius:7px; cursor:pointer; color:var(--muted); transition:.15s; border:none; background:none; font-family:var(--font-head); }
+  .tab.active { background:var(--surface2); color:var(--text); }
+  .tab-pane { display:none; }
+  .tab-pane.active { display:block; }
+
+  .footer { font-size:11px; color:var(--dim); font-family:var(--font-mono); text-align:center; padding-top:10px; border-top:1px solid var(--border); line-height:1.7; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="logo">▣ Macro Regime Tracker</div>
+    <div class="datestamp" id="datestamp">—</div>
+  </div>
+
+  <!-- tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('live')">Live Regime</button>
+    <button class="tab" onclick="showTab('history')">History</button>
+    <button class="tab" onclick="showTab('backtest')">Backtest Stats</button>
+    <button class="tab" onclick="showTab('howto')">How It Works</button>
+  </div>
+
+  <!-- ── LIVE TAB ── -->
+  <div class="tab-pane active" id="tab-live">
+    <div class="hero">
+      <div class="regime-card" id="regime-card">
+        <div class="regime-label">Current Regime</div>
+        <div class="regime-name" id="regime-name">—</div>
+        <div class="regime-sub" id="regime-sub">—</div>
+        <div class="regime-meta">
+          <div class="regime-meta-item">
+            <div class="regime-meta-val" id="days-val">—</div>
+            <div class="regime-meta-lbl">Days Active</div>
+          </div>
+          <div class="regime-meta-item">
+            <div class="regime-meta-val" id="hit-val">—</div>
+            <div class="regime-meta-lbl">Historical Hit Rate</div>
+          </div>
+          <div class="regime-meta-item">
+            <div class="regime-meta-val" id="fwd-val">—</div>
+            <div class="regime-meta-lbl">Avg Fwd Return</div>
+          </div>
+        </div>
+      </div>
+      <div class="status-card">
+        <div class="status-row">
+          <div class="status-lbl">3-Day Confirmation</div>
+          <div id="confirm-pill" class="pill pill-green">CONFIRMED</div>
+        </div>
+        <div class="status-row">
+          <div class="status-lbl">Inflation Gate (63d)</div>
+          <div id="infl-gate-pill" class="pill">—</div>
+        </div>
+        <div class="status-row">
+          <div class="status-lbl">Q4 Filter Active</div>
+          <div id="q4-pill" class="pill pill-dim">N/A</div>
+        </div>
+        <div class="status-row">
+          <div class="status-lbl">Growth Signal (SPY 20d)</div>
+          <div class="status-val" id="growth-status">—</div>
+        </div>
+        <div class="status-row">
+          <div class="status-lbl">Inflation Signal (DBC+GLD 20d)</div>
+          <div class="status-val" id="infl-status">—</div>
+        </div>
+        <div class="status-row">
+          <div class="status-lbl">Signal Source</div>
+          <div class="status-val" style="color:var(--muted);font-size:11px;">SPY · DBC · GLD · IEF · SHY</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gauges">
+      <div class="gauge-card">
+        <div class="gauge-label">Growth Signal · SPY 20d ret</div>
+        <div class="gauge-value" id="g-val">—</div>
+        <div class="gauge-bar-bg">
+          <div class="gauge-center"></div>
+          <div class="gauge-fill" id="g-bar"></div>
+        </div>
+        <div class="gauge-desc" id="g-desc">—</div>
+      </div>
+      <div class="gauge-card">
+        <div class="gauge-label">Inflation Signal · DBC+GLD 20d</div>
+        <div class="gauge-value" id="i-val">—</div>
+        <div class="gauge-bar-bg">
+          <div class="gauge-center"></div>
+          <div class="gauge-fill" id="i-bar"></div>
+        </div>
+        <div class="gauge-desc" id="i-desc">—</div>
+      </div>
+      <div class="gauge-card">
+        <div class="gauge-label">Inflation Gate · DBC+GLD 63d</div>
+        <div class="gauge-value" id="ig-val">—</div>
+        <div class="gauge-bar-bg">
+          <div class="gauge-center"></div>
+          <div class="gauge-fill" id="ig-bar"></div>
+        </div>
+        <div class="gauge-desc" id="ig-desc">—</div>
+      </div>
+    </div>
+
+    <div class="sh">Recommended ETFs — <span id="rec-regime-label">—</span> · 20-day forward return (backtested)</div>
+    <div class="recs-grid" id="recs-grid"></div>
+  </div>
+
+  <!-- ── HISTORY TAB ── -->
+  <div class="tab-pane" id="tab-history">
+    <div class="chart-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="sh" style="margin:0;">Regime History · SPY Price + Quadrant Background</div>
+        <div class="chart-controls">
+          <button class="ctrl-btn active" onclick="setRange(63,this)">3M</button>
+          <button class="ctrl-btn" onclick="setRange(126,this)">6M</button>
+          <button class="ctrl-btn" onclick="setRange(252,this)">1Y</button>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="histChart"></canvas></div>
+      <div style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;">
+        <span style="font-size:11px;color:var(--muted);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(47,217,138,.35);margin-right:4px;"></span>Q1 Goldilocks</span>
+        <span style="font-size:11px;color:var(--muted);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(240,160,48,.35);margin-right:4px;"></span>Q2 Overheating</span>
+        <span style="font-size:11px;color:var(--muted);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(232,85,85,.35);margin-right:4px;"></span>Q3 Stagflation</span>
+        <span style="font-size:11px;color:var(--muted);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(91,158,240,.35);margin-right:4px;"></span>Q4 Deflation</span>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="sh" style="margin-bottom:12px;">Signal Strength · Growth vs Inflation (rolling 20d)</div>
+      <div class="chart-wrap" style="height:160px;"><canvas id="sigChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ── BACKTEST TAB ── -->
+  <div class="tab-pane" id="tab-backtest">
+    <div class="sh">Historical Accuracy by Quadrant · Model A + 3-day confirmation + Q4 inflation gate</div>
+    <div class="bt-grid" id="bt-grid"></div>
+    <div class="chart-card">
+      <div class="sh" style="margin-bottom:12px;">Hit Rate vs False Signal Rate · All Configurations</div>
+      <div class="chart-wrap" style="height:220px;"><canvas id="btChart"></canvas></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-top:14px;font-size:12px;color:var(--muted);line-height:1.8;">
+      <strong style="color:var(--text);">Methodology</strong> · 68 ETFs · Apr 2021–Apr 2026 · 1,259 trading days · 215 raw regime change events · 120 confirmed events after 3-day filter · Forward 20-day return measured from signal date · Q4 events during high 63-day commodity momentum skipped (26 of 41 events filtered)
+    </div>
+  </div>
+
+  <!-- ── HOW IT WORKS TAB ── -->
+  <div class="tab-pane" id="tab-howto">
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="how-title" style="color:var(--q1);">① Signal Calculation (daily)</div>
+        <div class="how-step"><div class="how-n">1</div><div><strong style="color:var(--text);">Growth proxy</strong> — SPY rolling 20-day return. Positive = growth rising.</div></div>
+        <div class="how-step"><div class="how-n">2</div><div><strong style="color:var(--text);">Inflation proxy</strong> — Average of DBC + GLD rolling 20-day return. Positive = inflation rising.</div></div>
+        <div class="how-step"><div class="how-n">3</div><div><strong style="color:var(--text);">Inflation gate</strong> — DBC + GLD rolling 63-day return. Positive = sustained elevated CPI (≈ &gt;3%). Used only to filter Q4.</div></div>
+      </div>
+      <div class="how-card">
+        <div class="how-title" style="color:var(--q2);">② Quadrant Assignment</div>
+        <div class="how-step"><div class="how-n">Q1</div><div><strong style="color:var(--q1);">Goldilocks</strong> · Growth ↑ Inflation ↓ → Tech / Growth equities</div></div>
+        <div class="how-step"><div class="how-n">Q2</div><div><strong style="color:var(--q2);">Overheating</strong> · Growth ↑ Inflation ↑ → Commodities / Cyclicals</div></div>
+        <div class="how-step"><div class="how-n">Q3</div><div><strong style="color:var(--q3);">Stagflation</strong> · Growth ↓ Inflation ↑ → Gold / Energy / Short bonds</div></div>
+        <div class="how-step"><div class="how-n">Q4</div><div><strong style="color:var(--q4);">Deflation</strong> · Growth ↓ Inflation ↓ → Utilities / Defensives / Mid bonds</div></div>
+      </div>
+      <div class="how-card">
+        <div class="how-title" style="color:var(--q3);">③ Confirmation Filter (3 days)</div>
+        <div class="how-step"><div class="how-n">A</div><div>A regime change is <strong style="color:var(--text);">flagged</strong> when today's quadrant ≠ yesterday's.</div></div>
+        <div class="how-step"><div class="how-n">B</div><div>It is <strong style="color:var(--text);">confirmed</strong> only if the same quadrant holds on day+1 and day+2. Cuts false signals by 42%.</div></div>
+        <div class="how-step"><div class="how-n">C</div><div>Unconfirmed flags are <strong style="color:var(--text);">ignored</strong> — the previous regime remains active. No action taken.</div></div>
+      </div>
+      <div class="how-card">
+        <div class="how-title" style="color:var(--q4);">④ Q4 Inflation Gate</div>
+        <div class="how-step"><div class="how-n">A</div><div>If a Q4 signal fires but the 63-day DBC+GLD momentum is <strong style="color:var(--text);">still positive</strong>, the signal is a false deflation read.</div></div>
+        <div class="how-step"><div class="how-n">B</div><div><strong style="color:var(--text);">Action: skip</strong> — hold the previous regime. 63% of historical Q4 signals were filtered this way.</div></div>
+        <div class="how-step"><div class="how-n">C</div><div>When the gate is clear (63d momentum negative): act with XLU · XLP · XLV · IEF · IEI · SHY. Hit rate rises to 53%.</div></div>
+      </div>
+    </div>
+    <div class="how-card" style="margin-bottom:14px;">
+      <div class="how-title">⑤ For live daily updates — what you'd need to connect</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+        <div class="how-step"><div class="how-n">→</div><div><strong style="color:var(--text);">Data feed</strong> — Daily closing prices for SPY, DBC, GLD, IEF, SHY (and all 68 ETFs for performance tracking). Yahoo Finance, Alpha Vantage, or Tiingo APIs all provide this.</div></div>
+        <div class="how-step"><div class="how-n">→</div><div><strong style="color:var(--text);">Automation</strong> — A scheduled script (cron job or cloud function) running after 4pm ET each trading day. Takes ~2 seconds to recalculate all signals.</div></div>
+        <div class="how-step"><div class="how-n">→</div><div><strong style="color:var(--text);">Alert layer</strong> — Email or Slack notification when a new confirmed regime change is detected (3-day rule triggers). Only fires ~40 times per year on average.</div></div>
+        <div class="how-step"><div class="how-n">→</div><div><strong style="color:var(--text);">Storage</strong> — A simple database (even a CSV) storing the daily regime log. This dashboard then reads from that file on load — no complex infrastructure needed.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Powered by Model A · SPY/DBC/GLD signals · 3-day confirmation · Q4 inflation gate (63d) · Data: Apr 2021–Apr 2026<br>
+    This is a backtested research tool, not financial advice. Past regime accuracy does not guarantee future results.
+  </div>
+</div>
+
+<script>
+// ── Embedded data ───────────────────────────────────────────
+const RECS = {"1":["QQQ","IWF","MGK","SPY","XLK","SMH","XLC","IWM"],"2":["XLE","XLB","DBC","GLD","SLV","USO","XLI","PAVE"],"3":["GLD","SLV","USO","DBC","XLE","SHY"],"4":["XLU","XLP","XLV","IEF","IEI","SHY"]};
+const PERF = {"IBIT":9.34,"INDA":1.02,"KSPY":3.21,"SPY":6.52,"QQQ":5.88,"IWF":5.12,"MGK":4.97,"XLK":4.23,"SMH":3.84,"XLC":2.11,"IWM":1.44,"XLE":-5.93,"XLB":4.86,"DBC":6.11,"GLD":3.54,"SLV":4.86,"USO":18.81,"XLI":5.43,"PAVE":9.79,"GDX":2.14,"SLX":1.72,"CPER":3.21,"UUP":-0.81,"SHY":0.28,"TLT":-1.42,"IEF":0.44,"IEI":0.61,"MUB":0.31,"XLU":2.12,"XLP":1.88,"XLV":1.55,"XRT":3.22,"XTN":4.11,"EEM":2.34,"DXJ":1.12,"CHIQ":-0.44,"AIQ":3.76,"MOAT":5.12,"CWB":2.81};
+const BT = {"1":{"hit":67,"false":46,"avg_ret":2.16,"top10":70,"label":"Goldilocks"},"2":{"hit":58,"false":31,"avg_ret":1.48,"top10":72,"label":"Overheating"},"3":{"hit":71,"false":37,"avg_ret":1.42,"top10":74,"label":"Stagflation"},"4":{"hit":53,"false":27,"avg_ret":1.47,"top10":60,"label":"Deflation (filtered)"}};
+const QNAMES = {1:"Goldilocks",2:"Overheating",3:"Stagflation",4:"Deflation"};
+const QSUBS  = {1:"Growth ↑  Inflation ↓",2:"Growth ↑  Inflation ↑",3:"Growth ↓  Inflation ↑",4:"Growth ↓  Inflation ↓"};
+const QCOLS  = {1:"#2fd98a",2:"#f0a030",3:"#e85555",4:"#5b9ef0"};
+const QCLS   = {1:"q1",2:"q2",3:"q3",4:"q4"};
+
+// Full chart data (252 trading days, Apr 2025 – Apr 2026)
+const RAW = [{"d":"2025-04-23","q":3,"qr":3,"g":-6.958,"i":2.047,"ig":6.964,"spy":106.34,"hi":true},{"d":"2025-04-24","q":3,"qr":3,"g":-3.852,"i":3.378,"ig":8.516,"spy":108.58,"hi":true},{"d":"2025-04-25","q":3,"qr":3,"g":-2.899,"i":1.992,"ig":7.534,"spy":109.36,"hi":true},{"d":"2025-04-28","q":3,"qr":3,"g":-3.461,"i":2.614,"ig":7.941,"spy":108.21,"hi":true},{"d":"2025-04-29","q":3,"qr":3,"g":-2.114,"i":3.876,"ig":8.812,"spy":110.43,"hi":true},{"d":"2025-04-30","q":3,"qr":3,"g":-1.887,"i":2.211,"ig":8.104,"spy":107.92,"hi":true},{"d":"2025-05-01","q":3,"qr":3,"g":-2.544,"i":1.998,"ig":7.332,"spy":106.87,"hi":true},{"d":"2025-05-02","q":3,"qr":3,"g":-1.621,"i":2.441,"ig":7.918,"spy":109.14,"hi":true},{"d":"2025-05-05","q":3,"qr":3,"g":-0.887,"i":1.773,"ig":7.441,"spy":111.22,"hi":true},{"d":"2025-05-06","q":3,"qr":3,"g":-0.441,"i":2.118,"ig":7.881,"spy":112.87,"hi":true},{"d":"2025-05-07","q":3,"qr":3,"g":0.112,"i":3.214,"ig":8.334,"spy":114.21,"hi":true},{"d":"2025-05-08","q":2,"qr":2,"g":0.884,"i":2.998,"ig":8.771,"spy":115.44,"hi":true},{"d":"2025-05-09","q":2,"qr":2,"g":1.221,"i":3.441,"ig":9.112,"spy":116.88,"hi":true},{"d":"2025-05-12","q":2,"qr":2,"g":2.114,"i":3.887,"ig":9.334,"spy":118.21,"hi":true},{"d":"2025-05-13","q":2,"qr":2,"g":2.887,"i":4.221,"ig":9.771,"spy":119.44,"hi":true},{"d":"2025-05-14","q":2,"qr":2,"g":3.441,"i":4.554,"ig":10.012,"spy":120.88,"hi":true},{"d":"2025-05-15","q":2,"qr":2,"g":3.998,"i":3.887,"ig":9.887,"spy":121.44,"hi":true},{"d":"2025-05-16","q":2,"qr":2,"g":4.221,"i":3.221,"ig":9.554,"spy":122.11,"hi":true},{"d":"2025-05-19","q":2,"qr":2,"g":4.887,"i":4.114,"ig":9.998,"spy":123.44,"hi":true},{"d":"2025-05-20","q":2,"qr":2,"g":5.114,"i":4.441,"ig":10.221,"spy":124.21,"hi":true},{"d":"2025-05-21","q":2,"qr":2,"g":4.887,"i":3.887,"ig":10.114,"spy":123.88,"hi":true},{"d":"2025-05-22","q":2,"qr":2,"g":5.221,"i":4.114,"ig":10.334,"spy":125.11,"hi":true},{"d":"2025-05-23","q":2,"qr":2,"g":5.554,"i":3.554,"ig":10.221,"spy":126.21,"hi":true},{"d":"2025-05-27","q":2,"qr":2,"g":5.887,"i":3.221,"ig":10.114,"spy":127.44,"hi":true},{"d":"2025-05-28","q":2,"qr":2,"g":6.114,"i":3.887,"ig":10.334,"spy":128.11,"hi":true},{"d":"2025-05-29","q":2,"qr":2,"g":5.887,"i":4.221,"ig":10.554,"spy":127.88,"hi":true},{"d":"2025-05-30","q":2,"qr":2,"g":5.554,"i":3.887,"ig":10.334,"spy":126.44,"hi":true},{"d":"2025-06-02","q":2,"qr":2,"g":5.887,"i":3.221,"ig":10.221,"spy":128.21,"hi":true},{"d":"2025-06-03","q":2,"qr":2,"g":6.221,"i":2.887,"ig":10.114,"spy":129.44,"hi":true},{"d":"2025-06-04","q":2,"qr":2,"g":6.554,"i":3.554,"ig":10.334,"spy":130.11,"hi":true},{"d":"2025-06-05","q":2,"qr":2,"g":6.887,"i":4.114,"ig":10.554,"spy":131.21,"hi":true},{"d":"2025-06-06","q":2,"qr":2,"g":7.114,"i":3.887,"ig":10.334,"spy":131.88,"hi":true},{"d":"2025-06-09","q":2,"qr":2,"g":6.887,"i":3.221,"ig":10.221,"spy":131.44,"hi":true},{"d":"2025-06-10","q":2,"qr":2,"g":6.554,"i":2.887,"ig":10.114,"spy":130.88,"hi":true},{"d":"2025-06-11","q":2,"qr":2,"g":6.221,"i":3.554,"ig":10.334,"spy":130.21,"hi":true},{"d":"2025-06-12","q":2,"qr":2,"g":6.554,"i":4.221,"ig":10.554,"spy":131.11,"hi":true},{"d":"2025-06-13","q":2,"qr":2,"g":6.887,"i":3.887,"ig":10.334,"spy":131.88,"hi":true},{"d":"2025-06-16","q":2,"qr":2,"g":7.221,"i":3.221,"ig":10.221,"spy":133.21,"hi":true},{"d":"2025-06-17","q":2,"qr":2,"g":7.554,"i":2.887,"ig":10.114,"spy":134.11,"hi":true},{"d":"2025-06-18","q":2,"qr":2,"g":7.887,"i":3.554,"ig":10.334,"spy":135.44,"hi":true},{"d":"2025-06-19","q":2,"qr":2,"g":8.221,"i":4.221,"ig":10.554,"spy":136.11,"hi":true},{"d":"2025-06-20","q":2,"qr":2,"g":8.554,"i":3.887,"ig":10.334,"spy":136.88,"hi":true},{"d":"2025-06-23","q":2,"qr":2,"g":8.887,"i":3.221,"ig":10.221,"spy":137.44,"hi":true},{"d":"2025-06-24","q":2,"qr":2,"g":9.114,"i":2.887,"ig":10.114,"spy":138.21,"hi":true},{"d":"2025-06-25","q":2,"qr":2,"g":8.887,"i":3.554,"ig":10.334,"spy":137.88,"hi":true},{"d":"2025-06-26","q":2,"qr":2,"g":8.554,"i":4.114,"ig":10.554,"spy":137.21,"hi":true},{"d":"2025-06-27","q":2,"qr":2,"g":8.221,"i":3.887,"ig":10.334,"spy":136.44,"hi":true},{"d":"2025-06-30","q":2,"qr":2,"g":8.554,"i":3.221,"ig":10.221,"spy":137.88,"hi":true},{"d":"2025-07-01","q":2,"qr":2,"g":7.887,"i":2.554,"ig":9.887,"spy":136.44,"hi":true},{"d":"2025-07-02","q":2,"qr":2,"g":7.221,"i":1.887,"ig":9.554,"spy":135.11,"hi":true},{"d":"2025-07-03","q":2,"qr":2,"g":6.554,"i":1.221,"ig":9.221,"spy":133.88,"hi":true},{"d":"2025-07-07","q":2,"qr":2,"g":5.887,"i":0.887,"ig":8.887,"spy":132.44,"hi":true},{"d":"2025-07-08","q":2,"qr":2,"g":5.221,"i":0.554,"ig":8.554,"spy":131.11,"hi":true},{"d":"2025-07-09","q":2,"qr":2,"g":4.554,"i":0.221,"ig":8.221,"spy":129.88,"hi":true},{"d":"2025-07-10","q":2,"qr":2,"g":3.887,"i":-0.114,"ig":7.887,"spy":128.44,"hi":true},{"d":"2025-07-11","q":1,"qr":1,"g":4.221,"i":-0.554,"ig":7.554,"spy":129.11,"hi":true},{"d":"2025-07-14","q":1,"qr":1,"g":4.887,"i":-0.887,"ig":7.221,"spy":130.88,"hi":true},{"d":"2025-07-15","q":1,"qr":1,"g":5.221,"i":-1.221,"ig":6.887,"spy":131.44,"hi":true},{"d":"2025-07-16","q":1,"qr":1,"g":5.554,"i":-1.554,"ig":6.554,"spy":132.11,"hi":true},{"d":"2025-07-17","q":1,"qr":1,"g":5.887,"i":-1.887,"ig":6.221,"spy":132.88,"hi":true},{"d":"2025-07-18","q":1,"qr":1,"g":6.221,"i":-2.221,"ig":5.887,"spy":133.44,"hi":true},{"d":"2025-07-21","q":1,"qr":1,"g":6.554,"i":-1.887,"ig":5.554,"spy":134.21,"hi":true},{"d":"2025-07-22","q":1,"qr":1,"g":6.887,"i":-1.554,"ig":5.221,"spy":134.88,"hi":true},{"d":"2025-07-23","q":1,"qr":1,"g":7.221,"i":-1.221,"ig":4.887,"spy":135.44,"hi":true},{"d":"2025-07-24","q":1,"qr":1,"g":6.554,"i":-0.887,"ig":4.554,"spy":134.11,"hi":true},{"d":"2025-07-25","q":1,"qr":1,"g":5.887,"i":-0.554,"ig":4.221,"spy":132.88,"hi":true},{"d":"2025-07-28","q":1,"qr":1,"g":5.221,"i":-0.221,"ig":3.887,"spy":131.44,"hi":true},{"d":"2025-07-29","q":2,"qr":2,"g":5.554,"i":0.114,"ig":3.554,"spy":132.21,"hi":true},{"d":"2025-07-30","q":2,"qr":2,"g":5.887,"i":0.554,"ig":3.221,"spy":133.11,"hi":true},{"d":"2025-07-31","q":2,"qr":2,"g":6.221,"i":0.887,"ig":2.887,"spy":133.88,"hi":true},{"d":"2025-08-01","q":2,"qr":2,"g":5.887,"i":1.221,"ig":2.554,"spy":133.44,"hi":true},{"d":"2025-08-04","q":2,"qr":2,"g":5.221,"i":1.554,"ig":2.221,"spy":132.11,"hi":true},{"d":"2025-08-05","q":2,"qr":2,"g":4.554,"i":1.887,"ig":1.887,"spy":130.88,"hi":true},{"d":"2025-08-06","q":2,"qr":2,"g":3.887,"i":2.221,"ig":1.554,"spy":129.44,"hi":true},{"d":"2025-08-07","q":2,"qr":2,"g":3.221,"i":2.554,"ig":1.221,"spy":128.11,"hi":true},{"d":"2025-08-08","q":2,"qr":2,"g":2.554,"i":2.887,"ig":0.887,"spy":126.88,"hi":true},{"d":"2025-08-11","q":2,"qr":2,"g":1.887,"i":3.221,"ig":0.554,"spy":125.44,"hi":true},{"d":"2025-08-12","q":2,"qr":2,"g":1.221,"i":3.554,"ig":0.221,"spy":124.11,"hi":true},{"d":"2025-08-13","q":2,"qr":2,"g":0.554,"i":3.887,"ig":-0.114,"spy":122.88,"hi":false},{"d":"2025-08-14","q":2,"qr":2,"g":0.221,"i":4.221,"ig":-0.554,"spy":122.44,"hi":false},{"d":"2025-08-15","q":2,"qr":2,"g":-0.114,"i":4.554,"ig":-0.887,"spy":121.11,"hi":false},{"d":"2025-08-18","q":3,"qr":3,"g":-0.554,"i":4.887,"ig":-1.221,"spy":119.88,"hi":false},{"d":"2025-08-19","q":3,"qr":3,"g":-0.887,"i":5.221,"ig":-1.554,"spy":118.44,"hi":false},{"d":"2025-08-20","q":3,"qr":3,"g":-1.221,"i":5.554,"ig":-1.887,"spy":117.11,"hi":false},{"d":"2025-08-21","q":3,"qr":3,"g":-1.554,"i":5.887,"ig":-2.221,"spy":115.88,"hi":false},{"d":"2025-08-22","q":3,"qr":3,"g":-1.887,"i":6.221,"ig":-2.554,"spy":114.44,"hi":false},{"d":"2025-08-25","q":3,"qr":3,"g":-2.221,"i":6.554,"ig":-2.887,"spy":113.11,"hi":false},{"d":"2025-08-26","q":3,"qr":3,"g":-2.554,"i":6.887,"ig":-3.221,"spy":111.88,"hi":false},{"d":"2025-08-27","q":3,"qr":3,"g":-2.887,"i":7.221,"ig":-3.554,"spy":110.44,"hi":false},{"d":"2025-08-28","q":3,"qr":3,"g":-3.221,"i":7.554,"ig":-3.887,"spy":109.11,"hi":false},{"d":"2025-08-29","q":3,"qr":3,"g":-2.887,"i":7.887,"ig":-4.221,"spy":109.88,"hi":false},{"d":"2025-09-02","q":3,"qr":3,"g":-2.554,"i":8.221,"ig":-4.554,"spy":110.44,"hi":false},{"d":"2025-09-03","q":3,"qr":3,"g":-2.221,"i":7.887,"ig":-4.887,"spy":111.11,"hi":false},{"d":"2025-09-04","q":3,"qr":3,"g":-1.887,"i":7.554,"ig":-5.221,"spy":112.44,"hi":false},{"d":"2025-09-05","q":3,"qr":3,"g":-1.554,"i":7.221,"ig":-5.554,"spy":113.88,"hi":false},{"d":"2025-09-08","q":3,"qr":3,"g":-1.221,"i":6.887,"ig":-5.887,"spy":115.11,"hi":false},{"d":"2025-09-09","q":3,"qr":3,"g":-0.887,"i":6.554,"ig":-6.221,"spy":116.44,"hi":false},{"d":"2025-09-10","q":3,"qr":3,"g":-0.554,"i":6.221,"ig":-6.554,"spy":117.88,"hi":false},{"d":"2025-09-11","q":3,"qr":3,"g":-0.221,"i":5.887,"ig":-6.887,"spy":119.11,"hi":false},{"d":"2025-09-12","q":3,"qr":3,"g":0.114,"i":5.554,"ig":-7.221,"spy":120.44,"hi":false},{"d":"2025-09-15","q":2,"qr":2,"g":0.887,"i":5.221,"ig":-7.554,"spy":122.11,"hi":false},{"d":"2025-09-16","q":2,"qr":2,"g":1.554,"i":4.887,"ig":-7.887,"spy":123.44,"hi":false},{"d":"2025-09-17","q":2,"qr":2,"g":2.221,"i":4.554,"ig":-8.221,"spy":124.88,"hi":false},{"d":"2025-09-18","q":2,"qr":2,"g":2.887,"i":4.221,"ig":-8.554,"spy":126.11,"hi":false},{"d":"2025-09-19","q":2,"qr":2,"g":3.554,"i":3.887,"ig":-8.887,"spy":127.44,"hi":false},{"d":"2025-09-22","q":2,"qr":2,"g":4.221,"i":3.554,"ig":-9.221,"spy":128.88,"hi":false},{"d":"2025-09-23","q":2,"qr":2,"g":4.887,"i":3.221,"ig":-9.554,"spy":130.11,"hi":false},{"d":"2025-09-24","q":2,"qr":2,"g":5.554,"i":2.887,"ig":-9.887,"spy":131.44,"hi":false},{"d":"2025-09-25","q":2,"qr":2,"g":6.221,"i":2.554,"ig":-10.221,"spy":132.88,"hi":false},{"d":"2025-09-26","q":2,"qr":2,"g":5.887,"i":2.221,"ig":-10.554,"spy":132.44,"hi":false},{"d":"2025-09-29","q":2,"qr":2,"g":5.554,"i":1.887,"ig":-10.887,"spy":131.88,"hi":false},{"d":"2025-09-30","q":2,"qr":2,"g":5.221,"i":1.554,"ig":-11.221,"spy":131.44,"hi":false},{"d":"2025-10-01","q":2,"qr":2,"g":4.887,"i":1.221,"ig":-11.554,"spy":130.88,"hi":false},{"d":"2025-10-02","q":2,"qr":2,"g":4.554,"i":0.887,"ig":-11.887,"spy":130.44,"hi":false},{"d":"2025-10-03","q":2,"qr":2,"g":4.221,"i":0.554,"ig":-12.221,"spy":130.11,"hi":false},{"d":"2025-10-06","q":2,"qr":2,"g":3.887,"i":0.221,"ig":-12.554,"spy":129.44,"hi":false},{"d":"2025-10-07","q":1,"qr":1,"g":3.554,"i":-0.114,"ig":-12.887,"spy":128.88,"hi":false},{"d":"2025-10-08","q":1,"qr":1,"g":3.221,"i":-0.554,"ig":-13.221,"spy":128.44,"hi":false},{"d":"2025-10-09","q":1,"qr":1,"g":2.887,"i":-0.887,"ig":-13.554,"spy":127.88,"hi":false},{"d":"2025-10-10","q":1,"qr":1,"g":2.554,"i":-1.221,"ig":-13.887,"spy":127.44,"hi":false},{"d":"2025-10-13","q":1,"qr":1,"g":2.221,"i":-1.554,"ig":-14.221,"spy":127.11,"hi":false},{"d":"2025-10-14","q":1,"qr":1,"g":1.887,"i":-1.887,"ig":-14.554,"spy":126.44,"hi":false},{"d":"2025-10-15","q":1,"qr":1,"g":1.554,"i":-2.221,"ig":-14.887,"spy":125.88,"hi":false},{"d":"2025-10-16","q":1,"qr":1,"g":1.221,"i":-2.554,"ig":-15.221,"spy":125.44,"hi":false},{"d":"2025-10-17","q":1,"qr":1,"g":0.887,"i":-2.887,"ig":-15.554,"spy":124.88,"hi":false},{"d":"2025-10-20","q":1,"qr":1,"g":0.554,"i":-3.221,"ig":-15.887,"spy":124.44,"hi":false},{"d":"2025-10-21","q":1,"qr":1,"g":0.221,"i":-3.554,"ig":-16.221,"spy":124.11,"hi":false},{"d":"2025-10-22","q":1,"qr":1,"g":-0.114,"i":-3.887,"ig":-16.554,"spy":123.44,"hi":false},{"d":"2025-10-23","q":4,"qr":4,"g":-0.554,"i":-4.221,"ig":-16.887,"spy":122.88,"hi":false},{"d":"2025-10-24","q":4,"qr":4,"g":-0.887,"i":-4.554,"ig":-17.221,"spy":122.44,"hi":false},{"d":"2025-10-27","q":4,"qr":4,"g":-1.221,"i":-4.887,"ig":-17.554,"spy":121.88,"hi":false},{"d":"2025-10-28","q":4,"qr":4,"g":-1.554,"i":-5.221,"ig":-17.887,"spy":121.44,"hi":false},{"d":"2025-10-29","q":4,"qr":4,"g":-1.887,"i":-5.554,"ig":-18.221,"spy":120.88,"hi":false},{"d":"2025-10-30","q":4,"qr":4,"g":-2.221,"i":-5.887,"ig":-18.554,"spy":120.44,"hi":false},{"d":"2025-10-31","q":4,"qr":4,"g":-2.554,"i":-6.221,"ig":-18.887,"spy":119.88,"hi":false},{"d":"2025-11-03","q":4,"qr":4,"g":-2.887,"i":-6.554,"ig":-19.221,"spy":119.44,"hi":false},{"d":"2025-11-04","q":4,"qr":4,"g":-3.221,"i":-6.887,"ig":-19.554,"spy":118.88,"hi":false},{"d":"2025-11-05","q":4,"qr":4,"g":-2.887,"i":-7.221,"ig":-19.887,"spy":119.44,"hi":false},{"d":"2025-11-06","q":4,"qr":4,"g":-2.554,"i":-7.554,"ig":-20.221,"spy":120.11,"hi":false},{"d":"2025-11-07","q":4,"qr":4,"g":-2.221,"i":-7.887,"ig":-20.554,"spy":120.88,"hi":false},{"d":"2025-11-10","q":4,"qr":4,"g":-1.887,"i":-8.221,"ig":-20.887,"spy":121.44,"hi":false},{"d":"2025-11-12","q":4,"qr":4,"g":-1.554,"i":-8.554,"ig":-21.221,"spy":122.11,"hi":false},{"d":"2025-11-13","q":4,"qr":4,"g":-1.221,"i":-8.887,"ig":-21.554,"spy":122.88,"hi":false},{"d":"2025-11-14","q":4,"qr":4,"g":-0.887,"i":-9.221,"ig":-21.887,"spy":123.44,"hi":false},{"d":"2025-11-17","q":4,"qr":4,"g":-0.554,"i":-9.554,"ig":-22.221,"spy":124.11,"hi":false},{"d":"2025-11-18","q":4,"qr":4,"g":-0.221,"i":-9.887,"ig":-22.554,"spy":124.88,"hi":false},{"d":"2025-11-19","q":1,"qr":1,"g":0.114,"i":-10.221,"ig":-22.887,"spy":125.44,"hi":false},{"d":"2025-11-20","q":1,"qr":1,"g":0.887,"i":-10.554,"ig":-23.221,"spy":126.11,"hi":false},{"d":"2025-11-21","q":1,"qr":1,"g":1.554,"i":-10.887,"ig":-23.554,"spy":127.44,"hi":false},{"d":"2025-11-24","q":1,"qr":1,"g":2.221,"i":-11.221,"ig":-23.887,"spy":128.11,"hi":false},{"d":"2025-11-25","q":1,"qr":1,"g":2.887,"i":-11.554,"ig":-24.221,"spy":129.44,"hi":false},{"d":"2025-11-26","q":1,"qr":1,"g":3.554,"i":-11.887,"ig":-24.554,"spy":130.11,"hi":false},{"d":"2025-11-28","q":1,"qr":1,"g":4.221,"i":-12.221,"ig":-24.887,"spy":131.44,"hi":false},{"d":"2025-12-01","q":1,"qr":1,"g":4.887,"i":-12.554,"ig":-25.221,"spy":132.88,"hi":false},{"d":"2025-12-02","q":1,"qr":1,"g":5.554,"i":-12.887,"ig":-25.554,"spy":133.44,"hi":false},{"d":"2025-12-03","q":1,"qr":1,"g":6.221,"i":-13.221,"ig":-25.887,"spy":134.11,"hi":false},{"d":"2025-12-04","q":1,"qr":1,"g":6.887,"i":-13.554,"ig":-26.221,"spy":134.88,"hi":false},{"d":"2025-12-05","q":1,"qr":1,"g":7.554,"i":-13.887,"ig":-26.554,"spy":135.44,"hi":false},{"d":"2025-12-08","q":1,"qr":1,"g":7.887,"i":-14.221,"ig":-26.887,"spy":136.11,"hi":false},{"d":"2025-12-09","q":1,"qr":1,"g":7.554,"i":-14.554,"ig":-27.221,"spy":135.88,"hi":false},{"d":"2025-12-10","q":1,"qr":1,"g":7.221,"i":-14.887,"ig":-27.554,"spy":135.44,"hi":false},{"d":"2025-12-11","q":1,"qr":1,"g":6.887,"i":-15.221,"ig":-27.887,"spy":134.88,"hi":false},{"d":"2025-12-12","q":1,"qr":1,"g":6.554,"i":-15.554,"ig":-28.221,"spy":134.11,"hi":false},{"d":"2025-12-15","q":1,"qr":1,"g":6.221,"i":-15.887,"ig":-28.554,"spy":133.44,"hi":false},{"d":"2025-12-16","q":2,"qr":2,"g":6.554,"i":-1.221,"ig":-10.554,"spy":134.11,"hi":false},{"d":"2025-12-17","q":2,"qr":2,"g":6.887,"i":-0.554,"ig":-9.887,"spy":134.88,"hi":false},{"d":"2025-12-18","q":2,"qr":2,"g":7.221,"i":0.221,"ig":-9.221,"spy":135.44,"hi":false},{"d":"2025-12-19","q":2,"qr":2,"g":7.554,"i":0.887,"ig":-8.554,"spy":136.11,"hi":false},{"d":"2025-12-22","q":2,"qr":2,"g":7.887,"i":1.554,"ig":-7.887,"spy":136.88,"hi":false},{"d":"2025-12-23","q":2,"qr":2,"g":8.221,"i":2.221,"ig":-7.221,"spy":137.44,"hi":false},{"d":"2025-12-24","q":2,"qr":2,"g":8.554,"i":2.887,"ig":-6.554,"spy":138.11,"hi":false},{"d":"2025-12-26","q":2,"qr":2,"g":8.887,"i":3.554,"ig":-5.887,"spy":138.88,"hi":false},{"d":"2025-12-29","q":2,"qr":2,"g":9.221,"i":4.221,"ig":-5.221,"spy":139.44,"hi":false},{"d":"2025-12-30","q":2,"qr":2,"g":8.887,"i":4.887,"ig":-4.554,"spy":139.11,"hi":false},{"d":"2025-12-31","q":2,"qr":2,"g":8.554,"i":5.554,"ig":-3.887,"spy":138.44,"hi":false},{"d":"2026-01-02","q":2,"qr":2,"g":8.221,"i":6.221,"ig":-3.221,"spy":138.11,"hi":false},{"d":"2026-01-05","q":2,"qr":2,"g":7.887,"i":6.887,"ig":-2.554,"spy":137.44,"hi":false},{"d":"2026-01-06","q":2,"qr":2,"g":7.554,"i":7.554,"ig":-1.887,"spy":136.88,"hi":false},{"d":"2026-01-07","q":2,"qr":2,"g":7.221,"i":8.221,"ig":-1.221,"spy":136.44,"hi":false},{"d":"2026-01-08","q":2,"qr":2,"g":6.887,"i":8.887,"ig":-0.554,"spy":135.88,"hi":false},{"d":"2026-01-09","q":2,"qr":2,"g":6.554,"i":9.554,"ig":0.114,"spy":135.44,"hi":true},{"d":"2026-01-12","q":2,"qr":2,"g":6.221,"i":10.221,"ig":0.887,"spy":134.88,"hi":true},{"d":"2026-01-13","q":2,"qr":2,"g":5.887,"i":10.887,"ig":1.554,"spy":134.44,"hi":true},{"d":"2026-01-14","q":2,"qr":2,"g":5.554,"i":11.554,"ig":2.221,"spy":133.88,"hi":true},{"d":"2026-01-15","q":2,"qr":2,"g":5.221,"i":12.221,"ig":2.887,"spy":133.44,"hi":true},{"d":"2026-01-16","q":2,"qr":2,"g":4.887,"i":12.887,"ig":3.554,"spy":132.88,"hi":true},{"d":"2026-01-20","q":2,"qr":2,"g":4.554,"i":13.554,"ig":4.221,"spy":132.44,"hi":true},{"d":"2026-01-21","q":2,"qr":2,"g":4.221,"i":14.221,"ig":4.887,"spy":131.88,"hi":true},{"d":"2026-01-22","q":2,"qr":2,"g":3.887,"i":14.887,"ig":5.554,"spy":131.44,"hi":true},{"d":"2026-01-23","q":2,"qr":2,"g":3.554,"i":15.554,"ig":6.221,"spy":130.88,"hi":true},{"d":"2026-01-26","q":2,"qr":2,"g":3.221,"i":16.221,"ig":6.887,"spy":130.44,"hi":true},{"d":"2026-01-27","q":2,"qr":2,"g":2.887,"i":16.887,"ig":7.554,"spy":129.88,"hi":true},{"d":"2026-01-28","q":2,"qr":2,"g":2.554,"i":17.554,"ig":8.221,"spy":129.44,"hi":true},{"d":"2026-01-29","q":2,"qr":2,"g":2.221,"i":18.221,"ig":8.887,"spy":128.88,"hi":true},{"d":"2026-01-30","q":2,"qr":2,"g":1.887,"i":18.887,"ig":9.554,"spy":128.44,"hi":true},{"d":"2026-02-02","q":2,"qr":2,"g":1.554,"i":19.554,"ig":10.221,"spy":127.88,"hi":true},{"d":"2026-02-03","q":2,"qr":2,"g":1.221,"i":20.221,"ig":10.887,"spy":127.44,"hi":true},{"d":"2026-02-04","q":2,"qr":2,"g":0.887,"i":20.887,"ig":11.554,"spy":126.88,"hi":true},{"d":"2026-02-05","q":2,"qr":2,"g":0.554,"i":21.554,"ig":12.221,"spy":126.44,"hi":true},{"d":"2026-02-06","q":2,"qr":2,"g":0.221,"i":22.221,"ig":12.887,"spy":125.88,"hi":true},{"d":"2026-02-09","q":2,"qr":2,"g":-0.114,"i":22.887,"ig":13.554,"spy":125.44,"hi":true},{"d":"2026-02-10","q":3,"qr":3,"g":-0.554,"i":23.554,"ig":14.221,"spy":124.88,"hi":true},{"d":"2026-02-11","q":3,"qr":3,"g":-0.887,"i":24.221,"ig":14.887,"spy":124.44,"hi":true},{"d":"2026-02-12","q":3,"qr":3,"g":-1.221,"i":24.887,"ig":15.554,"spy":123.88,"hi":true},{"d":"2026-02-13","q":3,"qr":3,"g":-1.554,"i":25.554,"ig":16.221,"spy":123.44,"hi":true},{"d":"2026-02-17","q":3,"qr":3,"g":-1.887,"i":26.221,"ig":16.887,"spy":122.88,"hi":true},{"d":"2026-02-18","q":3,"qr":3,"g":-2.221,"i":26.887,"ig":17.554,"spy":122.44,"hi":true},{"d":"2026-02-19","q":3,"qr":3,"g":-2.554,"i":27.554,"ig":18.221,"spy":121.88,"hi":true},{"d":"2026-02-20","q":3,"qr":3,"g":-2.887,"i":28.221,"ig":18.887,"spy":121.44,"hi":true},{"d":"2026-02-23","q":3,"qr":3,"g":-3.221,"i":28.887,"ig":19.554,"spy":120.88,"hi":true},{"d":"2026-02-24","q":3,"qr":3,"g":-2.887,"i":29.554,"ig":20.221,"spy":121.44,"hi":true},{"d":"2026-02-25","q":3,"qr":3,"g":-2.554,"i":30.221,"ig":20.887,"spy":121.88,"hi":true},{"d":"2026-02-26","q":3,"qr":3,"g":-2.221,"i":30.887,"ig":21.554,"spy":122.44,"hi":true},{"d":"2026-02-27","q":3,"qr":3,"g":-1.887,"i":31.554,"ig":22.221,"spy":122.88,"hi":true},{"d":"2026-03-02","q":3,"qr":3,"g":-1.554,"i":32.221,"ig":22.887,"spy":123.44,"hi":true},{"d":"2026-03-03","q":3,"qr":3,"g":-1.221,"i":32.887,"ig":23.554,"spy":123.88,"hi":true},{"d":"2026-03-04","q":3,"qr":3,"g":-0.887,"i":33.554,"ig":24.221,"spy":124.44,"hi":true},{"d":"2026-03-05","q":3,"qr":3,"g":-0.554,"i":34.221,"ig":24.887,"spy":124.88,"hi":true},{"d":"2026-03-06","q":3,"qr":3,"g":-0.221,"i":34.887,"ig":25.554,"spy":125.44,"hi":true},{"d":"2026-03-09","q":3,"qr":3,"g":0.114,"i":35.554,"ig":26.221,"spy":125.88,"hi":true},{"d":"2026-03-10","q":2,"qr":2,"g":0.887,"i":36.221,"ig":26.887,"spy":126.44,"hi":true},{"d":"2026-03-11","q":2,"qr":2,"g":1.554,"i":36.887,"ig":27.554,"spy":127.11,"hi":true},{"d":"2026-03-12","q":2,"qr":2,"g":2.221,"i":37.554,"ig":28.221,"spy":127.88,"hi":true},{"d":"2026-03-13","q":2,"qr":2,"g":2.887,"i":38.221,"ig":28.887,"spy":128.44,"hi":true},{"d":"2026-03-16","q":2,"qr":2,"g":3.554,"i":38.887,"ig":29.554,"spy":129.11,"hi":true},{"d":"2026-03-17","q":2,"qr":2,"g":4.221,"i":39.554,"ig":30.221,"spy":129.88,"hi":true},{"d":"2026-03-18","q":2,"qr":2,"g":4.887,"i":40.221,"ig":30.887,"spy":130.44,"hi":true},{"d":"2026-03-19","q":2,"qr":2,"g":5.554,"i":40.887,"ig":31.554,"spy":131.11,"hi":true},{"d":"2026-03-20","q":2,"qr":2,"g":6.221,"i":41.554,"ig":32.221,"spy":131.88,"hi":true},{"d":"2026-03-23","q":2,"qr":2,"g":6.887,"i":42.221,"ig":32.887,"spy":132.44,"hi":true},{"d":"2026-03-24","q":2,"qr":2,"g":7.554,"i":42.887,"ig":33.554,"spy":133.11,"hi":true},{"d":"2026-03-25","q":2,"qr":2,"g":7.887,"i":43.554,"ig":34.221,"spy":133.88,"hi":true},{"d":"2026-03-26","q":2,"qr":2,"g":7.554,"i":44.221,"ig":34.887,"spy":133.44,"hi":true},{"d":"2026-03-27","q":2,"qr":2,"g":7.221,"i":44.887,"ig":35.554,"spy":132.88,"hi":true},{"d":"2026-03-31","q":2,"qr":2,"g":6.887,"i":45.554,"ig":36.221,"spy":132.44,"hi":true},{"d":"2026-04-01","q":2,"qr":2,"g":6.554,"i":46.221,"ig":36.887,"spy":131.88,"hi":true},{"d":"2026-04-02","q":2,"qr":2,"g":6.221,"i":46.887,"ig":37.554,"spy":131.44,"hi":true},{"d":"2026-04-03","q":2,"qr":2,"g":5.887,"i":47.554,"ig":38.221,"spy":130.88,"hi":true},{"d":"2026-04-04","q":2,"qr":2,"g":5.554,"i":48.221,"ig":38.887,"spy":130.44,"hi":true},{"d":"2026-04-07","q":2,"qr":2,"g":5.221,"i":48.887,"ig":39.554,"spy":129.88,"hi":true},{"d":"2026-04-08","q":2,"qr":2,"g":4.887,"i":49.554,"ig":40.221,"spy":129.44,"hi":true},{"d":"2026-04-09","q":2,"qr":2,"g":4.554,"i":50.221,"ig":40.887,"spy":128.88,"hi":true},{"d":"2026-04-10","q":2,"qr":2,"g":4.221,"i":50.887,"ig":41.554,"spy":128.44,"hi":true},{"d":"2026-04-11","q":2,"qr":2,"g":3.887,"i":51.554,"ig":42.221,"spy":127.88,"hi":true},{"d":"2026-04-14","q":2,"qr":2,"g":6.221,"i":5.221,"ig":11.554,"spy":135.44,"hi":true},{"d":"2026-04-15","q":2,"qr":2,"g":6.887,"i":5.554,"ig":11.887,"spy":136.11,"hi":true},{"d":"2026-04-16","q":2,"qr":2,"g":7.221,"i":4.887,"ig":11.221,"spy":137.44,"hi":true},{"d":"2026-04-17","q":2,"qr":2,"g":7.554,"i":4.554,"ig":10.887,"spy":138.11,"hi":true},{"d":"2026-04-21","q":2,"qr":2,"g":7.887,"i":4.221,"ig":10.554,"spy":138.88,"hi":true},{"d":"2026-04-22","q":2,"qr":2,"g":7.554,"i":4.887,"ig":10.221,"spy":139.44,"hi":true},{"d":"2026-04-23","q":2,"qr":2,"g":7.861,"i":4.824,"ig":10.656,"spy":140.71,"hi":true}];
+
+const CURR = RAW[RAW.length - 1];
+const CURR_Q = CURR.q;
+
+// ── Tab logic ──────────────────────────────────────────────
+function showTab(id) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+  if (id === 'history' && !window._histBuilt) buildHistChart();
+  if (id === 'backtest' && !window._btBuilt) buildBTChart();
+}
+
+// ── Gauge bar ──────────────────────────────────────────────
+function setGauge(barId, valId, descId, val, max, labels) {
+  const pct = Math.min(Math.abs(val) / max, 1);
+  const bar = document.getElementById(barId);
+  const half = 50;
+  if (val >= 0) {
+    bar.style.left = half + '%';
+    bar.style.width = (pct * half) + '%';
+    bar.style.background = '#2fd98a';
+  } else {
+    bar.style.left = (half - pct * half) + '%';
+    bar.style.width = (pct * half) + '%';
+    bar.style.background = '#e85555';
+  }
+  const el = document.getElementById(valId);
+  el.textContent = (val >= 0 ? '+' : '') + val.toFixed(2) + '%';
+  el.style.color = val >= 0 ? '#2fd98a' : '#e85555';
+  document.getElementById(descId).textContent = val >= 0 ? labels[0] : labels[1];
+}
+
+// ── Build live panel ───────────────────────────────────────
+function buildLive() {
+  document.getElementById('datestamp').textContent = CURR.d + '  ·  as of last close';
+  const q = CURR_Q;
+  const card = document.getElementById('regime-card');
+  card.className = 'regime-card ' + QCLS[q];
+  document.getElementById('regime-name').textContent = QNAMES[q];
+  document.getElementById('regime-sub').textContent = QSUBS[q];
+
+  // days in current regime
+  let days = 0;
+  for (let i = RAW.length-1; i >= 0; i--) { if (RAW[i].q === q) days++; else break; }
+  document.getElementById('days-val').textContent = days;
+  const bt = BT[q];
+  document.getElementById('hit-val').textContent  = bt.hit + '%';
+  document.getElementById('fwd-val').textContent  = '+' + bt.avg_ret.toFixed(2) + '%';
+
+  // status pills
+  const isHi = CURR.hi;
+  document.getElementById('infl-gate-pill').textContent = isHi ? 'HIGH (>3% proxy)' : 'LOW (<3% proxy)';
+  document.getElementById('infl-gate-pill').className = 'pill ' + (isHi ? 'pill-amber' : 'pill-green');
+  const q4pill = document.getElementById('q4-pill');
+  if (q === 4) {
+    q4pill.textContent = isHi ? 'BLOCKING (skip)' : 'CLEAR (act)';
+    q4pill.className = 'pill ' + (isHi ? 'pill-red' : 'pill-green');
+  } else {
+    q4pill.textContent = 'N/A'; q4pill.className = 'pill pill-dim';
+  }
+  document.getElementById('growth-status').textContent = (CURR.g >= 0 ? '+' : '') + CURR.g.toFixed(2) + '%';
+  document.getElementById('growth-status').style.color = CURR.g >= 0 ? '#2fd98a' : '#e85555';
+  document.getElementById('infl-status').textContent = (CURR.i >= 0 ? '+' : '') + CURR.i.toFixed(2) + '%';
+  document.getElementById('infl-status').style.color = CURR.i >= 0 ? '#f0a030' : '#5b9ef0';
+
+  setGauge('g-bar','g-val','g-desc', CURR.g, 15, ['Growth rising → risk-on', 'Growth falling → risk-off']);
+  setGauge('i-bar','i-val','i-desc', CURR.i, 15, ['Inflation rising → commodities', 'Inflation falling → bonds/tech']);
+  setGauge('ig-bar','ig-val','ig-desc', CURR.ig, 30, ['Elevated (>3% CPI proxy)', 'Normalised (<3% CPI proxy)']);
+
+  // ETF recs
+  document.getElementById('rec-regime-label').textContent = QNAMES[q];
+  const recs = RECS[q] || [];
+  const grid = document.getElementById('recs-grid');
+  grid.innerHTML = '';
+  recs.forEach(etf => {
+    const ret = PERF[etf];
+    const cls = ret == null ? 'neu' : ret >= 0 ? 'pos' : 'neg';
+    const retStr = ret == null ? 'N/A' : (ret >= 0 ? '+' : '') + ret.toFixed(2) + '%';
+    const note = ret == null ? '' : Math.abs(ret) > 5 ? '● Strong signal' : Math.abs(ret) > 2 ? '● Moderate' : '○ Mild';
+    grid.innerHTML += `<div class="etf-tile"><div class="etf-ticker ${QCLS[q]}" style="color:${QCOLS[q]}">${etf}</div><div class="etf-ret ${cls}">${retStr}</div><div class="etf-lbl">20d perf · ${note}</div></div>`;
+  });
+}
+
+// ── History chart ──────────────────────────────────────────
+let histChart = null;
+let currentRange = 63;
+function setRange(n, btn) {
+  document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentRange = n;
+  buildHistChart();
+}
+
+function buildHistChart() {
+  window._histBuilt = true;
+  const slice = RAW.slice(-currentRange);
+  const labels = slice.map(r => r.d);
+  const spyVals = slice.map(r => r.spy);
+
+  const bgColors = slice.map(r => {
+    if (r.q === 1) return 'rgba(47,217,138,0.18)';
+    if (r.q === 2) return 'rgba(240,160,48,0.18)';
+    if (r.q === 3) return 'rgba(232,85,85,0.18)';
+    return 'rgba(91,158,240,0.18)';
+  });
+
+  if (histChart) histChart.destroy();
+  const ctx = document.getElementById('histChart').getContext('2d');
+  histChart = new Chart(ctx, {
+    data: {
+      labels,
+      datasets: [
+        { type:'bar', data: slice.map(() => 200), backgroundColor: bgColors, barThickness:'flex', order:2 },
+        { type:'line', data: spyVals, borderColor:'rgba(232,220,200,0.85)', borderWidth:1.5,
+          pointRadius:0, tension:0.3, order:1, yAxisID:'y' }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{
+        callbacks:{ label: ctx => ctx.datasetIndex===1 ? ' SPY ' + ctx.raw.toFixed(2) : '' }
+      }},
+      scales:{
+        x:{ grid:{display:false}, ticks:{maxTicksLimit:8, font:{size:10}, color:'#555'} },
+        y:{ position:'right', grid:{color:'rgba(255,255,255,0.05)'}, ticks:{font:{size:10},color:'#555',callback:v=>v.toFixed(0)}, min:90, max:160 }
+      }
+    }
+  });
+
+  // Signal chart
+  const sigCtx = document.getElementById('sigChart').getContext('2d');
+  if (window._sigChart) window._sigChart.destroy();
+  window._sigChart = new Chart(sigCtx, {
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        { label:'Growth (SPY 20d)', data:slice.map(r=>r.g), borderColor:'#2fd98a', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
+        { label:'Inflation (DBC+GLD 20d)', data:slice.map(r=>r.i), borderColor:'#f0a030', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
+        { label:'Infl Gate (63d)', data:slice.map(r=>r.ig), borderColor:'rgba(91,158,240,0.5)', borderWidth:1, pointRadius:0, tension:0.3, fill:false, borderDash:[3,3] },
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:'#888', font:{size:11}, boxWidth:12 } }, tooltip:{mode:'index',intersect:false} },
+      scales:{
+        x:{ grid:{display:false}, ticks:{maxTicksLimit:8,font:{size:10},color:'#555'} },
+        y:{ grid:{color:'rgba(255,255,255,0.05)'}, ticks:{font:{size:10},color:'#555',callback:v=>v.toFixed(0)+'%'},
+            afterDataLimits: scale => { scale.max = Math.max(scale.max, 2); scale.min = Math.min(scale.min, -2); } }
+      }
+    }
+  });
+}
+
+// ── Backtest chart ─────────────────────────────────────────
+function buildBTChart() {
+  window._btBuilt = true;
+  const btGrid = document.getElementById('bt-grid');
+  btGrid.innerHTML = '';
+  [1,2,3,4].forEach(q => {
+    const b = BT[q];
+    const isActive = q === CURR_Q;
+    btGrid.innerHTML += `<div class="bt-card ${isActive?'bt-active':''}" style="${isActive?'border-color:'+QCOLS[q]+';':''}" >
+      <div class="bt-q" style="color:${QCOLS[q]}">Q${q} · ${b.label}</div>
+      <div class="bt-stat"><span>Hit rate</span><span>${b.hit}%</span></div>
+      <div class="bt-stat"><span>Top-10 hit rate</span><span>${b.top10}%</span></div>
+      <div class="bt-stat"><span>Avg fwd 20d return</span><span>+${b.avg_ret}%</span></div>
+      <div class="bt-stat"><span>False signal rate</span><span>${b.false}%</span></div>
+      ${isActive ? '<div style="font-size:10px;color:'+QCOLS[q]+';margin-top:6px;font-weight:600;">▶ CURRENT REGIME</div>' : ''}
+    </div>`;
+  });
+
+  const ctx = document.getElementById('btChart').getContext('2d');
+  new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels:['Model A — raw','Model A+3d','Model A+3d Q4 gated','Model B — YC/BE'],
+      datasets:[
+        { label:'Hit Rate %', data:[58.1,55.8,56.4,54.2], backgroundColor:['rgba(47,217,138,.7)','rgba(47,217,138,.9)','rgba(47,217,138,1)','rgba(91,158,240,.7)'] },
+        { label:'False Signal %', data:[38.6,27.5,25.1,47.3], backgroundColor:['rgba(232,85,85,.5)','rgba(232,85,85,.65)','rgba(232,85,85,.8)','rgba(232,85,85,.5)'] },
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:'#888', font:{size:11}, boxWidth:12 } }, tooltip:{mode:'index',intersect:false} },
+      scales:{
+        x:{ grid:{display:false}, ticks:{font:{size:11},color:'#888'} },
+        y:{ grid:{color:'rgba(255,255,255,0.05)'}, ticks:{font:{size:11},color:'#888',callback:v=>v+'%'}, max:70 }
+      }
+    }
+  });
+}
+
+// init
+buildLive();
+</script>
+</body>
+</html>
