@@ -385,7 +385,7 @@ let isLive   = false;
   // BEFORE — fails due to CORS: const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=${days}d`; const r = await fetch(url, {headers:{'Accept':'application/json'}});
 
   // ── Yahoo Finance fetch ───────────────────────────────────
-  async function fetchYahoo(ticker, days=100) {
+  async function fetchYahoo(ticker, days=252) {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=${days}d`;
   const r = await fetch(url, {headers:{'Accept':'application/json'}});
   if (!r.ok) throw new Error(r.status);
