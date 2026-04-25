@@ -68,10 +68,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--head);min-height:1
 .s-lbl{font-size:12px;color:var(--muted);}
 .s-val{font-family:var(--mono);font-size:13px;color:var(--text);}
 .pill{font-size:10px;padding:3px 11px;border-radius:20px;font-weight:600;font-family:var(--mono);}
-.pill-g{background:rgba(47,217,138,.4);color:var(--q1);}
-.pill-a{background:rgba(240,160,48,.4);color:var(--q2);}
-.pill-r{background:rgba(232,85,85,.4);color:var(--q3);}
-.pill-b{background:rgba(91,158,240,.4);color:var(--q4);}
+.pill-g{background:rgba(47,217,138,.15);color:var(--q1);}
+.pill-a{background:rgba(240,160,48,.18);color:var(--q2);}
+.pill-r{background:rgba(232,85,85,.15);color:var(--q3);}
+.pill-b{background:rgba(91,158,240,.15);color:var(--q4);}
 .pill-d{background:rgba(255,255,255,.07);color:var(--dim);}
 
 /* gauges */
@@ -100,8 +100,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--head);min-height:1
 .track-row.today{border-color:var(--border2);background:var(--surface2);}
 .track-head{display:grid;grid-template-columns:90px 130px 70px 80px 80px 80px 1fr;gap:6px;padding:4px 14px 8px;font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);}
 .qbadge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;}
-.qb1{background:rgba(47,217,138,.25);color:var(--q1);}.qb2{background:rgba(240,160,48,.25);color:var(--q2);}
-.qb3{background:rgba(232,85,85,.25);color:var(--q3);}.qb4{background:rgba(91,158,240,.25);color:var(--q4);}
+.qb1{background:rgba(47,217,138,.15);color:var(--q1);}.qb2{background:rgba(240,160,48,.15);color:var(--q2);}
+.qb3{background:rgba(232,85,85,.15);color:var(--q3);}.qb4{background:rgba(91,158,240,.15);color:var(--q4);}
 .mono{font-family:var(--mono);}
 
 /* chart */
@@ -383,8 +383,7 @@ let liveData = null; // populated from Yahoo Finance fetch
 let isLive   = false;
 
 // ── Yahoo Finance fetch ───────────────────────────────────
-  async function fetchYahoo(ticker, days=252) 
-  {
+async function fetchYahoo(ticker, days=252) {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=${days}d`;
   const r = await fetch(url, {headers:{'Accept':'application/json'}});
   if (!r.ok) throw new Error(r.status);
@@ -394,10 +393,8 @@ let isLive   = false;
   const cl  = res.indicators.quote[0].close;
   return ts.map((t,i) => ({d: new Date(t*1000).toISOString().slice(0,10), c: cl[i]}))
             .filter(x => x.c !== null);
-  const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=${days}d`; 
-  const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(yahooUrl)}`; 
-  const r = await fetch(proxy);
-  }
+}
+
 function calcSignals(prices) {
   // prices = [{d,c}] sorted ascending
   const n = prices.length;
