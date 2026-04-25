@@ -572,7 +572,7 @@ function buildHistChart(){
   histChart=new Chart(document.getElementById('histChart').getContext('2d'),{
     data:{labels,datasets:[
       {type:'bar',data:slice.map(()=>200),backgroundColor:bgC,barThickness:'flex',order:2},
-      {type:'line',data:slice.map(r=>r.spy),borderColor:'rgba(238,235,229,.8)',borderWidth:1.5,pointRadius:0,tension:0.3,order:1,yAxisID:'y'}
+      { type:'line', data: slice.map(r => r.realClose || r.spy),borderColor:'rgba(238,235,229,.8)',borderWidth:1.5,pointRadius:0,tension:0.3,order:1,yAxisID:'y'}
     ]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.datasetIndex===1?' SPY '+ctx.raw.toFixed(1):''}}},
@@ -651,6 +651,12 @@ updateCountdown(); setInterval(updateCountdown,60000);
 function checkAutoRefresh(){
   const ct=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Chicago'}));
   if(ct.getHours()===17&&ct.getMinutes()<5&&!isLive) fetchLiveData(false);
+}
+  py.forEach(row => {
+  const match = CHART.find(c => c.d === row.d);
+  if (match) match.realClose = row.c;
+});
+if (window._hb) buildHistChart(); // refresh chart if already rendered
 }
 setInterval(checkAutoRefresh,60000);
 
