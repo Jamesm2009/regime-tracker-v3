@@ -1,4 +1,4 @@
-<b>Parameters and filters at a glance:</b?
+<b>Parameters and filters at a glance:</b>
 The dashboard runs three sequential checks every day. First, the growth signal (SPY 20-day return) and inflation signal (DBC + GLD 20-day average) determine the raw quadrant. Second, the 3-day confirmation filter blocks the signal from firing unless the quadrant holds for three consecutive days — filtering out ~42% of noise. Third, for Q4 only, the 63-day commodity momentum gate checks whether inflation has genuinely normalised before allowing defensive positioning; if it hasn't, the tracker holds the previous regime rather than rotating.
 
 <b>How daily updates would work:</b>
