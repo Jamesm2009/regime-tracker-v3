@@ -230,10 +230,10 @@ hr.div{border:none;border-top:1px solid var(--border);margin:14px 0;}
       </div>
       <div class="chart-wrap" style="height:210px;"><canvas id="histChart"></canvas></div>
       <div class="legend">
-        <div class="leg-item"><div class="leg-dot" style="background:rgba(47,217,138,.45);"></div>Q1 Goldilocks</div>
-        <div class="leg-item"><div class="leg-dot" style="background:rgba(240,160,48,.45);"></div>Q2 Overheating</div>
-        <div class="leg-item"><div class="leg-dot" style="background:rgba(232,85,85,.45);"></div>Q3 Stagflation</div>
-        <div class="leg-item"><div class="leg-dot" style="background:rgba(91,158,240,.45);"></div>Q4 Deflation</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(47,217,138,.55);"></div>Q1 Goldilocks</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(240,160,48,.55);"></div>Q2 Overheating</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(220,59,82,.55);"></div>Q3 Stagflation</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(73,170,240,.55);"></div>Q4 Deflation</div>
       </div>
     </div>
     <div class="chart-card">
@@ -740,7 +740,7 @@ function updateCountdown() {
   const now = new Date();
   const ct  = new Date(now.toLocaleString('en-US', {timeZone:'America/Chicago'}));
   const next = new Date(ct);
-  next.setHours(17, 0, 0, 0);
+  next.setHours(18, 0, 0, 0);
   if (ct >= next) next.setDate(next.getDate() + 1);
   while (next.getDay() === 0 || next.getDay() === 6) next.setDate(next.getDate() + 1);
   const diff = next - ct;
@@ -751,7 +751,7 @@ function updateCountdown() {
 updateCountdown();
 setInterval(updateCountdown, 60000);
 
-// Auto-refresh at 5pm CT
+// Auto-refresh at 6pm CT
 setInterval(() => {
   const ct = new Date(new Date().toLocaleString('en-US', {timeZone:'America/Chicago'}));
   if (ct.getHours() === 17 && ct.getMinutes() < 3) doFetch(false);
