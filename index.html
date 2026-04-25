@@ -382,8 +382,10 @@ const CHART=[{"d":"2025-04-23","q":3,"g":-6.958,"i":2.047,"ig":6.964,"spy":100.0
 let liveData = null; // populated from Yahoo Finance fetch
 let isLive   = false;
 
-// ── Yahoo Finance fetch ───────────────────────────────────
-async function fetchYahoo(ticker, days=100) {
+  // BEFORE — fails due to CORS: const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=${days}d`; const r = await fetch(url, {headers:{'Accept':'application/json'}});
+
+  // ── Yahoo Finance fetch ───────────────────────────────────
+  async function fetchYahoo(ticker, days=100) {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=${days}d`;
   const r = await fetch(url, {headers:{'Accept':'application/json'}});
   if (!r.ok) throw new Error(r.status);
@@ -393,8 +395,10 @@ async function fetchYahoo(ticker, days=100) {
   const cl  = res.indicators.quote[0].close;
   return ts.map((t,i) => ({d: new Date(t*1000).toISOString().slice(0,10), c: cl[i]}))
             .filter(x => x.c !== null);
-}
 
+    // AFTER — works in any browser via free proxy (no key needed): const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=${days}d`; const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(yahooUrl)}`; const r = await fetch(proxy);
+
+  }
 function calcSignals(prices) {
   // prices = [{d,c}] sorted ascending
   const n = prices.length;
