@@ -379,12 +379,21 @@ async function doFetch(manual=false) {
     const latestRow = historyRows[historyRows.length - 1];
     const fetchQ = latestRow ? latestRow.q : 2;
     const etfsToFetch = RECS[fetchQ] || [];
-    // Fetch all ETFs in the current quadrant basket (21 days needed for 20d return)
-    const etfResults = await Promise.allSettled(
-      etfsToFetch.map(t => fetchYahoo(t, 30))
-    );
+    // Seed etfPerf with already-fetched tickers (free — no extra request)
     etfPerf = {};
-    etfsToFetch.forEach((ticker, idx) => {
+    const alreadyFetched = { 'SPY': spy, 'DBC': dbc, 'GLD': gld };
+    Object.entries(alreadyFetched).forEach(([ticker, prices]) => {
+      if (prices.length >= 21) {
+        const n = prices.length;
+        etfPerf[ticker] = (prices[n-1].c - prices[n-21].c) / prices[n-21].c * 100;
+      }
+    });
+    // Fetch remaining ETFs in the current quadrant basket
+    const etfsToActuallyFetch = etfsToFetch.filter(t => !(t in etfPerf));
+    const etfResults = await Promise.allSettled(
+      etfsToActuallyFetch.map(t => fetchYahoo(t, 45))
+    );
+    etfsToActuallyFetch.forEach((ticker, idx) => {
       const r = etfResults[idx];
       if (r.status === 'fulfilled' && r.value.length >= 21) {
         const prices = r.value;
