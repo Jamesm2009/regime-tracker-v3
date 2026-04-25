@@ -567,7 +567,7 @@ function buildHistChart(){
   window._hb=true;
   const slice=CHART.slice(-currentRange);
   const labels=slice.map(r=>r.d);
-  const bgC=slice.map(r=>r.q===1?'rgba(47,217,138,.22)':r.q===2?'rgba(240,160,48,.22)':r.q===3?'rgba(232,85,85,.22)':'rgba(91,158,240,.22)');
+  const bgC=slice.map(r=>r.q===1?'rgba(47,217,138,.45)':r.q===2?'rgba(240,160,48,.45)':r.q===3?'rgba(232,85,85,.45)':'rgba(91,158,240,.45)');
   if(histChart)histChart.destroy();
   histChart=new Chart(document.getElementById('histChart').getContext('2d'),{
     data:{labels,datasets:[
