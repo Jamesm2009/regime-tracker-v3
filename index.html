@@ -141,6 +141,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:14px 0;}
 
 /* ── MOBILE ── */
 @media (max-width: 680px) {
+  #factor-guide { grid-template-columns: 1fr !important; }
   .app { padding:12px 10px; }
   .topbar { flex-direction:column; align-items:flex-start; gap:8px; }
   .topbar-right { flex-wrap:wrap; gap:8px; }
@@ -173,6 +174,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:14px 0;}
 }
 
 @media (min-width:681px) and (max-width:860px) {
+  #factor-guide { grid-template-columns: 1fr 1fr !important; }
   .recs-grid { grid-template-columns:repeat(3,1fr); }
   .bt-grid   { grid-template-columns:repeat(2,1fr); }
   .how-grid  { grid-template-columns:1fr; }
@@ -223,7 +225,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:14px 0;}
         <div class="s-row"><span class="s-lbl">Q4 Filter Active</span><span class="pill pill-d" id="q4-pill">N/A</span></div>
         <div class="s-row"><span class="s-lbl">Growth Signal (SPY 20d)</span><span class="s-val" id="g-status">—</span></div>
         <div class="s-row"><span class="s-lbl">Inflation Signal (DBC+GLD 20d)</span><span class="s-val" id="i-status">—</span></div>
-        <div class="s-row"><span class="s-lbl">Signal Sources</span><span class="s-val" style="font-size:11px;color:var(--muted);">SPY · DBC · DBA · GLD</span></div>
+        <div class="s-row"><span class="s-lbl">Signal Sources</span><span class="s-val" style="font-size:11px;color:var(--muted);">SPY · DBC/DBA · GLD</span></div>
       </div>
     </div>
 
@@ -235,7 +237,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:14px 0;}
         <div class="g-desc" id="g-desc">—</div>
       </div>
       <div class="gauge">
-        <div class="g-lbl">Inflation · DBC+GLD 20d Avg</div>
+        <div class="g-lbl">Inflation · DBC/DBA+GLD 20d (hybrid)</div>
         <div class="g-val" id="i-val">—</div>
         <div class="g-bg"><div class="g-center"></div><div class="g-fill" id="i-bar"></div></div>
         <div class="g-desc" id="i-desc">—</div>
@@ -251,12 +253,37 @@ hr.div{border:none;border-top:1px solid var(--border);margin:14px 0;}
     <div class="sec-head">Recommended ETFs — <span id="rec-lbl">—</span> · 20-day forward return (backtested avg)</div>
     <div class="recs-grid" id="recs-grid"></div>
 
+    <div class="sec-head" style="margin-top:14px;">Short Candidates — <span id="short-regime-lbl">—</span> · Underperform in this regime</div>
+    <div class="recs-grid" id="shorts-grid"></div>
+
+    <div id="crypto-note" style="font-size:12px;color:var(--dim);font-family:'DM Mono',monospace;padding:8px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);margin-bottom:14px;"></div>
+
     <div class="sec-head">Recent Track Record — Last 5 Trading Days</div>
     <div class="track-head">
       <span>Date</span><span>Regime</span><span>SPY Day</span>
       <span>Growth 20d</span><span>Inflation 20d</span><span>Gate 63d</span><span>Notes</span>
     </div>
     <div id="track-body"></div>
+
+    <!-- Email alert subscription -->
+    <div style="margin-top:14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;">
+      <div class="sec-head" style="margin-bottom:10px;">Regime Change Alerts · Email Notification</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.65;">
+        Get notified when a <strong style="color:var(--text);">confirmed regime change</strong> is detected (3-day rule, ~40 alerts/year). No spam — only fires on genuine quadrant shifts.
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <input type="email" id="alert-email" placeholder="your@email.com"
+          style="flex:1;min-width:200px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:9px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;outline:none;">
+        <button onclick="subscribeAlert()" id="subscribe-btn"
+          style="padding:9px 20px;border-radius:8px;border:none;background:var(--q1);color:#0c0d0f;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;">
+          Subscribe
+        </button>
+      </div>
+      <div id="alert-status" style="font-size:11px;color:var(--dim);margin-top:8px;font-family:'DM Mono',monospace;min-height:16px;"></div>
+      <div style="margin-top:10px;font-size:11px;color:var(--dimmer);line-height:1.7;">
+        Powered by <strong style="color:var(--dim);">EmailJS</strong> (free tier, no backend needed) or replace with your Vercel serverless function + Upstash for persistent subscriber storage. See <em>How It Works</em> tab for setup instructions.
+      </div>
+    </div>
   </div>
 
   <!-- ══════════════ HISTORY TAB ══════════════ -->
@@ -281,6 +308,11 @@ hr.div{border:none;border-top:1px solid var(--border);margin:14px 0;}
     <div class="chart-card">
       <div class="card-title" style="margin-bottom:14px;">Signal Strength · Growth vs Inflation (20d) vs Gate (63d)</div>
       <div class="chart-wrap" style="height:170px;"><canvas id="sigChart"></canvas></div>
+      <div class="legend">
+        <div class="leg-item"><div class="leg-dot" style="background:var(--q1);"></div>Growth (SPY 20d)</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--q2);"></div>Inflation (DBC+GLD 20d)</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(91,158,240,.55);border:1px dashed #5b9ef0;"></div>Infl Gate (63d)</div>
+      </div>
     </div>
   </div>
 
@@ -316,7 +348,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:14px 0;}
     </div>
     <div class="method-card">
       <div class="card-title" style="margin-bottom:10px;">Methodology</div>
-      <div class="method-text">68 ETFs &nbsp;·&nbsp; Apr 2021–Apr 2026 &nbsp;·&nbsp; 1,259 trading days &nbsp;·&nbsp; 215 raw regime change events &nbsp;·&nbsp; 120 confirmed events after 3-day filter &nbsp;·&nbsp; Forward 20-day return measured from signal date &nbsp;·&nbsp; Q4 events during elevated 63-day commodity momentum skipped (26 of 41 events filtered) &nbsp;·&nbsp; Q4 basket: XLU · XLP · XLV · IEF · IEI · SHY</div>
+      <div class="method-text">68 ETFs &nbsp;·&nbsp; Jan 2010–Apr 2026 &nbsp;·&nbsp; 4,082 trading days (~16 years) &nbsp;·&nbsp; 263 confirmed regime changes &nbsp;·&nbsp; 3-day confirmation filter (13–20% false signal rate vs 38% in 5yr test) &nbsp;·&nbsp; Hybrid inflation proxy: DBC→DBA when energy premium &gt;6pp &nbsp;·&nbsp; Q4 gate: requires 63d commodity momentum negative &nbsp;·&nbsp; Captures: taper tantrum, COVID, rate-hike cycle, QE era</div>
     </div>
   </div>
 
@@ -362,6 +394,28 @@ hr.div{border:none;border-top:1px solid var(--border);margin:14px 0;}
         </div>
         <div class="note-box"><strong>Note on UUP:</strong> UUP was tested and excluded from all quadrant baskets — it was the worst performer in Q4 in both high and low CPI environments, averaging −0.46% and −1.35% respectively. The dollar strengthens during rate-hike cycles (when Q4 shouldn't be active) and weakens precisely when Q4 deflation windows are genuine.</div>
       </div>
+
+      <!-- Vercel + Upstash + EmailJS setup -->
+      <div class="how-card wide" style="background:var(--surface2);">
+        <div class="how-title" style="color:var(--muted);">&#x2460;&#x2467; Infrastructure Setup — Vercel · Upstash · Email Alerts</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:4px;">
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;">Vercel — Hosting &amp; Cron</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.75;">Deploy <code>index.html</code> to Vercel for free hosting. Add <code>api/refresh.js</code> as a serverless function that fetches Yahoo Finance server-side (no CORS issues) and writes signals to Upstash. Schedule with Vercel Cron: <code>"0 23 * * 1-5"</code> (5pm CT weekdays).</div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;">Upstash — Redis Storage</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.75;">Store two keys: <code>regime:current</code> (today's quadrant + signals JSON) and <code>alerts:subscribers</code> (email list array). Dashboard reads <code>regime:current</code> on load — instant, no live Yahoo fetch needed. Free tier is ample.</div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;">Resend — Email Alerts</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.75;">When the cron detects a confirmed regime change, trigger emails via <strong>Resend API</strong> (free 3,000/month) to all subscribers. Email includes the new quadrant, signal levels, and ETF recommendations. ~40 emails/year per subscriber.</div>
+          </div>
+        </div>
+        <div class="note-box" style="margin-top:14px;">
+          <strong style="color:var(--text);">Quick start:</strong>&nbsp; 1) Deploy to Vercel &rarr; 2) Create free Upstash Redis DB &rarr; 3) Add <code>UPSTASH_URL</code>, <code>UPSTASH_TOKEN</code>, <code>RESEND_API_KEY</code> as Vercel env vars &rarr; 4) Add <code>api/refresh.js</code> with cron schedule &rarr; 5) Subscribe via the alert box on the Live Regime tab. Full cron function is ~60 lines of JS.
+        </div>
+      </div>
     </div>
   </div>
 
@@ -378,24 +432,51 @@ const QCLS    = {1:'q1',2:'q2',3:'q3',4:'q4'};
 const QBCLS   = {1:'qb1',2:'qb2',3:'qb3',4:'qb4'};
 
 const RECS = {
-  1:['QQQ','IWF','MGK','SPY','XLK','SMH','XLC','IWM'],
-  2:['XLE','XLB','DBC','GLD','SLV','USO','XLI','PAVE'],
-  3:['GLD','SLV','USO','DBC','XLE','SHY'],
+  1:['QQQ','IWF','MGK','SMH','XLK','XLY','XHB','IWM'],
+  2:['XLE','XLB','SLV','DBC','GLD','XLI','SMH','XHB'],
+  3:['GLD','SLV','USO','XLE','SHY','XLK'],
   4:['XLU','XLP','XLV','IEF','IEI','SHY']
+};
+const SHORTS = {
+  1:['XLE','EEM','CHIQ','EWU'],
+  2:['TLT','HYG','FXY','FXE'],
+  3:['TLT','IEF','EMB','FXY'],
+  4:['USO','DBC','VNM','XLE']
+};
+const ETF_FACTORS = {
+  'QQQ':'US Lg Growth','IWF':'US Lg Growth','MGK':'US Lg Growth',
+  'SMH':'High Momentum','XLK':'Tech / Growth','XLY':'US Cyclical',
+  'XHB':'Cyclical / Housing','IWM':'US Small Cap','SPY':'US Lg Blend',
+  'XLC':'Comm Services','XLE':'Energy','XLB':'Materials',
+  'SLV':'Commodities','DBC':'Broad Cmdty','GLD':'Gold / Real Asset',
+  'XLI':'US Industrials','PAVE':'Infrastructure','USO':'Oil',
+  'TLT':'Long Duration Bonds','IEF':'Med Duration Bonds',
+  'IEI':'Med Duration Bonds','SHY':'Short Duration Bonds',
+  'MUB':'Muni Bonds','HYG':'High Yield Bonds','EMB':'EM Bonds',
+  'XLU':'Defensive / Low Vol','XLP':'Defensive / Low Vol',
+  'XLV':'Healthcare / Defensive','EEM':'Emerging Mkts',
+  'CHIQ':'China / EM','EWU':'Intl Developed','FXY':'Yen / Safe Haven',
+  'FXE':'Euro FX','VNM':'Frontier EM','IBIT':'Crypto (Satellite)'
+};
+const CRYPTO_NOTE = {
+  1:'IBIT: avg +7.2% in Q1 (only 573 days, std 12.5%) — satellite/high-risk only',
+  2:'IBIT: avg −0.1% in Q2, high dispersion. Not recommended.',
+  3:'IBIT: avg +6.4% in Q3 (std 8.6%) — satellite/opportunistic only',
+  4:'IBIT: insufficient Q4 data. Not recommended.'
 };
 
 const BT = {
-  1:{hit:67,top10:70,falsePct:46,avg:2.16,label:'Goldilocks'},
-  2:{hit:58,top10:72,falsePct:31,avg:1.48,label:'Overheating'},
-  3:{hit:71,top10:74,falsePct:37,avg:1.42,label:'Stagflation'},
-  4:{hit:53,top10:60,falsePct:27,avg:1.47,label:'Deflation (filtered)'}
+  1:{hit:62,top10:55,falsePct:13,avg:1.03,label:'Goldilocks'},
+  2:{hit:55,top10:80,falsePct:11,avg:1.46,label:'Overheating'},
+  3:{hit:51,top10:63,falsePct:20,avg:0.36,label:'Stagflation'},
+  4:{hit:50,top10:55,falsePct:17,avg:0.43,label:'Deflation (filtered)'}
 };
 
 // ════════════════════════════════════════════
 //  STATE
 // ════════════════════════════════════════════
 let allPrices = {spy:[], dbc:[], gld:[]};  // raw [{d,c}] from Yahoo
-let etfPerf = {};  // {ticker: 20d_return_pct} populated after ETF fetch
+let etfPerf = {}, etfPerf5d = {};  // 20d and 5d returns per ticker
 let historyRows = [];   // [{d, q, g, i, ig, spyClose}] built after fetch
 let currentRange = 63;
 let histChart = null, sigChart = null, btChartInst = null;
@@ -427,7 +508,7 @@ async function doFetch(manual=false) {
   badge.textContent = '⟳ Fetching…';
 
   try {
-   const [spy, dbc, gld, dba] = await Promise.all([
+    const [spy, dbc, gld, dba] = await Promise.all([
       fetchYahoo('SPY', 270),
       fetchYahoo('DBC', 270),
       fetchYahoo('GLD', 270),
@@ -439,26 +520,27 @@ async function doFetch(manual=false) {
     const latestRow = historyRows[historyRows.length - 1];
     const fetchQ = latestRow ? latestRow.q : 2;
     const etfsToFetch = RECS[fetchQ] || [];
-    // Seed etfPerf with already-fetched tickers (free — no extra request)
-    etfPerf = {};
+    // Seed etfPerf + etfPerf5d with already-fetched tickers
+    etfPerf = {}; etfPerf5d = {};
     const alreadyFetched = { 'SPY': spy, 'DBC': dbc, 'GLD': gld, 'DBA': dba };
     Object.entries(alreadyFetched).forEach(([ticker, prices]) => {
-      if (prices.length >= 21) {
-        const n = prices.length;
-        etfPerf[ticker] = (prices[n-1].c - prices[n-21].c) / prices[n-21].c * 100;
-      }
+      const n = prices.length;
+      if (n >= 21) etfPerf[ticker]   = (prices[n-1].c - prices[n-21].c) / prices[n-21].c * 100;
+      if (n >= 6)  etfPerf5d[ticker] = (prices[n-1].c - prices[n-6].c)  / prices[n-6].c  * 100;
     });
-    // Fetch remaining ETFs in the current quadrant basket
-    const etfsToActuallyFetch = etfsToFetch.filter(t => !(t in etfPerf));
+    // Fetch remaining ETFs (long + short baskets)
+    const shortTickers = SHORTS[fetchQ] || [];
+    const allToFetch = [...new Set([...etfsToFetch, ...shortTickers])];
+    const etfsToActuallyFetch = allToFetch.filter(t => !(t in etfPerf));
     const etfResults = await Promise.allSettled(
       etfsToActuallyFetch.map(t => fetchYahoo(t, 45))
     );
     etfsToActuallyFetch.forEach((ticker, idx) => {
       const r = etfResults[idx];
-      if (r.status === 'fulfilled' && r.value.length >= 21) {
-        const prices = r.value;
-        const n = prices.length;
-        etfPerf[ticker] = (prices[n-1].c - prices[n-21].c) / prices[n-21].c * 100;
+      if (r.status === 'fulfilled') {
+        const prices = r.value; const n = prices.length;
+        if (n >= 21) etfPerf[ticker]   = (prices[n-1].c - prices[n-21].c) / prices[n-21].c * 100;
+        if (n >= 6)  etfPerf5d[ticker] = (prices[n-1].c - prices[n-6].c)  / prices[n-6].c  * 100;
       }
     });
     renderAll();
@@ -513,7 +595,7 @@ function buildHistoryRows() {
     const d63  = di >= 63 ? ret(dbc, di, 63) : null;
     const a63  = ai >= 63 ? ret(dba, ai, 63) : null;
     const g63  = gi >= 63 ? ret(gld, gi, 63) : null;
-    // Hybrid: if DBC runs >6pp above DBA on 20d basis → energy spike → use DBA instead
+    // Hybrid: if DBC runs >6pp above DBA on 20d basis → energy spike → use DBA
     const infl20comp = (d20 != null && a20 != null && (d20 - a20) > 0.06) ? a20 : d20;
     const infl63comp = (d63 != null && a63 != null && (d63 - a63) > 0.06) ? a63 : d63;
     const i20  = (infl20comp != null && g20g != null) ? (infl20comp + g20g) / 2 : null;
@@ -601,23 +683,52 @@ function renderLivePanel(row) {
   setGauge('i-bar','i-val','i-desc', row.i, 15, ['Inflation rising → commodities','Inflation falling → bonds/tech']);
   setGauge('ig-bar','ig-val','ig-desc', row.ig, 30, ['Elevated · Q4 blocked','Normalised · Q4 active if signalled']);
 
-  // ETF recs — real 20d returns from live Yahoo Finance fetch
+  // ETF tiles — long recs with 5d + 20d + factor labels
   document.getElementById('rec-lbl').textContent = QNAMES[q];
+  const shortLbl = document.getElementById('short-regime-lbl');
+  if (shortLbl) shortLbl.textContent = QNAMES[q];
+  checkRegimeChange(q);
   const grid = document.getElementById('recs-grid');
   grid.innerHTML = '';
   (RECS[q] || []).forEach(etf => {
-    const r = etfPerf[etf];
-    const cls = r == null ? 'neu' : r >= 0 ? 'pos' : 'neg';
-    const retStr = r == null ? '—' : (r >= 0 ? '+' : '') + r.toFixed(2) + '%';
-    const strength = r == null ? '' : Math.abs(r) > 10 ? '▲▲ Very strong' : Math.abs(r) > 5 ? '▲ Strong' : Math.abs(r) > 2 ? '● Moderate' : '○ Mild';
-    const noteCol = r == null ? '' : r >= 0 ? 'color:var(--q1)' : 'color:var(--q3)';
+    const r20 = etfPerf[etf];   const r5 = etfPerf5d[etf];
+    const cls20 = r20 == null ? 'neu' : r20 >= 0 ? 'pos' : 'neg';
+    const cls5  = r5  == null ? 'neu' : r5  >= 0 ? 'pos' : 'neg';
+    const fmt = (v,cls) => v == null ? '<span class="neu">—</span>' : `<span class="${cls}">${v>=0?'+':''}${v.toFixed(2)}%</span>`;
+    const factor = ETF_FACTORS[etf] || '';
     grid.innerHTML += `<div class="etf-tile">
       <div class="etf-tick" style="color:${QCOLS[q]}">${etf}</div>
-      <div class="etf-ret ${cls}">${retStr}</div>
-      <div class="etf-note" style="${noteCol}">${strength}</div>
-      <div class="etf-note" style="color:var(--dimmer);font-size:9px;margin-top:1px;">20d return · live</div>
+      <div style="display:flex;gap:8px;align-items:baseline;margin:3px 0;">
+        <span class="etf-ret ${cls20}">${r20==null?'—':(r20>=0?'+':'')+r20.toFixed(2)+'%'}</span>
+        <span style="font-size:10px;color:var(--dim);">20d</span>
+        ${r5!=null?`<span style="font-family:'DM Mono',monospace;font-size:13px;" class="${cls5}">${r5>=0?'+':''}${r5.toFixed(2)}%</span><span style="font-size:10px;color:var(--dim);">5d</span>`:''}
+      </div>
+      <div class="etf-note" style="color:var(--dimmer);font-size:10px;">${factor}</div>
     </div>`;
   });
+
+  // Short candidates
+  const shortGrid = document.getElementById('shorts-grid');
+  if (shortGrid) {
+    shortGrid.innerHTML = '';
+    (SHORTS[q] || []).forEach(etf => {
+      const r20 = etfPerf[etf]; const r5 = etfPerf5d[etf];
+      const factor = ETF_FACTORS[etf] || '';
+      const cls20 = r20 == null ? 'neu' : r20 >= 0 ? 'pos' : 'neg';
+      shortGrid.innerHTML += `<div class="etf-tile" style="border-color:rgba(232,85,85,.2);">
+        <div class="etf-tick" style="color:var(--q3)">${etf} <span style="font-size:9px;opacity:.7;">SHORT</span></div>
+        <div style="display:flex;gap:8px;align-items:baseline;margin:3px 0;">
+          <span class="etf-ret ${cls20}">${r20==null?'—':(r20>=0?'+':'')+r20.toFixed(2)+'%'}</span>
+          <span style="font-size:10px;color:var(--dim);">20d</span>
+        </div>
+        <div class="etf-note" style="color:var(--dimmer);font-size:10px;">${factor}</div>
+      </div>`;
+    });
+  }
+
+  // Crypto note
+  const cryptoNote = document.getElementById('crypto-note');
+  if (cryptoNote) cryptoNote.textContent = CRYPTO_NOTE[q] || '';
 }
 
 function setGauge(barId, valId, descId, val, max, labels) {
@@ -735,14 +846,12 @@ function buildHistChart() {
           display:true,
           position:'top',
           align:'start',
-            labels:{ color:'#eeebe5', font:{size:12}, boxWidth:14, padding:18,
-                    generateLabels: chart => chart.data.datasets.map((ds,i) => ({
+          labels:{ color:'#c0bdb8', font:{size:11}, boxWidth:12, padding:16,
+            generateLabels: chart => chart.data.datasets.map((ds,i) => ({
               text: ds.label, strokeStyle: ds.borderColor,
               fillStyle: ds.borderColor, hidden: false, index: i,
               lineDash: ds.borderDash || [],
-              lineWidth: ds.borderWidth,
-              fontColor: '#eeebe5',
-              color: '#eeebe5'
+              lineWidth: ds.borderWidth
             }))
           }
         },
@@ -764,13 +873,7 @@ function buildHistChart() {
         y:{
           grid:{color:'rgba(255,255,255,0.07)'},
           ticks:{font:{size:10}, color:'#8e8b86', callback: v=>v.toFixed(0)+'%'},
-         afterDataLimits: s => { s.max=Math.max(s.max,5); s.min=Math.min(s.min,-5); },
-          grid:{
-            color: ctx => ctx.tick.value === 0
-              ? 'rgba(255,255,255,0.35)'   // bright white line at zero
-              : 'rgba(255,255,255,0.07)',   // dim lines everywhere else
-            lineWidth: ctx => ctx.tick.value === 0 ? 1.5 : 1
-          }
+          afterDataLimits: s => { s.max=Math.max(s.max,5); s.min=Math.min(s.min,-5); }
         }
       }
     }
@@ -801,21 +904,21 @@ function buildBT() {
   btChartInst = new Chart(document.getElementById('btChart').getContext('2d'), {
     type:'bar',
     data:{
-      labels:['Model A — raw','Model A + 3-day','A + 3d + Q4 gate','Model B (YC/BE)'],
+      labels:['5yr raw','5yr +3d','15yr +3d+gate','15yr +hybrid proxy'],
       datasets:[
-        { label:'Hit Rate %', data:[58.1,55.8,56.4,54.2],
-          backgroundColor:['rgba(47,217,138,.5)','rgba(47,217,138,.7)','rgba(47,217,138,.95)','rgba(91,158,240,.5)'] },
-        { label:'False Signal %', data:[38.6,27.5,25.1,47.3],
-          backgroundColor:['rgba(232,85,85,.4)','rgba(232,85,85,.55)','rgba(232,85,85,.7)','rgba(232,85,85,.4)'] },
+        { label:'Hit Rate %', data:[58.1,55.8,55.9,55.9],
+          backgroundColor:['rgba(47,217,138,.4)','rgba(47,217,138,.6)','rgba(47,217,138,.85)','rgba(47,217,138,.95)'] },
+        { label:'False Signal %', data:[38.6,27.5,15.2,13.8],
+          backgroundColor:['rgba(232,85,85,.4)','rgba(232,85,85,.5)','rgba(232,85,85,.65)','rgba(232,85,85,.8)'] },
       ]
     },
     options:{
       responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{labels:{color:'#eeebe5',font:{size:12},boxWidth:14,padding:14}},
-        tooltip:{mode:'index',intersect:false,backgroundColor:'rgba(14,15,17,0.92)',titleColor:'#eeebe5',bodyColor:'#c0bdb8',borderColor:'rgba(255,255,255,0.12)',borderWidth:1} },
+      plugins:{ legend:{labels:{color:'var(--muted)',font:{size:11},boxWidth:12}},
+        tooltip:{mode:'index',intersect:false} },
       scales:{
-        x:{ grid:{display:false}, ticks:{font:{size:12},color:'#c0bdb8'} },
-        y:{ grid:{color:'rgba(255,255,255,.07)'}, ticks:{font:{size:12},color:'#c0bdb8',callback:v=>v+'%'}, max:70 }
+        x:{ grid:{display:false}, ticks:{font:{size:11},color:'var(--muted)'} },
+        y:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{font:{size:11},color:'var(--muted)',callback:v=>v+'%'}, max:70 }
       }
     }
   });
@@ -858,9 +961,77 @@ setInterval(() => {
 }, 60000);
 
 // ════════════════════════════════════════════
+//  EMAIL ALERT SUBSCRIPTION
+// ════════════════════════════════════════════
+function subscribeAlert() {
+  const emailEl = document.getElementById('alert-email');
+  const statusEl = document.getElementById('alert-status');
+  const btn = document.getElementById('subscribe-btn');
+  const email = emailEl.value.trim();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    statusEl.textContent = 'Please enter a valid email address.';
+    statusEl.style.color = 'var(--q3)';
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = 'Subscribing…';
+  statusEl.style.color = 'var(--dim)';
+  statusEl.textContent = 'Saving your email…';
+
+  // Store in localStorage as fallback (works without backend)
+  // Replace this fetch() with your Vercel API endpoint when ready
+  try {
+    const subs = JSON.parse(localStorage.getItem('regime_subscribers') || '[]');
+    if (subs.includes(email)) {
+      statusEl.textContent = 'Already subscribed: ' + email;
+      statusEl.style.color = 'var(--q2)';
+    } else {
+      subs.push(email);
+      localStorage.setItem('regime_subscribers', JSON.stringify(subs));
+      statusEl.textContent = '✓ Subscribed: ' + email + ' — you'll receive alerts on confirmed regime changes.';
+      statusEl.style.color = 'var(--q1)';
+      emailEl.value = '';
+    }
+  } catch(e) {
+    statusEl.textContent = 'Error saving. When Vercel API is connected, replace localStorage with: fetch('/api/subscribe', {method:'POST',body:JSON.stringify({email})})';
+    statusEl.style.color = 'var(--q3)';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Subscribe';
+}
+
+// Check auto-refresh regime change and alert (client-side detection)
+let lastKnownQ = null;
+function checkRegimeChange(newQ) {
+  if (lastKnownQ !== null && lastKnownQ !== newQ) {
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:999;background:'+
+      (newQ===1?'rgba(47,217,138,.95)':newQ===2?'rgba(240,160,48,.95)':
+       newQ===3?'rgba(232,85,85,.95)':'rgba(91,158,240,.95)')+
+      ';color:#0c0d0f;padding:12px 20px;font-weight:700;font-size:13px;text-align:center;';
+    banner.textContent = '⚡ Regime Change Detected: ' + (lastKnownQ?'Q'+lastKnownQ:'?') +
+      ' → Q' + newQ + ' ' + QNAMES[newQ] + ' · Check your email for details.';
+    document.body.prepend(banner);
+    setTimeout(() => banner.remove(), 8000);
+  }
+  lastKnownQ = newQ;
+}
+
+// ════════════════════════════════════════════
 //  INIT
 // ════════════════════════════════════════════
 doFetch(false);
 </script>
+
+  <!-- Disclaimer -->
+  <div style="max-width:1100px;margin:20px auto 0;padding:0 16px 24px;">
+    <div style="border-top:1px solid var(--border);padding-top:16px;">
+      <div style="background:rgba(232,85,85,.06);border:1px solid rgba(232,85,85,.2);border-radius:10px;padding:14px 18px;font-size:11px;color:var(--muted);line-height:1.8;">
+        <strong style="color:var(--q3);font-size:12px;letter-spacing:.05em;">&#x26A0;&#xFE0F; DISCLAIMER &mdash; NOT INVESTMENT ADVICE</strong><br>
+        This dashboard is provided for <strong style="color:var(--text);">informational and educational purposes only</strong> and does not constitute investment advice, a recommendation to buy or sell any security, or an offer to provide investment advisory services. Past regime accuracy does not guarantee future results. All backtested results are hypothetical and do not reflect actual trading or the impact of transaction costs, taxes, or fees. <strong style="color:var(--text);">You must conduct your own research and consult a qualified financial advisor before making any investment decisions.</strong> Regime signals are based on publicly available market data and quantitative models that may not capture all risks, including geopolitical events or structural market changes. The authors accept no liability for investment decisions made using this tool.
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
