@@ -694,8 +694,7 @@ function renderLivePanel(row) {
     q4p.textContent = 'N/A'; q4p.className = 'pill pill-d';
   }
 
-  const fmt = v => v == null ? '—' : (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
-  const gs = document.getElementById('g-status');
+   const gs = document.getElementById('g-status');
   gs.textContent = fmt(row.g);
   gs.style.color = row.g == null ? '' : row.g >= 0 ? 'var(--q1)' : 'var(--q3)';
   const is = document.getElementById('i-status');
