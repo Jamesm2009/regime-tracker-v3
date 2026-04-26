@@ -727,7 +727,7 @@ function buildHistChart() {
           display:true,
           position:'top',
           align:'start',
-          labels:{ color:'#c0bdb8', font:{size:11}, boxWidth:12, padding:16,
+            labels:{ color:'#eeebe5', font:{size:12}, boxWidth:14, padding:18,
             generateLabels: chart => chart.data.datasets.map((ds,i) => ({
               text: ds.label, strokeStyle: ds.borderColor,
               fillStyle: ds.borderColor, hidden: false, index: i,
@@ -801,11 +801,11 @@ function buildBT() {
     },
     options:{
       responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{labels:{color:'var(--muted)',font:{size:11},boxWidth:12}},
-        tooltip:{mode:'index',intersect:false} },
+      plugins:{ legend:{labels:{color:'#eeebe5',font:{size:12},boxWidth:14,padding:14}},
+        tooltip:{mode:'index',intersect:false,backgroundColor:'rgba(14,15,17,0.92)',titleColor:'#eeebe5',bodyColor:'#c0bdb8',borderColor:'rgba(255,255,255,0.12)',borderWidth:1} },
       scales:{
-        x:{ grid:{display:false}, ticks:{font:{size:11},color:'var(--muted)'} },
-        y:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{font:{size:11},color:'var(--muted)',callback:v=>v+'%'}, max:70 }
+        x:{ grid:{display:false}, ticks:{font:{size:12},color:'#c0bdb8'} },
+        y:{ grid:{color:'rgba(255,255,255,.07)'}, ticks:{font:{size:12},color:'#c0bdb8',callback:v=>v+'%'}, max:70 }
       }
     }
   });
