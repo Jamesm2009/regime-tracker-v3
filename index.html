@@ -223,7 +223,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:14px 0;}
         <div class="s-row"><span class="s-lbl">Q4 Filter Active</span><span class="pill pill-d" id="q4-pill">N/A</span></div>
         <div class="s-row"><span class="s-lbl">Growth Signal (SPY 20d)</span><span class="s-val" id="g-status">—</span></div>
         <div class="s-row"><span class="s-lbl">Inflation Signal (DBC+GLD 20d)</span><span class="s-val" id="i-status">—</span></div>
-        <div class="s-row"><span class="s-lbl">Signal Sources</span><span class="s-val" style="font-size:11px;color:var(--muted);">SPY · DBC · GLD</span></div>
+        <div class="s-row"><span class="s-lbl">Signal Sources</span><span class="s-val" style="font-size:11px;color:var(--muted);">SPY · DBC · DBA · GLD</span></div>
       </div>
     </div>
 
@@ -427,12 +427,13 @@ async function doFetch(manual=false) {
   badge.textContent = '⟳ Fetching…';
 
   try {
-    const [spy, dbc, gld] = await Promise.all([
+   const [spy, dbc, gld, dba] = await Promise.all([
       fetchYahoo('SPY', 270),
       fetchYahoo('DBC', 270),
-      fetchYahoo('GLD', 270)
+      fetchYahoo('GLD', 270),
+      fetchYahoo('DBA', 270)
     ]);
-    allPrices = {spy, dbc, gld};
+    allPrices = {spy, dbc, gld, dba};
     buildHistoryRows();
     // Determine current quadrant so we know which ETFs to fetch
     const latestRow = historyRows[historyRows.length - 1];
@@ -440,7 +441,7 @@ async function doFetch(manual=false) {
     const etfsToFetch = RECS[fetchQ] || [];
     // Seed etfPerf with already-fetched tickers (free — no extra request)
     etfPerf = {};
-    const alreadyFetched = { 'SPY': spy, 'DBC': dbc, 'GLD': gld };
+    const alreadyFetched = { 'SPY': spy, 'DBC': dbc, 'GLD': gld, 'DBA': dba };
     Object.entries(alreadyFetched).forEach(([ticker, prices]) => {
       if (prices.length >= 21) {
         const n = prices.length;
@@ -502,14 +503,21 @@ function buildHistoryRows() {
   historyRows = spy.map((row, i) => {
     const g20  = ret(spy, i, 20);
     // For DBC and GLD, find matching index by date
+    const dba  = allPrices.dba || [];
     const di   = dbc.findIndex(x => x.d === row.d);
     const gi   = gld.findIndex(x => x.d === row.d);
+    const ai   = dba.findIndex(x => x.d === row.d);
     const d20  = di >= 20 ? ret(dbc, di, 20) : null;
+    const a20  = ai >= 20 ? ret(dba, ai, 20) : null;
     const g20g = gi >= 20 ? ret(gld, gi, 20) : null;
     const d63  = di >= 63 ? ret(dbc, di, 63) : null;
+    const a63  = ai >= 63 ? ret(dba, ai, 63) : null;
     const g63  = gi >= 63 ? ret(gld, gi, 63) : null;
-    const i20  = (d20 != null && g20g != null) ? (d20 + g20g) / 2 : null;
-    const ig63 = (d63 != null && g63 != null)  ? (d63 + g63)  / 2 : null;
+    // Hybrid: if DBC runs >6pp above DBA on 20d basis → energy spike → use DBA instead
+    const infl20comp = (d20 != null && a20 != null && (d20 - a20) > 0.06) ? a20 : d20;
+    const infl63comp = (d63 != null && a63 != null && (d63 - a63) > 0.06) ? a63 : d63;
+    const i20  = (infl20comp != null && g20g != null) ? (infl20comp + g20g) / 2 : null;
+    const ig63 = (infl63comp != null && g63  != null) ? (infl63comp + g63)  / 2 : null;
     const rawQ = getQ(g20, i20);
     return { d: row.d, spyClose: row.c, g: g20, i: i20, ig: ig63, q: rawQ };
   });
