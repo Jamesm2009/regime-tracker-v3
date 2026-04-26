@@ -281,11 +281,6 @@ hr.div{border:none;border-top:1px solid var(--border);margin:14px 0;}
     <div class="chart-card">
       <div class="card-title" style="margin-bottom:14px;">Signal Strength · Growth vs Inflation (20d) vs Gate (63d)</div>
       <div class="chart-wrap" style="height:170px;"><canvas id="sigChart"></canvas></div>
-      <div class="legend">
-        <div class="leg-item"><div class="leg-dot" style="background:var(--q1);"></div>Growth (SPY 20d)</div>
-        <div class="leg-item"><div class="leg-dot" style="background:var(--q2);"></div>Inflation (DBC+GLD 20d)</div>
-        <div class="leg-item"><div class="leg-dot" style="background:rgba(91,158,240,.55);border:1px dashed #5b9ef0;"></div>Infl Gate (63d)</div>
-      </div>
     </div>
   </div>
 
@@ -759,7 +754,13 @@ function buildHistChart() {
         y:{
           grid:{color:'rgba(255,255,255,0.07)'},
           ticks:{font:{size:10}, color:'#8e8b86', callback: v=>v.toFixed(0)+'%'},
-          afterDataLimits: s => { s.max=Math.max(s.max,5); s.min=Math.min(s.min,-5); }
+         afterDataLimits: s => { s.max=Math.max(s.max,5); s.min=Math.min(s.min,-5); },
+          grid:{
+            color: ctx => ctx.tick.value === 0
+              ? 'rgba(255,255,255,0.35)'   // bright white line at zero
+              : 'rgba(255,255,255,0.07)',   // dim lines everywhere else
+            lineWidth: ctx => ctx.tick.value === 0 ? 1.5 : 1
+          }
         }
       }
     }
