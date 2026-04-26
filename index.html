@@ -728,11 +728,13 @@ function buildHistChart() {
           position:'top',
           align:'start',
             labels:{ color:'#eeebe5', font:{size:12}, boxWidth:14, padding:18,
-            generateLabels: chart => chart.data.datasets.map((ds,i) => ({
+                    generateLabels: chart => chart.data.datasets.map((ds,i) => ({
               text: ds.label, strokeStyle: ds.borderColor,
               fillStyle: ds.borderColor, hidden: false, index: i,
               lineDash: ds.borderDash || [],
-              lineWidth: ds.borderWidth
+              lineWidth: ds.borderWidth,
+              fontColor: '#eeebe5',
+              color: '#eeebe5'
             }))
           }
         },
