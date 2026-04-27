@@ -503,6 +503,13 @@ function renderLive(row){
   document.getElementById('days-val').textContent=days;
   document.getElementById('hit-val').textContent=BT[q].hit+'%';
   document.getElementById('fwd-val').textContent='+'+BT[q].avg.toFixed(2)+'%';
+  var nr=historyRows.length;
+  var cp=document.getElementById('confirm-pill');
+  var matchCt=1;
+  if(nr>=2&&historyRows[nr-2].q===q)matchCt=2;
+  if(nr>=3&&historyRows[nr-2].q===q&&historyRows[nr-3].q===q)matchCt=3;
+  if(matchCt>=3){cp.textContent='CONFIRMED';cp.className='pill pg';}
+  else{cp.textContent='PENDING \u2014 day '+matchCt+'/3';cp.className='pill pa';}
   var hi=row.ig!=null&&row.ig>0;
   var gp=document.getElementById('gate-pill');
   gp.textContent=hi?'HIGH (>3% proxy)':'LOW (<3% proxy)';gp.className='pill '+(hi?'pa':'pg');
@@ -694,4 +701,3 @@ doFetch(false);
 </script>
 </body>
 </html>
-ENDOFFILE
