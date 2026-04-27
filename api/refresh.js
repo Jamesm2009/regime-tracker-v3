@@ -4,18 +4,18 @@
 
 // ─── Upstash Redis helpers ───────────────────────────────────────────────────
 async function redisGet(key) {
-  const res = await fetch(`${process.env.UPSTASH_URL}/get/${encodeURIComponent(key)}`, {
-    headers: { Authorization: `Bearer ${process.env.UPSTASH_TOKEN}` }
+  const res = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/get/${encodeURIComponent(key)}`, {
+    headers: { Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}` }
   });
   const json = await res.json();
   return json.result; // null if not found
 }
 
 async function redisSet(key, value) {
-  const res = await fetch(`${process.env.UPSTASH_URL}/set/${encodeURIComponent(key)}`, {
+  const res = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/set/${encodeURIComponent(key)}`, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${process.env.UPSTASH_TOKEN}`,
+      Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify([value])
@@ -24,10 +24,10 @@ async function redisSet(key, value) {
 }
 
 async function redisSAdd(key, member) {
-  const res = await fetch(`${process.env.UPSTASH_URL}/sadd/${encodeURIComponent(key)}`, {
+  const res = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/sadd/${encodeURIComponent(key)}`, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${process.env.UPSTASH_TOKEN}`,
+      Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify([member])
@@ -36,8 +36,8 @@ async function redisSAdd(key, member) {
 }
 
 async function redisSmembers(key) {
-  const res = await fetch(`${process.env.UPSTASH_URL}/smembers/${encodeURIComponent(key)}`, {
-    headers: { Authorization: `Bearer ${process.env.UPSTASH_TOKEN}` }
+  const res = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/smembers/${encodeURIComponent(key)}`, {
+    headers: { Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}` }
   });
   const json = await res.json();
   return Array.isArray(json.result) ? json.result : [];
@@ -127,7 +127,7 @@ function getQuadrant(g, i, ig, prevQ) {
 // ─── Email helpers ────────────────────────────────────────────────────────────
 const QNAMES  = { 1: 'Goldilocks', 2: 'Overheating', 3: 'Stagflation', 4: 'Deflation' };
 const QARROWS = { 1: 'Growth ↑  Inflation ↓', 2: 'Growth ↑  Inflation ↑', 3: 'Growth ↓  Inflation ↑', 4: 'Growth ↓  Inflation ↓' };
-const RECS    = { https://scripture-platform.io}
+const RECS    = {
   1: ['QQQ', 'IWF', 'MGK', 'SMH', 'XLK', 'XLY', 'XHB', 'IWM'],
   2: ['XLE', 'XLB', 'SLV', 'DBC', 'GLD', 'XLI', 'SMH', 'XHB'],
   3: ['GLD', 'SLV', 'USO', 'XLE', 'SHY', 'XLK'],
@@ -233,7 +233,7 @@ async function sendRegimeChangeEmail(subscribers, prevQ, newQ, signals) {
   const html = buildEmailHtml(prevQ, newQ, signals);
 
   const payload = {
-    from: 'Macro Regime Tracker <alerts@scripture-platofrm.io>', // ← update with your Resend verified domain
+    from: 'Macro Regime Tracker <alerts@yourdomain.com>', // ← update with your Resend verified domain
     to: subscribers,
     subject: `⚡ Regime Change: Q${prevQ} ${QNAMES[prevQ]} → Q${newQ} ${QNAMES[newQ]} [${signals.date}]`,
     html
