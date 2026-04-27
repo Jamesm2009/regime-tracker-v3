@@ -596,10 +596,6 @@ function buildHistoryRows() {
   const dbc = allPrices.dbc;
   const gld = allPrices.gld;
 
-  // Build fast lookup maps
-  const dbcMap = Object.fromEntries(dbc.map(x => [x.d, x.c]));
-  const gldMap = Object.fromEntries(gld.map(x => [x.d, x.c]));
-
   // Pre-build date→index maps for O(1) lookup (avoid O(n²) findIndex in loop)
   const dbcIdx = Object.fromEntries(dbc.map((x,i) => [x.d, i]));
   const gldIdx = Object.fromEntries(gld.map((x,i) => [x.d, i]));
@@ -694,7 +690,8 @@ function renderLivePanel(row) {
     q4p.textContent = 'N/A'; q4p.className = 'pill pill-d';
   }
 
-   const gs = document.getElementById('g-status');
+  const fmt = v => v == null ? '—' : (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
+  const gs = document.getElementById('g-status');
   gs.textContent = fmt(row.g);
   gs.style.color = row.g == null ? '' : row.g >= 0 ? 'var(--q1)' : 'var(--q3)';
   const is = document.getElementById('i-status');
@@ -716,7 +713,6 @@ function renderLivePanel(row) {
     const r20 = (etfPerf||{})[etf];   const r5 = (etfPerf5d||{})[etf];
     const cls20 = r20 == null ? 'neu' : r20 >= 0 ? 'pos' : 'neg';
     const cls5  = r5  == null ? 'neu' : r5  >= 0 ? 'pos' : 'neg';
-    const fmt = (v,cls) => v == null ? '<span class="neu">—</span>' : `<span class="${cls}">${v>=0?'+':''}${v.toFixed(2)}%</span>`;
     const factor = ETF_FACTORS[etf] || '';
     grid.innerHTML += `<div class="etf-tile">
       <div class="etf-tick" style="color:${QCOLS[q]}">${etf}</div>
@@ -1032,7 +1028,7 @@ doFetch(false);
   <div style="max-width:1100px;margin:20px auto 0;padding:0 16px 24px;">
     <div style="border-top:1px solid var(--border);padding-top:16px;">
       <div style="background:rgba(232,85,85,.06);border:1px solid rgba(232,85,85,.2);border-radius:10px;padding:14px 18px;font-size:11px;color:var(--muted);line-height:1.8;">
-        <strong style="color:var(--q3);font-size:11px;letter-spacing:.05em;">&#x26A0;&#xFE0F; DISCLAIMER &mdash; NOT INVESTMENT ADVICE</strong><br>
+        <strong style="color:var(--q3);font-size:12px;letter-spacing:.05em;">&#x26A0;&#xFE0F; DISCLAIMER &mdash; NOT INVESTMENT ADVICE</strong><br>
         This dashboard is provided for <strong style="color:var(--text);">informational and educational purposes only</strong> and does not constitute investment advice, a recommendation to buy or sell any security, or an offer to provide investment advisory services. Past regime accuracy does not guarantee future results. All backtested results are hypothetical and do not reflect actual trading or the impact of transaction costs, taxes, or fees. <strong style="color:var(--text);">You must conduct your own research and consult a qualified financial advisor before making any investment decisions.</strong> Regime signals are based on publicly available market data and quantitative models that may not capture all risks, including geopolitical events or structural market changes. The authors accept no liability for investment decisions made using this tool.
       </div>
     </div>
