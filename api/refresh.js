@@ -127,7 +127,7 @@ function getQuadrant(g, i, ig, prevQ) {
 // ─── Email helpers ────────────────────────────────────────────────────────────
 const QNAMES  = { 1: 'Goldilocks', 2: 'Overheating', 3: 'Stagflation', 4: 'Deflation' };
 const QARROWS = { 1: 'Growth ↑  Inflation ↓', 2: 'Growth ↑  Inflation ↑', 3: 'Growth ↓  Inflation ↑', 4: 'Growth ↓  Inflation ↓' };
-const RECS    = {
+const RECS    = { https://scripture-platform.io}
   1: ['QQQ', 'IWF', 'MGK', 'SMH', 'XLK', 'XLY', 'XHB', 'IWM'],
   2: ['XLE', 'XLB', 'SLV', 'DBC', 'GLD', 'XLI', 'SMH', 'XHB'],
   3: ['GLD', 'SLV', 'USO', 'XLE', 'SHY', 'XLK'],
