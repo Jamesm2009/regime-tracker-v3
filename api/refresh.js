@@ -233,7 +233,7 @@ async function sendRegimeChangeEmail(subscribers, prevQ, newQ, signals) {
   const html = buildEmailHtml(prevQ, newQ, signals);
 
   const payload = {
-    from: 'Macro Regime Tracker <alerts@yourdomain.com>', // ← update with your Resend verified domain
+    from: 'Macro Regime Tracker <alerts@scripture-platofrm.io>', // ← update with your Resend verified domain
     to: subscribers,
     subject: `⚡ Regime Change: Q${prevQ} ${QNAMES[prevQ]} → Q${newQ} ${QNAMES[newQ]} [${signals.date}]`,
     html
