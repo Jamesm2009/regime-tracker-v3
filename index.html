@@ -217,7 +217,7 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
       <button class="esub" id="esub-btn" onclick="subscribeAlert()">Subscribe</button>
     </div>
     <div id="alert-status" style="font-size:11px;color:var(--dim);margin-top:8px;font-family:'DM Mono',monospace;min-height:16px;"></div>
-    <p style="margin-top:10px;font-size:11px;color:var(--dim2);line-height:1.7;">Saves to browser storage. Connect Vercel + Upstash + Resend for production email delivery (see How It Works).</p>
+    <p style="margin-top:10px;font-size:11px;color:var(--dim2);line-height:1.7;">Subscriptions stored in Upstash Redis &middot; Alerts delivered via Resend on confirmed regime change (~40/yr).</p>
   </div>
 </div>
 
@@ -673,15 +673,25 @@ function subscribeAlert(){
   var emailEl=document.getElementById('alert-email');
   var statusEl=document.getElementById('alert-status');
   var btn=document.getElementById('esub-btn');
-  var email=emailEl.value.trim();
+  var email=emailEl.value.trim().toLowerCase();
   if(!email||email.indexOf('@')<1){statusEl.textContent='Please enter a valid email address.';statusEl.style.color='var(--q3)';return;}
-  btn.disabled=true;btn.textContent='Saving\u2026';
-  try{
-    var subs=JSON.parse(localStorage.getItem('regime_subs')||'[]');
-    if(subs.indexOf(email)>=0){statusEl.textContent='Already subscribed: '+email;statusEl.style.color='var(--q2)';}
-    else{subs.push(email);localStorage.setItem('regime_subs',JSON.stringify(subs));statusEl.textContent='\u2713 Subscribed: '+email+' \u2014 you\'ll receive alerts on confirmed regime changes.';statusEl.style.color='var(--q1)';emailEl.value='';}
-  }catch(e){statusEl.textContent='Error. Connect Vercel + Upstash for production email delivery.';statusEl.style.color='var(--q3)';}
-  btn.disabled=false;btn.textContent='Subscribe';
+  btn.disabled=true;btn.textContent='Saving\u2026';statusEl.textContent='';
+  fetch('/api/subscribe',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({email:email})
+  }).then(function(r){return r.json();}).then(function(d){
+    if(d.ok){
+      if(d.added){statusEl.textContent='\u2713 Subscribed: '+email+' \u2014 you\'ll receive alerts on confirmed regime changes.';statusEl.style.color='var(--q1)';emailEl.value='';}
+      else{statusEl.textContent='Already subscribed: '+email;statusEl.style.color='var(--q2)';}
+    } else {
+      statusEl.textContent='Error: '+(d.error||'Unknown error');statusEl.style.color='var(--q3)';
+    }
+  }).catch(function(e){
+    statusEl.textContent='Network error \u2014 check that Vercel + Upstash env vars are set.';statusEl.style.color='var(--q3)';
+  }).finally(function(){
+    btn.disabled=false;btn.textContent='Subscribe';
+  });
 }
 
 function updateCountdown(){
