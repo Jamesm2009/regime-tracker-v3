@@ -1,80 +1,82 @@
-// api/regime.js — Vercel Serverless Function
-// GET /api/regime → returns the latest cached regime data from Redis
-// Called by index.html on every page load instead of hitting Yahoo Finance directly
-// Falls back gracefully if Redis is empty (first deploy, before cron has run)
-
-async function redis(…args) {
-const url   = process.env.UPSTASH_REDIS_REST_URL;
-const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-
-if (!url || !token) throw new Error(‘UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN is missing’);
-
-const res = await fetch(url, {
-method: ‘POST’,
-headers: {
-Authorization: `Bearer ${token}`,
-‘Content-Type’: ‘application/json’
-},
-body: JSON.stringify(args)
-});
-
-if (!res.ok) {
-const text = await res.text();
-throw new Error(`Upstash error ${res.status}: ${text}`);
-}
-
-const json = await res.json();
-return json.result;
-}
+// api/regime.js
+// GET /api/regime — returns cached regime data from Redis
+// Returns { ok, cached, regime } or { ok, cached:false } if empty
 
 module.exports = async function handler(req, res) {
 res.setHeader(‘Access-Control-Allow-Origin’, ‘*’);
 res.setHeader(‘Access-Control-Allow-Methods’, ‘GET, OPTIONS’);
 res.setHeader(‘Access-Control-Allow-Headers’, ‘Content-Type’);
-
 if (req.method === ‘OPTIONS’) return res.status(200).end();
-if (req.method !== ‘GET’) return res.status(405).json({ ok: false, error: ‘Method not allowed’ });
 
-try {
-const raw = await redis(‘GET’, ‘regime:current’);
+const url   = process.env.UPSTASH_REDIS_REST_URL;
+const token = process.env.UPSTASH_REDIS_REST_TOKEN;
 
-```
-if (!raw) {
-  // Redis is empty — cron hasn't run yet. Tell the dashboard to fall back to Yahoo.
-  return res.status(200).json({
-    ok: true,
-    cached: false,
-    message: 'No cached data yet — dashboard should fetch from Yahoo Finance directly'
-  });
+// Env var check — return clear error, never crash
+if (!url || !token) {
+return res.status(500).json({
+ok: false,
+error: ‘Missing env vars’,
+upstashUrl: url ? ‘set’ : ‘MISSING’,
+upstashToken: token ? ‘set’ : ‘MISSING’
+});
 }
 
-const data = JSON.parse(raw);
+// Single helper — POST body format, same as subscribe.js
+async function redisGet(key) {
+const r = await fetch(url, {
+method: ‘POST’,
+headers: { Authorization: `Bearer ${token}`, ‘Content-Type’: ‘application/json’ },
+body: JSON.stringify([‘GET’, key])
+});
+if (!r.ok) throw new Error(`Upstash ${r.status}`);
+const j = await r.json();
+return j.result; // null if key doesn’t exist
+}
 
-// Also fetch the last 5 history entries if stored
-const histRaw = await redis('GET', 'regime:history');
-const history = histRaw ? JSON.parse(histRaw) : null;
+try {
+const raw = await redisGet(‘regime:current’);
+
+```
+// Nothing stored yet — cron hasn't run
+if (raw === null || raw === undefined) {
+  return res.status(200).json({ ok: true, cached: false });
+}
+
+// Safely parse — if corrupt, return uncached rather than crash
+let data;
+try { data = typeof raw === 'string' ? JSON.parse(raw) : raw; }
+catch (e) { return res.status(200).json({ ok: true, cached: false, parseError: e.message }); }
+
+// Fetch history separately (may not exist on first run after update)
+let history = data.history || [];
+try {
+  const histRaw = await redisGet('regime:history');
+  if (histRaw) {
+    history = typeof histRaw === 'string' ? JSON.parse(histRaw) : histRaw;
+  }
+} catch (e) { /* use history from regime:current if regime:history fetch fails */ }
 
 return res.status(200).json({
   ok: true,
   cached: true,
-  updatedAt: data.updatedAt,
+  updatedAt: data.updatedAt || null,
   regime: {
-    q:            data.q,
-    rawQ:         data.rawQ,
-    date:         data.date,
-    spyClose:     data.spyClose,
-    g:            data.g,
-    i:            data.i,
-    ig:           data.ig,
-    energyPremium: data.energyPremium,
-    usingDBA:     data.usingDBA,
-    history:      history || data.history || []
+    q:             data.q            || 2,
+    rawQ:          data.rawQ         || data.q || 2,
+    date:          data.date         || null,
+    spyClose:      data.spyClose     || null,
+    g:             data.g            != null ? data.g  : null,
+    i:             data.i            != null ? data.i  : null,
+    ig:            data.ig           != null ? data.ig : null,
+    energyPremium: data.energyPremium != null ? data.energyPremium : null,
+    usingDBA:      data.usingDBA     || false,
+    history:       history
   }
 });
 ```
 
 } catch (err) {
-console.error(‘regime.js error:’, err);
-return res.status(500).json({ ok: false, error: err.message });
+// Never crash — return a fallback so dashboard uses Yahoo
+return res.status(200).json({ ok: true, cached: false, error: err.message });
 }
 };
