@@ -1,11 +1,11 @@
 // api/refresh.js
 // Vercel Cron: "0 23 * * 1-5" (5pm CT / 11pm UTC, weekdays)
-// Env vars: UPSTASH_URL, UPSTASH_TOKEN, RESEND_API_KEY, CRON_SECRET
+// Env vars: UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN, RESEND_API_KEY, CRON_SECRET
 
 // ── Redis (body-format, matches subscribe.js and regime.js) ──────────────────
 async function redis(...args) {
-  const url   = process.env.UPSTASH_URL;
-  const token = process.env.UPSTASH_TOKEN;
+  const url   = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) throw new Error('Upstash env vars missing');
   const r = await fetch(url, {
     method: 'POST',
@@ -130,8 +130,10 @@ async function sendAlert(subscribers, prevQ, newQ, sig) {
 module.exports = async function handler(req, res) {
   // Auth check for manual GET triggers
   if (req.method === 'GET') {
-    const auth = req.headers.authorization;
-    if (process.env.CRON_SECRET && auth !== `Bearer ${process.env.CRON_SECRET}`) {
+    var auth = req.headers.authorization;
+    var qsecret = req.query && req.query.secret;
+    var secret = process.env.CRON_SECRET;
+    if (secret && auth !== ('Bearer ' + secret) && qsecret !== secret) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
   }
