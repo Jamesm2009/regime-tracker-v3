@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -160,6 +161,7 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
 </div>
 
 <!-- LIVE TAB -->
+
 <div class="tp active" id="tab-live">
   <div class="hero">
     <div class="rc" id="regime-card">
@@ -222,6 +224,7 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
 </div>
 
 <!-- HISTORY TAB -->
+
 <div class="tp" id="tab-history">
   <div class="cc">
     <div class="cctop">
@@ -255,6 +258,7 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
 </div>
 
 <!-- BACKTEST TAB -->
+
 <div class="tp" id="tab-backtest">
   <div class="sh">15-Year Accuracy by Quadrant &middot; Jan 2010&#8211;Apr 2026 &middot; 3-day confirmation &middot; Q4 inflation gate &middot; Hybrid DBC/DBA proxy</div>
   <div class="btg" id="bt-grid"></div>
@@ -269,6 +273,7 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
 </div>
 
 <!-- HOW IT WORKS TAB -->
+
 <div class="tp" id="tab-howto">
   <div class="hg">
     <div class="hc">
@@ -407,26 +412,61 @@ function doFetch(manual){
   var badge=document.getElementById('data-badge');
   btn.disabled=true;
   badge.className='badge blo';
-  badge.textContent='\u27F3 Fetching\u2026';
-  Promise.all([fetchYahoo('SPY',270),fetchYahoo('DBC',270),fetchYahoo('GLD',270),fetchYahoo('DBA',270)]).then(function(results){
-    allPrices={spy:results[0],dbc:results[1],gld:results[2],dba:results[3]};
-    buildHistoryRows();
-    var fq=historyRows.length?historyRows[historyRows.length-1].q||2:2;
-    etfPerf={};etfPerf5d={};
-    [{t:'SPY',p:results[0]},{t:'DBC',p:results[1]},{t:'GLD',p:results[2]},{t:'DBA',p:results[3]}].forEach(function(x){
-      var n=x.p.length;
-      if(n>=21)etfPerf[x.t]=(x.p[n-1].c-x.p[n-21].c)/x.p[n-21].c*100;
-      if(n>=6)etfPerf5d[x.t]=(x.p[n-1].c-x.p[n-6].c)/x.p[n-6].c*100;
-    });
-    var need=[];var seen={};
-    (RECS[fq]||[]).concat(SHORTS[fq]||[]).forEach(function(t){if(!seen[t]&&!(t in etfPerf)){seen[t]=1;need.push(t);}});
-    return Promise.allSettled(need.map(function(t){return fetchYahoo(t,45);})).then(function(res2){
-      need.forEach(function(t,i){
-        var r=res2[i];
-        if(r.status==='fulfilled'){var p=r.value;var n=p.length;if(n>=21)etfPerf[t]=(p[n-1].c-p[n-21].c)/p[n-21].c*100;if(n>=6)etfPerf5d[t]=(p[n-1].c-p[n-6].c)/p[n-6].c*100;}
+  badge.textContent='\u27F3 Loading\u2026';
+
+  // On auto-load: check Redis cache first, render regime instantly, then update charts/ETF tiles from Yahoo.
+  // On manual refresh: skip cache, go straight to Yahoo for everything.
+  var cacheStep = manual
+    ? Promise.resolve(null)
+    : fetch('/api/regime').then(function(r){return r.json();}).catch(function(){return null;});
+
+  cacheStep.then(function(cached){
+    // If Redis has data, render the Live Regime tab immediately (no Yahoo needed for signals)
+    if(cached&&cached.ok&&cached.cached){
+      var cr=cached.regime;
+      // Build historyRows from cached 5-day history so renderLive + renderTrack work
+      if(cr.history&&cr.history.length){
+        historyRows=cr.history.map(function(h){
+          return{d:h.date,spyClose:h.spyClose||null,g:h.g,i:h.i,ig:h.ig,q:h.rawQ};
+        });
+        // Last row uses confirmed Q from cron (post 3-day filter + Q4 gate)
+        historyRows[historyRows.length-1].q=cr.q;
+      }
+      currentQ=cr.q;
+      document.getElementById('datestamp').textContent=cr.date+' \u00B7 cached \u00B7 updating\u2026';
+      renderLive({d:cr.date,spyClose:cr.spyClose,g:cr.g,i:cr.i,ig:cr.ig,q:cr.q});
+      renderTrack();
+      badge.className='badge bd';
+      badge.textContent='\u25CF Cached \u00B7 updating ETFs\u2026';
+    } else {
+      badge.textContent='\u27F3 Fetching\u2026';
+    }
+
+    // Always fetch Yahoo: SPY/DBC/GLD/DBA (270d) for charts + ETF tiles for current quadrant
+    return Promise.all([
+      fetchYahoo('SPY',270),fetchYahoo('DBC',270),fetchYahoo('GLD',270),fetchYahoo('DBA',270)
+    ]).then(function(results){
+      allPrices={spy:results[0],dbc:results[1],gld:results[2],dba:results[3]};
+      buildHistoryRows();
+      var fq=historyRows.length?historyRows[historyRows.length-1].q||2:2;
+      etfPerf={};etfPerf5d={};
+      [{t:'SPY',p:results[0]},{t:'DBC',p:results[1]},{t:'GLD',p:results[2]},{t:'DBA',p:results[3]}].forEach(function(x){
+        var n=x.p.length;
+        if(n>=21)etfPerf[x.t]=(x.p[n-1].c-x.p[n-21].c)/x.p[n-21].c*100;
+        if(n>=6)etfPerf5d[x.t]=(x.p[n-1].c-x.p[n-6].c)/x.p[n-6].c*100;
       });
-      renderAll();
-      badge.className='badge bl';badge.textContent='\u25CF Live data';btn.disabled=false;
+      var need=[];var seen={};
+      (RECS[fq]||[]).concat(SHORTS[fq]||[]).forEach(function(t){if(!seen[t]&&!(t in etfPerf)){seen[t]=1;need.push(t);}});
+      return Promise.allSettled(need.map(function(t){return fetchYahoo(t,45);})).then(function(res2){
+        need.forEach(function(t,i){
+          var r=res2[i];
+          if(r.status==='fulfilled'){var p=r.value;var n=p.length;
+            if(n>=21)etfPerf[t]=(p[n-1].c-p[n-21].c)/p[n-21].c*100;
+            if(n>=6)etfPerf5d[t]=(p[n-1].c-p[n-6].c)/p[n-6].c*100;}
+        });
+        renderAll();
+        badge.className='badge bl';badge.textContent='\u25CF Live data';btn.disabled=false;
+      });
     });
   }).catch(function(e){
     console.error('Fetch error:',e);
