@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -161,7 +160,6 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
 </div>
 
 <!-- LIVE TAB -->
-
 <div class="tp active" id="tab-live">
   <div class="hero">
     <div class="rc" id="regime-card">
@@ -224,7 +222,6 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
 </div>
 
 <!-- HISTORY TAB -->
-
 <div class="tp" id="tab-history">
   <div class="cc">
     <div class="cctop">
@@ -258,7 +255,6 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
 </div>
 
 <!-- BACKTEST TAB -->
-
 <div class="tp" id="tab-backtest">
   <div class="sh">15-Year Accuracy by Quadrant &middot; Jan 2010&#8211;Apr 2026 &middot; 3-day confirmation &middot; Q4 inflation gate &middot; Hybrid DBC/DBA proxy</div>
   <div class="btg" id="bt-grid"></div>
@@ -273,7 +269,6 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
 </div>
 
 <!-- HOW IT WORKS TAB -->
-
 <div class="tp" id="tab-howto">
   <div class="hg">
     <div class="hc">
@@ -335,6 +330,15 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
         </div>
       </div>
       <div class="nb"><strong>Note on UUP:</strong> Tested and excluded from all baskets &#8212; worst performer in Q4 in both high and low CPI environments (&#8722;0.46% and &#8722;1.35% respectively). The dollar strengthens during rate-hike cycles when Q4 shouldn't be active.</div>
+    </div>
+    <div class="hc wide tinted">
+      <div class="ht" style="color:var(--mut);">&#x2466; Production Setup &#8212; Vercel &middot; Upstash &middot; Resend</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:4px;" class="infra3">
+        <div><div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px;">Vercel &#8212; Hosting &amp; Cron</div><div style="font-size:12px;color:var(--mut);line-height:1.75;">Deploy <code>index.html</code> to Vercel. Add <code>api/refresh.js</code> serverless function to fetch Yahoo Finance server-side and write signals to Upstash. Cron: <code>"0 23 * * 1-5"</code> (5pm CT)</div></div>
+        <div><div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px;">Upstash &#8212; Redis Storage</div><div style="font-size:12px;color:var(--mut);line-height:1.75;">Two keys: <code>regime:current</code> (today's signals JSON) and <code>alerts:subscribers</code> (email list). Dashboard reads on load &#8212; instant. Free tier is ample.</div></div>
+        <div><div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px;">Resend &#8212; Email Alerts</div><div style="font-size:12px;color:var(--mut);line-height:1.75;">On confirmed regime change, send via <strong>Resend API</strong> (free 3,000/month) to all subscribers. Includes new quadrant, signals, ETF recommendations. ~40 emails/year per subscriber.</div></div>
+      </div>
+      <div class="nb"><strong>Quick start:</strong> 1) Deploy to Vercel &#8594; 2) Create free Upstash Redis DB &#8594; 3) Add <code>UPSTASH_URL</code>, <code>UPSTASH_TOKEN</code>, <code>RESEND_API_KEY</code> as Vercel env vars &#8594; 4) Add <code>api/refresh.js</code> &#8594; 5) Subscribe via Live Regime tab.</div>
     </div>
   </div>
 </div>
@@ -398,6 +402,24 @@ function fetchYahoo(ticker,days){
   });
 }
 
+function saveToRedis(){
+  if(!historyRows.length)return;
+  var latest=historyRows[historyRows.length-1];
+  var history=historyRows.slice(-5).map(function(r){return{date:r.d,spyClose:r.spyClose,rawQ:r.q,g:r.g,i:r.i,ig:r.ig};});
+  var payload={regime:{
+    q:currentQ,rawQ:latest.q,date:latest.d,spyClose:latest.spyClose,
+    g:latest.g,i:latest.i,ig:latest.ig,history:history
+  }};
+  fetch('/api/save',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(payload)
+  }).then(function(r){return r.json();}).then(function(d){
+    if(d.ok)console.log('Redis saved — Q'+d.q+(d.changed?' REGIME CHANGE':''));
+    else console.warn('Redis save failed:',d.error);
+  }).catch(function(e){console.warn('Redis save error:',e);});
+}
+
 function doFetch(manual){
   var btn=document.getElementById('rbtn');
   var badge=document.getElementById('data-badge');
@@ -457,6 +479,8 @@ function doFetch(manual){
         });
         renderAll();
         badge.className='badge bl';badge.textContent='\u25CF Live data';btn.disabled=false;
+        // Save latest signals to Redis so future loads can use cached data
+        saveToRedis();
       });
     });
   }).catch(function(e){
