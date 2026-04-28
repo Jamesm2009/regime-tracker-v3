@@ -4,8 +4,8 @@
 // GET  /api/subscribe                                    → debug: returns subscriber count
 
 async function redis(...args) {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const url = process.env.UPSTASH_URL;
+  const token = process.env.UPSTASH_TOKEN;
 
   if (!url || !token) {
     throw new Error('UPSTASH_URL or UPSTASH_TOKEN env var is missing');
@@ -57,8 +57,8 @@ module.exports = async function handler(req, res) {
       return res.status(500).json({
         ok: false,
         error: err.message,
-        upstashUrl: process.env.UPSTASH_REDIS_REST_URL ? 'set' : 'MISSING',
-        upstashToken: process.env.UPSTASH_REDIS_REST_TOKEN ? 'set' : 'MISSING'
+        upstashUrl: process.env.UPSTASH_URL ? 'set' : 'MISSING',
+        upstashToken: process.env.UPSTASH_TOKEN ? 'set' : 'MISSING'
       });
     }
   }
