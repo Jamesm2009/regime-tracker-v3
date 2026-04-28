@@ -141,11 +141,13 @@ module.exports = async function handler(req, res) {
   const log = [];
   try {
     log.push('Fetching Yahoo data...');
-    const [spy, dbc, gld, dba] = await Promise.all([
-      fetchYahoo('SPY', 270), fetchYahoo('DBC', 270),
-      fetchYahoo('GLD', 270), fetchYahoo('DBA', 270)
+    const [spy, dbc, gld] = await Promise.all([
+      fetchYahoo('SPY', 270), fetchYahoo('DBC', 270), fetchYahoo('GLD', 270)
     ]);
-    log.push(`SPY:${spy.length} DBC:${dbc.length} GLD:${gld.length} DBA:${dba.length}`);
+    // DBA sometimes returns 500 from Yahoo server-side — fall back to empty array
+    // which causes the hybrid filter to use DBC as-is (safe default)
+    const dba = await fetchYahoo('DBA', 270).catch(function() { return []; });
+    log.push('SPY:' + spy.length + ' DBC:' + dbc.length + ' GLD:' + gld.length + ' DBA:' + dba.length);
 
     const sig = calcSignals(spy, dbc, gld, dba);
     if (!sig) throw new Error('Not enough price history');
