@@ -4,18 +4,18 @@
 
 // ─── Upstash Redis helpers ───────────────────────────────────────────────────
 async function redisGet(key) {
-  const res = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/get/${encodeURIComponent(key)}`, {
-    headers: { Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}` }
+  const res = await fetch(`${process.env.UPSTASH_URL}/get/${encodeURIComponent(key)}`, {
+    headers: { Authorization: `Bearer ${process.env.UPSTASH_TOKEN}` }
   });
   const json = await res.json();
   return json.result; // null if not found
 }
 
 async function redisSet(key, value) {
-  const res = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/set/${encodeURIComponent(key)}`, {
+  const res = await fetch(`${process.env.UPSTASH_URL}/set/${encodeURIComponent(key)}`, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
+      Authorization: `Bearer ${process.env.UPSTASH_TOKEN}`,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify([value])
@@ -24,10 +24,10 @@ async function redisSet(key, value) {
 }
 
 async function redisSAdd(key, member) {
-  const res = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/sadd/${encodeURIComponent(key)}`, {
+  const res = await fetch(`${process.env.UPSTASH_URL}/sadd/${encodeURIComponent(key)}`, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
+      Authorization: `Bearer ${process.env.UPSTASH_TOKEN}`,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify([member])
@@ -36,8 +36,8 @@ async function redisSAdd(key, member) {
 }
 
 async function redisSmembers(key) {
-  const res = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/smembers/${encodeURIComponent(key)}`, {
-    headers: { Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}` }
+  const res = await fetch(`${process.env.UPSTASH_URL}/smembers/${encodeURIComponent(key)}`, {
+    headers: { Authorization: `Bearer ${process.env.UPSTASH_TOKEN}` }
   });
   const json = await res.json();
   return Array.isArray(json.result) ? json.result : [];
