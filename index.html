@@ -388,22 +388,32 @@ function checkRegimeChange(q){
   lastKnownQ=q;
 }
 
+function parseYahooJson(j){
+  var res=j.chart.result[0];
+  var ts=res.timestamp;
+  var cl=res.indicators.quote[0].close;
+  var raw=ts.map(function(t,i){return{d:new Date(t*1000).toISOString().slice(0,10),c:cl[i]};}).filter(function(x){return x.c!=null;});
+  var seen={};
+  raw.forEach(function(x){seen[x.d]=x;});
+  return Object.keys(seen).sort().map(function(d){return seen[d];});
+}
 function fetchYahoo(ticker,days){
   var bust=new Date().toISOString().slice(0,10).replace(/-/g,'');
   var yUrl='https://query1.finance.yahoo.com/v8/finance/chart/'+ticker+'?interval=1d&range='+days+'d&_cb='+bust;
-  var pUrl='https://corsproxy.io/?url='+encodeURIComponent(yUrl);
-  return fetch(pUrl).then(function(r){
-    if(!r.ok)throw new Error(ticker+': HTTP '+r.status);
+  var proxy1='https://corsproxy.io/?'+encodeURIComponent(yUrl);
+  var proxy2='https://api.allorigins.win/raw?url='+encodeURIComponent(yUrl);
+  return fetch(proxy1).then(function(r){
+    if(!r.ok)throw new Error('proxy1 '+r.status);
     return r.json();
   }).then(function(j){
-    var res=j.chart.result[0];
-    var ts=res.timestamp;
-    var cl=res.indicators.quote[0].close;
-    var raw=ts.map(function(t,i){return{d:new Date(t*1000).toISOString().slice(0,10),c:cl[i]};}).filter(function(x){return x.c!=null;});
-    // deduplicate by date (keep last entry per date — guards against proxy returning duplicate rows)
-    var seen={};
-    raw.forEach(function(x){seen[x.d]=x;});
-    return Object.keys(seen).sort().map(function(d){return seen[d];});
+    return parseYahooJson(j);
+  }).catch(function(){
+    return fetch(proxy2).then(function(r){
+      if(!r.ok)throw new Error(ticker+' both proxies failed');
+      return r.json();
+    }).then(function(j){
+      return parseYahooJson(j);
+    });
   });
 }
 
