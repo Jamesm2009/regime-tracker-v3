@@ -321,7 +321,7 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
       <div class="ht" style="color:var(--mut);">&#x2465; Live Updates &#8212; Yahoo Finance via CORS Proxy</div>
       <div class="hconn">
         <div>
-          <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Data source</strong> &#8212; Yahoo Finance free API. SPY, DBC, GLD, DBA fetched via <code>corsproxy.io</code> proxy. No API key required.</div></div>
+          <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Data source</strong> &#8212; Yahoo Finance free API. Routed via own Nginx <code>/yf/</code> proxy &mdash; no third-party dependency, no rate limits.</div></div>
           <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Calculation</strong> &#8212; SPY 20d (growth), DBC/DBA+GLD 20d hybrid (inflation), DBC+GLD 63d (gate). Under 2 seconds.</div></div>
         </div>
         <div>
@@ -398,22 +398,14 @@ function parseYahooJson(j){
   return Object.keys(seen).sort().map(function(d){return seen[d];});
 }
 function fetchYahoo(ticker,days){
+  // Routes through own Nginx proxy — no third-party CORS dependency
   var bust=new Date().toISOString().slice(0,10).replace(/-/g,'');
-  var yUrl='https://query1.finance.yahoo.com/v8/finance/chart/'+ticker+'?interval=1d&range='+days+'d&_cb='+bust;
-  var proxy1='https://corsproxy.io/?'+encodeURIComponent(yUrl);
-  var proxy2='https://api.allorigins.win/raw?url='+encodeURIComponent(yUrl);
-  return fetch(proxy1).then(function(r){
-    if(!r.ok)throw new Error('proxy1 '+r.status);
+  var url='/yf/v8/finance/chart/'+ticker+'?interval=1d&range='+days+'d&_cb='+bust;
+  return fetch(url).then(function(r){
+    if(!r.ok)throw new Error(ticker+': HTTP '+r.status);
     return r.json();
   }).then(function(j){
     return parseYahooJson(j);
-  }).catch(function(){
-    return fetch(proxy2).then(function(r){
-      if(!r.ok)throw new Error(ticker+' both proxies failed');
-      return r.json();
-    }).then(function(j){
-      return parseYahooJson(j);
-    });
   });
 }
 
