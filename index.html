@@ -53,8 +53,9 @@ body { background:var(--bg); color:var(--txt); font-family:var(--sans); font-siz
 .datestamp { font-family:var(--mono); font-size:11px; color:var(--dim); }
 
 /* ── Tabs ── */
-.tabs { display:flex; gap:2px; margin-bottom:20px; background:var(--surf); border-radius:var(--radius); padding:4px; border:1px solid var(--bdr); width:fit-content; overflow-x:auto; }
-.tab { font-family:var(--sans); font-size:12px; font-weight:600; padding:7px 18px; border-radius:8px; cursor:pointer; color:var(--mut); border:none; background:none; white-space:nowrap; letter-spacing:.03em; transition:all .15s; }
+.tabs { display:flex; gap:2px; margin-bottom:20px; background:var(--surf); border-radius:var(--radius); padding:4px; border:1px solid var(--bdr); overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; white-space:nowrap; width:100%; }
+.tabs::-webkit-scrollbar { display:none; }
+.tab { font-family:var(--sans); font-size:12px; font-weight:600; padding:7px 14px; border-radius:8px; cursor:pointer; color:var(--mut); border:none; background:none; white-space:nowrap; letter-spacing:.03em; transition:all .15s; flex-shrink:0; }
 .tab:hover { color:var(--txt); }
 .tab.active { background:var(--surf3); color:var(--txt); }
 .tp { display:none; }
