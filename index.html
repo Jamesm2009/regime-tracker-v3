@@ -318,7 +318,7 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
       </div>
     </div>
     <div class="hc wide">
-      <div class="ht" style="color:var(--mut);">&#x2465; Live Updates &#8212; Yahoo Finance via CORS Proxy</div>
+      <div class="ht" style="color:var(--mut);">&#x2465; Live Updates &#8212; How Data Is Fetched</div>
       <div class="hconn">
         <div>
           <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Data source</strong> &#8212; Yahoo Finance free API. Routed via own Nginx <code>/yf/</code> proxy &mdash; no third-party dependency, no rate limits.</div></div>
@@ -332,13 +332,20 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
       <div class="nb"><strong>Note on UUP:</strong> Tested and excluded from all baskets &#8212; worst performer in Q4 in both high and low CPI environments (&#8722;0.46% and &#8722;1.35% respectively). The dollar strengthens during rate-hike cycles when Q4 shouldn't be active.</div>
     </div>
     <div class="hc wide tinted">
-      <div class="ht" style="color:var(--mut);">&#x2466; Production Setup &#8212; Vercel &middot; Upstash &middot; Resend</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:4px;" class="infra3">
-        <div><div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px;">Vercel &#8212; Hosting &amp; Cron</div><div style="font-size:12px;color:var(--mut);line-height:1.75;">Deploy <code>index.html</code> to Vercel. Add <code>api/refresh.js</code> serverless function to fetch Yahoo Finance server-side and write signals to Upstash. Cron: <code>"0 23 * * 1-5"</code> (5pm CT)</div></div>
-        <div><div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px;">Upstash &#8212; Redis Storage</div><div style="font-size:12px;color:var(--mut);line-height:1.75;">Two keys: <code>regime:current</code> (today's signals JSON) and <code>alerts:subscribers</code> (email list). Dashboard reads on load &#8212; instant. Free tier is ample.</div></div>
-        <div><div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px;">Resend &#8212; Email Alerts</div><div style="font-size:12px;color:var(--mut);line-height:1.75;">On confirmed regime change, send via <strong>Resend API</strong> (free 3,000/month) to all subscribers. Includes new quadrant, signals, ETF recommendations. ~16 emails/year per subscriber.</div></div>
+      <div class="ht" style="color:var(--mut);">&#x2466; How to Use This Dashboard</div>
+      <div class="hconn">
+        <div>
+          <div class="hs"><div class="hn">1</div><div class="hb"><strong>Check the current regime</strong> &#8212; Open the Live Regime tab. The large coloured card tells you which of the four quadrants is active and how long it has been running.</div></div>
+          <div class="hs"><div class="hn">2</div><div class="hb"><strong>Read the three signal gauges</strong> &#8212; Green bar = growth rising. Amber bar = inflation rising. Blue dashed = inflation gate. Bars left of centre = negative signal.</div></div>
+          <div class="hs"><div class="hn">3</div><div class="hb"><strong>Check confirmation status</strong> &#8212; Only act when the pill reads <strong style="color:var(--q1);">CONFIRMED</strong>. A pending change needs 3 consecutive days before it is official.</div></div>
+        </div>
+        <div>
+          <div class="hs"><div class="hn">4</div><div class="hb"><strong>Review the ETF tiles</strong> &#8212; Long tiles show the recommended basket for this regime with live 20-day and 5-day returns. Short tiles show what tends to underperform.</div></div>
+          <div class="hs"><div class="hn">5</div><div class="hb"><strong>Subscribe to alerts</strong> &#8212; Enter your email in the alert box on the Live Regime tab to get notified on confirmed regime changes (~16 per year).</div></div>
+          <div class="hs"><div class="hn">6</div><div class="hb"><strong>Check the History tab</strong> &#8212; See how regimes have shifted over the past 3M/6M/1Y alongside SPY price. Use signal chart to spot divergences early.</div></div>
+        </div>
       </div>
-      <div class="nb"><strong>Quick start:</strong> 1) Deploy to Vercel &#8594; 2) Create free Upstash Redis DB &#8594; 3) Add <code>UPSTASH_URL</code>, <code>UPSTASH_TOKEN</code>, <code>RESEND_API_KEY</code> as Vercel env vars &#8594; 4) Add <code>api/refresh.js</code> &#8594; 5) Subscribe via Live Regime tab.</div>
+      <div class="nb"><strong>Important:</strong> This is a signal framework, not a trading system. Always review the Backtest Stats tab to understand hit rates and false signal rates before acting. See the full disclaimer below.</div>
     </div>
   </div>
 </div>
@@ -704,3 +711,4 @@ doFetch(false);
 </script>
 </body>
 </html>
+ENDOFFILE
