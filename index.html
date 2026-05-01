@@ -339,6 +339,80 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
 
 <!-- HOW TO USE TAB -->
 <div class="tp" id="tab-guide">
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+    <div class="hc">
+      <div class="ht" style="color:var(--q1);">Step 1 &#8212; Check the Current Regime</div>
+      <div class="hs"><div class="hn">&#8594;</div><div class="hb">The large coloured card on the Live Regime tab shows which of the four quadrants is active and how long it has been running.</div></div>
+      <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong style="color:var(--q1);">Goldilocks</strong> = growth up, inflation down. <strong style="color:var(--q2);">Overheating</strong> = both up. <strong style="color:var(--q3);">Stagflation</strong> = growth down, inflation up. <strong style="color:var(--q4);">Deflation</strong> = both down.</div></div>
+      <div class="hs"><div class="hn">&#8594;</div><div class="hb">Check the <strong>Hit Rate</strong> and <strong>Avg Fwd 20d</strong> shown on the card &#8212; these are the 15-year backtest results for this regime.</div></div>
+    </div>
+    <div class="hc">
+      <div class="ht" style="color:var(--q2);">Step 2 &#8212; Confirm the Signal</div>
+      <div class="hs"><div class="hn">&#8594;</div><div class="hb">Only act when the <strong>3-Day Confirmation</strong> pill reads <span class="pill pg">CONFIRMED</span>. A new regime needs 3 consecutive days before it is official.</div></div>
+      <div class="hs"><div class="hn">&#8594;</div><div class="hb">Check the three gauges &#8212; <strong style="color:var(--q1);">Growth</strong> (green), <strong style="color:var(--q2);">Inflation</strong> (amber), <strong style="color:var(--q4);">Gate</strong> (blue). Bars right of centre = positive signal.</div></div>
+      <div class="hs"><div class="hn">&#8594;</div><div class="hb">If <strong>Q4 Filter Active</strong> shows BLOCKING, the deflation signal has been suppressed &#8212; hold the previous regime.</div></div>
+    </div>
+    <div class="hc">
+      <div class="ht" style="color:var(--q3);">Step 3 &#8212; Review the ETF Baskets</div>
+      <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Long tiles</strong> &#8212; The recommended ETF basket for this regime. 20-day return shows recent momentum. 5-day return shows short-term direction.</div></div>
+      <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Short tiles</strong> &#8212; ETFs that historically underperform in this regime. Consider reducing or avoiding these.</div></div>
+      <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Crypto note</strong> &#8212; IBIT is opportunistic in Q1 and Q3 only. High risk, satellite position only &#8212; not core.</div></div>
+    </div>
+    <div class="hc">
+      <div class="ht" style="color:var(--q4);">Step 4 &#8212; Monitor &amp; Stay Alerted</div>
+      <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>History tab</strong> &#8212; Review the SPY chart with colour-coded regime bands to see how the current regime compares to past episodes.</div></div>
+      <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Signal chart</strong> &#8212; Watch for growth and inflation lines crossing zero &#8212; that is typically where regime changes begin.</div></div>
+      <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Subscribe to alerts</strong> &#8212; Enter your email on the Live Regime tab. You will be notified within 24 hours of any confirmed regime change (~16/year).</div></div>
+    </div>
+  </div>
+
+  <div class="cc">
+    <div class="ct" style="margin-bottom:14px;">Common Questions</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:6px;">Why didn&#8217;t the regime change even though the Gate went negative?</div>
+        <div style="font-size:12px;color:var(--mut);line-height:1.8;">The Gate going negative does <strong style="color:var(--txt);">not trigger a regime change</strong> on its own. It is a permission switch, not a signal. It only matters for Q4 &#8212; and only if both Growth <em>and</em> Inflation are already negative. If Growth is still positive, the regime stays Q1 or Q2 regardless of the Gate. Think of it as: the Gate going negative unlocks the door to Q4, but Growth and Inflation still have to knock.</div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:6px;">The Gate has been negative for several days but nothing changed &#8212; is that normal?</div>
+        <div style="font-size:12px;color:var(--mut);line-height:1.8;">Yes, completely normal. Check the Growth Signal on the Live Regime tab. If Growth is positive (green), the model is in Q1 or Q2 &#8212; the Gate is irrelevant in those quadrants. The Gate only blocks or allows Q4. It has no effect on Q1, Q2, or Q3 signals at all.</div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:6px;">Why does the 3-Day Confirmation exist?</div>
+        <div style="font-size:12px;color:var(--mut);line-height:1.8;">Without it, the model generated a false signal on 38% of regime changes in backtesting &#8212; flags that reversed within a day or two. Requiring 3 consecutive days in the same quadrant cuts that to 13&#8211;20%. The cost is a 2&#8211;3 day lag on entry. The benefit is far fewer whipsaws.</div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:6px;">What does the Inflation Signal going negative mean if we&#8217;re still in Q2?</div>
+        <div style="font-size:12px;color:var(--mut);line-height:1.8;">It means 20-day commodity momentum has dipped below zero, but the 3-day confirmation has not yet confirmed a change. The model holds Q2 until the new quadrant holds for 3 full days. If the amber line stays below zero on the signal chart, a confirmed shift to Q1 is likely within days.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cc">
+    <div class="ct" style="margin-bottom:14px;">Quick Reference &#8212; What Each Regime Means for Your Portfolio</div>
+    <div class="fg4">
+      <div class="fcard" style="background:rgba(47,217,138,.07);border:1px solid rgba(47,217,138,.2);">
+        <div style="font-size:11px;font-weight:700;color:var(--q1);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Q1 Goldilocks</div>
+        <div style="font-size:12px;color:var(--mut);line-height:1.8;"><strong style="color:var(--txt);">Favour:</strong> US tech, growth stocks, small caps<br><strong style="color:var(--txt);">Reduce:</strong> Energy, international, bonds<br><strong style="color:var(--txt);">Hit rate:</strong> 62% &middot; Avg fwd 20d: +1.03%<br><strong style="color:var(--txt);">Typical duration:</strong> Weeks to months</div>
+      </div>
+      <div class="fcard" style="background:rgba(240,160,48,.07);border:1px solid rgba(240,160,48,.2);">
+        <div style="font-size:11px;font-weight:700;color:var(--q2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Q2 Overheating</div>
+        <div style="font-size:12px;color:var(--mut);line-height:1.8;"><strong style="color:var(--txt);">Favour:</strong> Commodities, energy, cyclicals<br><strong style="color:var(--txt);">Reduce:</strong> Long bonds, high yield, EUR/JPY<br><strong style="color:var(--txt);">Hit rate:</strong> 55% &middot; Avg fwd 20d: +1.46%<br><strong style="color:var(--txt);">Typical duration:</strong> Weeks to months</div>
+      </div>
+      <div class="fcard" style="background:rgba(232,85,85,.07);border:1px solid rgba(232,85,85,.2);">
+        <div style="font-size:11px;font-weight:700;color:var(--q3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Q3 Stagflation</div>
+        <div style="font-size:12px;color:var(--mut);line-height:1.8;"><strong style="color:var(--txt);">Favour:</strong> Gold, silver, oil, short bonds<br><strong style="color:var(--txt);">Reduce:</strong> Long bonds, EM bonds, JPY<br><strong style="color:var(--txt);">Hit rate:</strong> 51% &middot; Avg fwd 20d: +0.36%<br><strong style="color:var(--txt);">Typical duration:</strong> Days to weeks</div>
+      </div>
+      <div class="fcard" style="background:rgba(91,158,240,.07);border:1px solid rgba(91,158,240,.2);">
+        <div style="font-size:11px;font-weight:700;color:var(--q4);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Q4 Deflation</div>
+        <div style="font-size:12px;color:var(--mut);line-height:1.8;"><strong style="color:var(--txt);">Favour:</strong> Defensives, utilities, med bonds<br><strong style="color:var(--txt);">Reduce:</strong> Oil, commodities, frontier EM<br><strong style="color:var(--txt);">Hit rate:</strong> 50% &middot; Avg fwd 20d: +0.43%<br><strong style="color:var(--txt);">Gate required:</strong> 63d infl momentum negative</div>
+      </div>
+    </div>
+    <div class="nb"><strong>Remember:</strong> This is a signal framework, not a trading system. Hit rates of 50&#8211;62% mean there will be false signals. Always size positions accordingly and consult a qualified financial advisor before acting.</div>
+  </div>
+
+</div>
   <div class="hg">
     <div class="hc">
       <div class="ht" style="color:var(--q1);">Step 1 &#8212; Check the Current Regime</div>
