@@ -1,7 +1,7 @@
 const fs = require('fs');
 const https = require('https');
 
-const TIINGO_TOKEN = process.env.TIINGO_API_KEY || 'YOUR_TIINGO_KEY_HERE';
+const TIINGO_TOKEN = process.env.TIINGO_API_KEY || '59ef52629eeae58175e43bc4cc4402344e8a484f';
 
 // Transition probabilities from 16-year backtest
 const TRANS_PROBS = {
