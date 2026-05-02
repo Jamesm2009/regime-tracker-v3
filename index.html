@@ -157,7 +157,6 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
   <button class="tab" onclick="showTab('history',this)">History</button>
   <button class="tab" onclick="showTab('backtest',this)">Backtest Stats</button>
   <button class="tab" onclick="showTab('howto',this)">How It Works</button>
-  <button class="tab" onclick="showTab('guide',this)">How to Use</button>
 </div>
 
 <!-- LIVE TAB -->
@@ -179,27 +178,42 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
       <div class="sr"><span class="slb">Q4 Filter Active</span><span class="pill pd" id="q4-pill">N/A</span></div>
       <div class="sr"><span class="slb">Growth Signal (SPY 20d)</span><span class="sv" id="g-status">&#8212;</span></div>
       <div class="sr"><span class="slb">Inflation Signal (DBC/DBA+GLD 20d)</span><span class="sv" id="i-status">&#8212;</span></div>
+      <div class="sr"><span class="slb">Gate Signal (DBC+GLD 63d)</span><span class="sv" id="ig-status">&#8212;</span></div>
       <div class="sr"><span class="slb">Signal Sources</span><span class="sv" style="font-size:11px;color:var(--mut);">SPY &middot; DBC/DBA &middot; GLD</span></div>
     </div>
   </div>
-  <div class="gauges">
-    <div class="gauge">
-      <div class="gl">Growth &middot; SPY 20d Return</div>
-      <div class="gv" id="g-val">&#8212;</div>
-      <div class="gbg"><div class="gctr"></div><div class="gf" id="g-bar"></div></div>
-      <div class="gd" id="g-desc">&#8212;</div>
+  <div class="cc">
+    <div class="ct" style="margin-bottom:12px;">Transition Outlook &middot; Next Regime Probabilities (20-day window)</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">
+      <div style="padding:12px 14px;border-radius:9px;border:1px solid var(--bdr);background:var(--surf2);" id="prob-q1">
+        <div style="font-size:10px;font-weight:700;color:var(--q1);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;">Q1 Goldilocks</div>
+        <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--q1);" id="prob-q1-val">&#8212;</div>
+      </div>
+      <div style="padding:12px 14px;border-radius:9px;border:1px solid var(--bdr);background:var(--surf2);" id="prob-q2">
+        <div style="font-size:10px;font-weight:700;color:var(--q2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;">Q2 Overheating</div>
+        <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--q2);" id="prob-q2-val">&#8212;</div>
+      </div>
+      <div style="padding:12px 14px;border-radius:9px;border:1px solid var(--bdr);background:var(--surf2);" id="prob-q3">
+        <div style="font-size:10px;font-weight:700;color:var(--q3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;">Q3 Stagflation</div>
+        <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--q3);" id="prob-q3-val">&#8212;</div>
+      </div>
+      <div style="padding:12px 14px;border-radius:9px;border:1px solid var(--bdr);background:var(--surf2);" id="prob-q4">
+        <div style="font-size:10px;font-weight:700;color:var(--q4);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;">Q4 Deflation</div>
+        <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--q4);" id="prob-q4-val">&#8212;</div>
+      </div>
     </div>
-    <div class="gauge">
-      <div class="gl">Inflation &middot; DBC/DBA+GLD 20d (hybrid)</div>
-      <div class="gv" id="i-val">&#8212;</div>
-      <div class="gbg"><div class="gctr"></div><div class="gf" id="i-bar"></div></div>
-      <div class="gd" id="i-desc">&#8212;</div>
-    </div>
-    <div class="gauge">
-      <div class="gl">Infl Gate &middot; DBC+GLD 63d</div>
-      <div class="gv" id="ig-val">&#8212;</div>
-      <div class="gbg"><div class="gctr"></div><div class="gf" id="ig-bar"></div></div>
-      <div class="gd" id="ig-desc">&#8212;</div>
+    <div style="background:var(--surf2);border-radius:9px;padding:13px 16px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--mut);margin-bottom:6px;">Signal Momentum (5-day change)</div>
+          <div style="font-size:12px;color:var(--mut);line-height:1.7;" id="momentum-text">&#8212;</div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--mut);margin-bottom:6px;">Historical Pattern</div>
+          <div style="font-size:12px;color:var(--mut);line-height:1.7;" id="pattern-text">&#8212;</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:var(--dim2);" id="duration-text">Current regime has been active for <strong id="days-in-regime">&#8212;</strong> days. Historical average: <strong id="avg-duration">&#8212;</strong> days.</div>
     </div>
   </div>
   <div class="sh">Recommended ETFs &#8212; <span id="rec-lbl">&#8212;</span> &middot; Live 20d &amp; 5d returns</div>
@@ -212,7 +226,7 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
   <div id="track-body"></div>
   <div class="email-box">
     <div class="sh" style="margin-bottom:8px;">Regime Change Alerts &middot; Email Notification</div>
-    <p style="font-size:12px;color:var(--mut);margin-bottom:12px;line-height:1.65;">Get notified when a <strong style="color:var(--txt);">confirmed regime change</strong> is detected (~16 alerts/year).</p>
+    <p style="font-size:12px;color:var(--mut);margin-bottom:12px;line-height:1.65;">Get notified when a <strong style="color:var(--txt);">confirmed regime change</strong> is detected (~40 alerts/year).</p>
     <div class="erow">
       <input type="email" id="alert-email" class="einput" placeholder="your@email.com">
       <button class="esub" id="esub-btn" onclick="subscribeAlert()">Subscribe</button>
@@ -289,7 +303,7 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
       <div class="ht" style="color:var(--q3);">&#x2462; 3-Day Confirmation Filter</div>
       <div class="hs"><div class="hn">A</div><div class="hb">A regime change is <strong>flagged</strong> when today's quadrant differs from yesterday's. No action yet.</div></div>
       <div class="hs"><div class="hn">B</div><div class="hb">Confirmed only if the same quadrant holds on day+1 and day+2. Eliminates 42% of false signals.</div></div>
-      <div class="hs"><div class="hn">C</div><div class="hb">Unconfirmed flags are <strong>ignored</strong> &#8212; the previous regime remains active. ~16 confirmed changes/year.</div></div>
+      <div class="hs"><div class="hn">C</div><div class="hb">Unconfirmed flags are <strong>ignored</strong> &#8212; the previous regime remains active. ~40 confirmed changes/year.</div></div>
     </div>
     <div class="hc">
       <div class="ht" style="color:var(--q4);">&#x2463; Q4 Inflation Gate</div>
@@ -319,98 +333,32 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
       </div>
     </div>
     <div class="hc wide">
-      <div class="ht" style="color:var(--mut);">&#x2465; Live Updates &#8212; How Data Is Fetched</div>
+      <div class="ht" style="color:var(--mut);">&#x2465; Live Updates &#8212; Yahoo Finance via CORS Proxy</div>
       <div class="hconn">
         <div>
-          <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Data source</strong> &#8212; Yahoo Finance free API. Routed via own Nginx <code>/yf/</code> proxy &mdash; no third-party dependency, no rate limits.</div></div>
+          <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Data source</strong> &#8212; Yahoo Finance free API. SPY, DBC, GLD, DBA fetched via <code>allorigins.win</code> proxy. No API key required.</div></div>
           <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Calculation</strong> &#8212; SPY 20d (growth), DBC/DBA+GLD 20d hybrid (inflation), DBC+GLD 63d (gate). Under 2 seconds.</div></div>
         </div>
         <div>
           <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Schedule</strong> &#8212; Auto-checks at 5pm CT weekdays. Countdown shown in top bar. Hit &#8635; Refresh at any time.</div></div>
-          <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Alerts</strong> &#8212; ~16 confirmed changes/year. Subscribe via the alert box on Live Regime tab.</div></div>
+          <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Alerts</strong> &#8212; ~40 confirmed changes/year. Subscribe via the alert box on Live Regime tab.</div></div>
         </div>
       </div>
       <div class="nb"><strong>Note on UUP:</strong> Tested and excluded from all baskets &#8212; worst performer in Q4 in both high and low CPI environments (&#8722;0.46% and &#8722;1.35% respectively). The dollar strengthens during rate-hike cycles when Q4 shouldn't be active.</div>
     </div>
-
+    <div class="hc wide tinted">
+      <div class="ht" style="color:var(--mut);">&#x2466; Production Setup &#8212; Vercel &middot; Upstash &middot; Resend</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:4px;" class="infra3">
+        <div><div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px;">Vercel &#8212; Hosting &amp; Cron</div><div style="font-size:12px;color:var(--mut);line-height:1.75;">Deploy <code>index.html</code> to Vercel. Add <code>api/refresh.js</code> serverless function to fetch Yahoo Finance server-side and write signals to Upstash. Cron: <code>"0 23 * * 1-5"</code> (5pm CT)</div></div>
+        <div><div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px;">Upstash &#8212; Redis Storage</div><div style="font-size:12px;color:var(--mut);line-height:1.75;">Two keys: <code>regime:current</code> (today's signals JSON) and <code>alerts:subscribers</code> (email list). Dashboard reads on load &#8212; instant. Free tier is ample.</div></div>
+        <div><div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px;">Resend &#8212; Email Alerts</div><div style="font-size:12px;color:var(--mut);line-height:1.75;">On confirmed regime change, send via <strong>Resend API</strong> (free 3,000/month) to all subscribers. Includes new quadrant, signals, ETF recommendations. ~40 emails/year per subscriber.</div></div>
+      </div>
+      <div class="nb"><strong>Quick start:</strong> 1) Deploy to Vercel &#8594; 2) Create free Upstash Redis DB &#8594; 3) Add <code>UPSTASH_URL</code>, <code>UPSTASH_TOKEN</code>, <code>RESEND_API_KEY</code> as Vercel env vars &#8594; 4) Add <code>api/refresh.js</code> &#8594; 5) Subscribe via Live Regime tab.</div>
+    </div>
   </div>
 </div>
 </div>
 
-<!-- HOW TO USE TAB -->
-<div class="tp" id="tab-guide">
-<div style="max-width:860px;margin:0 auto;">
-  <div class="hg" style="max-width:860px;margin:0 auto;">
-    <div class="hc">
-      <div class="ht" style="color:var(--q1);">Step 1 &#8212; Check the Current Regime</div>
-      <div class="hs"><div class="hn">&#8594;</div><div class="hb">The large coloured card on the Live Regime tab shows which of the four quadrants is active and how long it has been running.</div></div>
-      <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong style="color:var(--q1);">Goldilocks</strong> = growth up, inflation down. <strong style="color:var(--q2);">Overheating</strong> = both up. <strong style="color:var(--q3);">Stagflation</strong> = growth down, inflation up. <strong style="color:var(--q4);">Deflation</strong> = both down.</div></div>
-      <div class="hs"><div class="hn">&#8594;</div><div class="hb">Check the <strong>Hit Rate</strong> and <strong>Avg Fwd 20d</strong> shown on the card &#8212; these are the 15-year backtest results for this regime.</div></div>
-    </div>
-    <div class="hc">
-      <div class="ht" style="color:var(--q2);">Step 2 &#8212; Confirm the Signal</div>
-      <div class="hs"><div class="hn">&#8594;</div><div class="hb">Only act when the <strong>3-Day Confirmation</strong> pill reads <span class="pill pg">CONFIRMED</span>. A new regime needs 3 consecutive days before it is official.</div></div>
-      <div class="hs"><div class="hn">&#8594;</div><div class="hb">Check the three gauges &#8212; <strong style="color:var(--q1);">Growth</strong> (green), <strong style="color:var(--q2);">Inflation</strong> (amber), <strong style="color:var(--q4);">Gate</strong> (blue). Bars right of centre = positive signal.</div></div>
-      <div class="hs"><div class="hn">&#8594;</div><div class="hb">If <strong>Q4 Filter Active</strong> shows BLOCKING, the deflation signal has been suppressed &#8212; hold the previous regime.</div></div>
-    </div>
-    <div class="hc">
-      <div class="ht" style="color:var(--q3);">Step 3 &#8212; Review the ETF Baskets</div>
-      <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Long tiles</strong> &#8212; The recommended ETF basket for this regime. 20-day return shows recent momentum. 5-day return shows short-term direction.</div></div>
-      <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Short tiles</strong> &#8212; ETFs that historically underperform in this regime. Consider reducing or avoiding these.</div></div>
-      <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Crypto note</strong> &#8212; IBIT is opportunistic in Q1 and Q3 only. High risk, satellite position only &#8212; not core.</div></div>
-    </div>
-    <div class="hc">
-      <div class="ht" style="color:var(--q4);">Step 4 &#8212; Monitor &amp; Stay Alerted</div>
-      <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>History tab</strong> &#8212; Review the SPY chart with colour-coded regime bands to see how the current regime compares to past episodes.</div></div>
-      <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Signal chart</strong> &#8212; Watch for growth and inflation lines crossing zero &#8212; that is typically where regime changes begin.</div></div>
-      <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Subscribe to alerts</strong> &#8212; Enter your email on the Live Regime tab. You will be notified within 24 hours of any confirmed regime change (~16/year).</div></div>
-    </div>
-  </div>
-  <div class="cc">
-    <div class="ct" style="margin-bottom:14px;">Common Questions</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-      <div>
-        <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:6px;">Why didn&#8217;t the regime change even though the Gate went negative?</div>
-        <div style="font-size:12px;color:var(--mut);line-height:1.8;">The Gate going negative does <strong style="color:var(--txt);">not trigger a regime change</strong> on its own. It is a permission switch, not a signal. It only matters for Q4 &#8212; and only if both Growth <em>and</em> Inflation are already negative. If Growth is still positive, the regime stays Q1 or Q2 regardless of the Gate. Think of it as: the Gate going negative unlocks the door to Q4, but Growth and Inflation still have to knock.</div>
-      </div>
-      <div>
-        <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:6px;">The Gate has been negative for several days but nothing changed &#8212; is that normal?</div>
-        <div style="font-size:12px;color:var(--mut);line-height:1.8;">Yes, completely normal. Check the Growth Signal on the Live Regime tab. If Growth is positive (green), the model is in Q1 or Q2 &#8212; the Gate is irrelevant in those quadrants. The Gate only blocks or allows Q4. It has no effect on Q1, Q2, or Q3 signals at all.</div>
-      </div>
-      <div>
-        <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:6px;">Why does the 3-Day Confirmation exist?</div>
-        <div style="font-size:12px;color:var(--mut);line-height:1.8;">Without it, the model generated a false signal on 38% of regime changes in backtesting &#8212; flags that reversed within a day or two. Requiring 3 consecutive days in the same quadrant cuts that to 13&#8211;20%. The cost is a 2&#8211;3 day lag on entry. The benefit is far fewer whipsaws.</div>
-      </div>
-      <div>
-        <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:6px;">What does the Inflation Signal going negative mean if we&#8217;re still in Q2?</div>
-        <div style="font-size:12px;color:var(--mut);line-height:1.8;">It means 20-day commodity momentum has dipped below zero, but the 3-day confirmation has not yet confirmed a change. The model holds Q2 until the new quadrant holds for 3 full days. If the amber line stays below zero on the signal chart, a confirmed shift to Q1 is likely within days.</div>
-      </div>
-    </div>
-  </div>
-  <div class="cc">
-    <div class="ct" style="margin-bottom:14px;">Quick Reference &#8212; What Each Regime Means for Your Portfolio</div>
-    <div class="fg4">
-      <div class="fcard" style="background:rgba(47,217,138,.07);border:1px solid rgba(47,217,138,.2);">
-        <div style="font-size:11px;font-weight:700;color:var(--q1);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Q1 Goldilocks</div>
-        <div style="font-size:12px;color:var(--mut);line-height:1.8;"><strong style="color:var(--txt);">Favour:</strong> US tech, growth stocks, small caps<br><strong style="color:var(--txt);">Reduce:</strong> Energy, international, bonds<br><strong style="color:var(--txt);">Hit rate:</strong> 62% &middot; Avg fwd 20d: +1.03%<br><strong style="color:var(--txt);">Typical duration:</strong> Weeks to months</div>
-      </div>
-      <div class="fcard" style="background:rgba(240,160,48,.07);border:1px solid rgba(240,160,48,.2);">
-        <div style="font-size:11px;font-weight:700;color:var(--q2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Q2 Overheating</div>
-        <div style="font-size:12px;color:var(--mut);line-height:1.8;"><strong style="color:var(--txt);">Favour:</strong> Commodities, energy, cyclicals<br><strong style="color:var(--txt);">Reduce:</strong> Long bonds, high yield, EUR/JPY<br><strong style="color:var(--txt);">Hit rate:</strong> 55% &middot; Avg fwd 20d: +1.46%<br><strong style="color:var(--txt);">Typical duration:</strong> Weeks to months</div>
-      </div>
-      <div class="fcard" style="background:rgba(232,85,85,.07);border:1px solid rgba(232,85,85,.2);">
-        <div style="font-size:11px;font-weight:700;color:var(--q3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Q3 Stagflation</div>
-        <div style="font-size:12px;color:var(--mut);line-height:1.8;"><strong style="color:var(--txt);">Favour:</strong> Gold, silver, oil, short bonds<br><strong style="color:var(--txt);">Reduce:</strong> Long bonds, EM bonds, JPY<br><strong style="color:var(--txt);">Hit rate:</strong> 51% &middot; Avg fwd 20d: +0.36%<br><strong style="color:var(--txt);">Typical duration:</strong> Days to weeks</div>
-      </div>
-      <div class="fcard" style="background:rgba(91,158,240,.07);border:1px solid rgba(91,158,240,.2);">
-        <div style="font-size:11px;font-weight:700;color:var(--q4);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Q4 Deflation</div>
-        <div style="font-size:12px;color:var(--mut);line-height:1.8;"><strong style="color:var(--txt);">Favour:</strong> Defensives, utilities, med bonds<br><strong style="color:var(--txt);">Reduce:</strong> Oil, commodities, frontier EM<br><strong style="color:var(--txt);">Hit rate:</strong> 50% &middot; Avg fwd 20d: +0.43%<br><strong style="color:var(--txt);">Gate required:</strong> 63d infl momentum negative</div>
-      </div>
-    </div>
-    <div class="nb"><strong>Remember:</strong> This is a signal framework, not a trading system. Hit rates of 50&#8211;62% mean there will be false signals. Always size positions accordingly and consult a qualified financial advisor before acting.</div>
-  </div>
-</div>
-</div>
 <div class="app">
   <div class="disc">
     <div class="disc-inner">
@@ -455,31 +403,21 @@ function checkRegimeChange(q){
   lastKnownQ=q;
 }
 
-function parseYahooJson(j){
-  var res=j.chart.result[0];
-  var ts=res.timestamp;
-  var cl=res.indicators.quote[0].close;
-  var raw=ts.map(function(t,i){return{d:new Date(t*1000).toISOString().slice(0,10),c:cl[i]};}).filter(function(x){return x.c!=null;});
-  var seen={};
-  raw.forEach(function(x){seen[x.d]=x;});
-  return Object.keys(seen).sort().map(function(d){return seen[d];});
-}
 function fetchYahoo(ticker,days){
-  // Routes through own Nginx proxy — no third-party CORS dependency
-  var bust=new Date().toISOString().slice(0,10).replace(/-/g,'');
-  var url='/yf/v8/finance/chart/'+ticker+'?interval=1d&range='+days+'d&_cb='+bust;
-  return fetch(url).then(function(r){
+  var yUrl='https://query1.finance.yahoo.com/v8/finance/chart/'+ticker+'?interval=1d&range='+days+'d';
+  var pUrl='https://api.allorigins.win/raw?url='+encodeURIComponent(yUrl);
+  return fetch(pUrl).then(function(r){
     if(!r.ok)throw new Error(ticker+': HTTP '+r.status);
     return r.json();
   }).then(function(j){
-    return parseYahooJson(j);
+    var res=j.chart.result[0];
+    var ts=res.timestamp;
+    var cl=res.indicators.quote[0].close;
+    return ts.map(function(t,i){return{d:new Date(t*1000).toISOString().slice(0,10),c:cl[i]};}).filter(function(x){return x.c!=null;});
   });
 }
 
-var isFetching=false;
 function doFetch(manual){
-  if(isFetching)return;
-  isFetching=true;
   var btn=document.getElementById('rbtn');
   var badge=document.getElementById('data-badge');
   btn.disabled=true;
@@ -503,14 +441,14 @@ function doFetch(manual){
         if(r.status==='fulfilled'){var p=r.value;var n=p.length;if(n>=21)etfPerf[t]=(p[n-1].c-p[n-21].c)/p[n-21].c*100;if(n>=6)etfPerf5d[t]=(p[n-1].c-p[n-6].c)/p[n-6].c*100;}
       });
       renderAll();
-      badge.className='badge bl';badge.textContent='\u25CF Live data';btn.disabled=false;isFetching=false;
+      badge.className='badge bl';badge.textContent='\u25CF Live data';btn.disabled=false;
     });
   }).catch(function(e){
     console.error('Fetch error:',e);
     badge.className='badge bd';
     badge.textContent=manual?'\u2715 Failed \u2014 see console':'\u25CF Demo mode';
     if(manual)setTimeout(function(){badge.className='badge bd';badge.textContent='\u25CF Demo mode';},4000);
-    btn.disabled=false;isFetching=false;
+    btn.disabled=false;
   });
 }
 
@@ -590,9 +528,9 @@ function renderLive(row){
   gs.textContent=fmtPct(row.g);gs.style.color=row.g==null?'':row.g>=0?'var(--q1)':'var(--q3)';
   var is=document.getElementById('i-status');
   is.textContent=fmtPct(row.i);is.style.color=row.i==null?'':row.i>=0?'var(--q2)':'var(--q4)';
-  setGauge('g-bar','g-val','g-desc',row.g,0.15,['Growth rising \u2192 risk-on','Growth falling \u2192 risk-off']);
-  setGauge('i-bar','i-val','i-desc',row.i,0.15,['Inflation rising \u2192 commodities','Inflation falling \u2192 bonds/tech']);
-  setGauge('ig-bar','ig-val','ig-desc',row.ig,0.30,['Elevated \u00B7 Q4 blocked','Normalised \u00B7 Q4 active if signalled']);
+  var igs=document.getElementById('ig-status');
+  igs.textContent=fmtPct(row.ig);igs.style.color=row.ig==null?'':row.ig>=0?'var(--q2)':'var(--q1)';
+  renderTransitions(q,row,days);
   checkRegimeChange(q);
   document.getElementById('rec-lbl').textContent=QNAMES[q];
   document.getElementById('short-lbl').textContent=QNAMES[q];
@@ -615,15 +553,39 @@ function renderLive(row){
   cn.textContent=CRYPTO[q]||'';cn.style.display='block';
 }
 
-function setGauge(barId,valId,descId,val,maxV,labels){
-  var bar=document.getElementById(barId);
-  var p=val==null?0:Math.min(Math.abs(val)/maxV,1);
-  if(val!=null&&val>=0){bar.style.left='50%';bar.style.width=(p*50)+'%';bar.style.background='var(--q1)';}
-  else if(val!=null){bar.style.left=(50-p*50)+'%';bar.style.width=(p*50)+'%';bar.style.background='var(--q3)';}
-  var el=document.getElementById(valId);
-  el.textContent=val==null?'\u2014':(val>=0?'+':'')+(val*100).toFixed(2)+'%';
-  el.style.color=val==null?'var(--mut)':val>=0?'var(--q1)':'var(--q3)';
-  document.getElementById(descId).textContent=val==null?'\u2014':val>=0?labels[0]:labels[1];
+var TRANS_PROBS={1:{1:0.929,2:0.046,3:0.003,4:0.022},2:{1:0.036,2:0.946,3:0.012,4:0.007},3:{1:0.012,2:0.046,3:0.922,4:0.021},4:{1:0.034,2:0.017,3:0.015,4:0.934}};
+var AVG_DURATIONS={1:14,2:18,3:13,4:15};
+var TRANS_PATTERNS={'2_to_1':{growth:0.0334,inflation:0.0047},'1_to_2':{growth:0.0273,inflation:-0.0060},'1_to_4':{growth:0.0021,inflation:-0.0234},'4_to_1':{growth:-0.0098,inflation:-0.0264}};
+
+function renderTransitions(q,row,daysActive){
+  var probs=TRANS_PROBS[q];
+  [1,2,3,4].forEach(function(tq){
+    var el=document.getElementById('prob-q'+tq);
+    var val=document.getElementById('prob-q'+tq+'-val');
+    val.textContent=(probs[tq]*100).toFixed(1)+'%';
+    if(tq===q){el.style.borderWidth='2px';el.style.borderColor=QCOLS[q];el.style.background='var(--surf3)';}
+    else{el.style.borderWidth='1px';el.style.borderColor='var(--bdr)';el.style.background='var(--surf2)';}
+  });
+  var prevRow=historyRows.length>=6?historyRows[historyRows.length-6]:null;
+  var gChg=prevRow&&prevRow.g!=null&&row.g!=null?(row.g-prevRow.g):null;
+  var iChg=prevRow&&prevRow.i!=null&&row.i!=null?(row.i-prevRow.i):null;
+  var gDir=gChg==null?'':gChg>0.005?'\u2191':gChg<-0.005?'\u2193':'\u2192';
+  var iDir=iChg==null?'':iChg>0.005?'\u2191':iChg<-0.005?'\u2193':'\u2192';
+  var gCol=gChg==null?'var(--mut)':gChg>0?'var(--q1)':gChg<0?'var(--q3)':'var(--mut)';
+  var iCol=iChg==null?'var(--mut)':iChg>0?'var(--q2)':iChg<0?'var(--q4)':'var(--mut)';
+  document.getElementById('momentum-text').innerHTML='Growth <span style="color:'+gCol+'">'+gDir+' '+(gChg!=null?fmtPct(gChg):'\u2014')+'</span><br>Inflation <span style="color:'+iCol+'">'+iDir+' '+(iChg!=null?fmtPct(iChg):'\u2014')+'</span>';
+  var nextQ=Object.keys(probs).filter(function(k){return k!=q;}).sort(function(a,b){return probs[b]-probs[a];})[0];
+  var patternKey=q+'_to_'+nextQ;
+  var pattern=TRANS_PATTERNS[patternKey];
+  var patternTxt='Most likely next: <strong style="color:'+QCOLS[nextQ]+'">Q'+nextQ+' '+QNAMES[nextQ]+'</strong> ('+(probs[nextQ]*100).toFixed(1)+'%)';
+  if(pattern&&probs[nextQ]>0.02){
+    var gDist=row.g!=null?Math.abs(row.g-pattern.growth):999;
+    var iDist=row.i!=null?Math.abs(row.i-pattern.inflation):999;
+    if(gDist<0.03&&iDist<0.03)patternTxt+='<br><span style="color:var(--q2);font-size:11px;">\u26A0 Signals near historical Q'+q+'\u2192Q'+nextQ+' pattern</span>';
+  }
+  document.getElementById('pattern-text').innerHTML=patternTxt;
+  document.getElementById('days-in-regime').textContent=daysActive;
+  document.getElementById('avg-duration').textContent=AVG_DURATIONS[q];
 }
 
 function renderTrack(){
