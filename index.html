@@ -122,9 +122,13 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
 .esub{padding:9px 20px;border-radius:8px;border:none;background:var(--q1);color:#0c0d0f;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;cursor:pointer;}
 .disc{border-top:1px solid var(--bdr);padding:16px 0 24px;}
 .disc-inner{background:rgba(232,85,85,.06);border:1px solid rgba(232,85,85,.2);border-radius:10px;padding:14px 18px;font-size:11px;color:var(--mut);line-height:1.8;}
+.prob-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.trans-detail{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 @media(max-width:680px){
   .hero,.hg,.hconn,.fg4,.infra3{grid-template-columns:1fr!important;}
   .gauges{grid-template-columns:1fr;}
+  .prob-grid{grid-template-columns:repeat(2,1fr)!important;}
+  .trans-detail{grid-template-columns:1fr!important;}
   .egrid{grid-template-columns:repeat(2,1fr);}
   .btg{grid-template-columns:repeat(2,1fr);}
   .hc.wide{grid-column:1;}
@@ -135,6 +139,7 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
 @media(min-width:681px) and (max-width:860px){
   .egrid{grid-template-columns:repeat(3,1fr);}
   .btg{grid-template-columns:repeat(2,1fr);}
+  .prob-grid{grid-template-columns:repeat(2,1fr)!important;}
   .hg{grid-template-columns:1fr;}
   .hc.wide{grid-column:1;}
   .fg4{grid-template-columns:repeat(2,1fr)!important;}
@@ -184,7 +189,7 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
   </div>
   <div class="cc">
     <div class="ct" style="margin-bottom:12px;">Transition Outlook &middot; Next Regime Probabilities (20-day window)</div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">
+    <div class="prob-grid">
       <div style="padding:12px 14px;border-radius:9px;border:1px solid var(--bdr);background:var(--surf2);" id="prob-q1">
         <div style="font-size:10px;font-weight:700;color:var(--q1);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;">Q1 Goldilocks</div>
         <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--q1);" id="prob-q1-val">&#8212;</div>
@@ -203,7 +208,7 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
       </div>
     </div>
     <div style="background:var(--surf2);border-radius:9px;padding:13px 16px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+      <div class="trans-detail">
         <div>
           <div style="font-size:11px;font-weight:700;color:var(--mut);margin-bottom:6px;">Signal Momentum (5-day change)</div>
           <div style="font-size:12px;color:var(--mut);line-height:1.7;" id="momentum-text">&#8212;</div>
