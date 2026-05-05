@@ -26,7 +26,7 @@ body{background:var(--bg);color:var(--txt);font-family:'Syne',sans-serif;min-hei
 .cd{font-family:'DM Mono',monospace;font-size:11px;color:var(--dim2);}
 .badge{font-family:'DM Mono',monospace;font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid;cursor:pointer;}
 .bl{border-color:var(--q1);color:var(--q1);background:rgba(47,217,138,.08);}
-.bd{border-color:var(--q2);color:var(--q2);background:rgba(240,160,48,.08);}
+.bd{border-color:var(--q3);color:var(--q3);background:rgba(232,85,85,.08);}
 .blo{border-color:var(--dim2);color:var(--dim);background:transparent;}
 .rbtn{font-family:'DM Mono',monospace;font-size:12px;padding:5px 14px;border-radius:7px;border:1px solid var(--bdr2);background:var(--surf2);color:var(--mut);cursor:pointer;}
 .rbtn:hover{background:var(--surf3);color:var(--txt);}
@@ -237,7 +237,6 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
       <button class="esub" id="esub-btn" onclick="subscribeAlert()">Subscribe</button>
     </div>
     <div id="alert-status" style="font-size:11px;color:var(--dim);margin-top:8px;font-family:'DM Mono',monospace;min-height:16px;"></div>
-    <p style="margin-top:10px;font-size:11px;color:var(--dim2);line-height:1.7;">Saves to browser storage. Connect Vercel + Upstash + Resend for production email delivery (see How It Works).</p>
   </div>
 </div>
 
@@ -338,27 +337,18 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
       </div>
     </div>
     <div class="hc wide">
-      <div class="ht" style="color:var(--mut);">&#x2465; Live Updates &#8212; Yahoo Finance via CORS Proxy</div>
+      <div class="ht" style="color:var(--mut);">&#x2465; Live Data &middot; DigitalOcean + Tiingo + Yahoo Finance</div>
       <div class="hconn">
         <div>
-          <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Data source</strong> &#8212; Yahoo Finance free API. SPY, DBC, GLD, DBA fetched via <code>allorigins.win</code> proxy. No API key required.</div></div>
-          <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Calculation</strong> &#8212; SPY 20d (growth), DBC/DBA+GLD 20d hybrid (inflation), DBC+GLD 63d (gate). Under 2 seconds.</div></div>
+          <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Nightly signal calc</strong> &#8212; cron.js runs at 1am CT weekdays. Fetches SPY, DBC, GLD, DBA from Tiingo API. Writes <code>data.json</code>. Dashboard reads this on load &#8212; instant.</div></div>
+          <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Live ETF prices</strong> &#8212; Yahoo Finance via corsproxy.io. Fetched client-side for the ETF tiles (20d &amp; 5d returns). No API key required.</div></div>
         </div>
         <div>
-          <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Schedule</strong> &#8212; Auto-checks at 5pm CT weekdays. Countdown shown in top bar. Hit &#8635; Refresh at any time.</div></div>
-          <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Alerts</strong> &#8212; ~40 confirmed changes/year. Subscribe via the alert box on Live Regime tab.</div></div>
+          <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Email alerts</strong> &#8212; On confirmed regime change, cron.js fires Resend API to all subscribers. ~40 alerts/year per subscriber.</div></div>
+          <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Subscriptions</strong> &#8212; subscribe-server.js (PM2, port 3001) handles email sign-ups. Nginx proxies <code>/subscribe</code> to it.</div></div>
         </div>
       </div>
-      <div class="nb"><strong>Note on UUP:</strong> Tested and excluded from all baskets &#8212; worst performer in Q4 in both high and low CPI environments (&#8722;0.46% and &#8722;1.35% respectively). The dollar strengthens during rate-hike cycles when Q4 shouldn't be active.</div>
-    </div>
-    <div class="hc wide tinted">
-      <div class="ht" style="color:var(--mut);">&#x2466; Production Setup &#8212; Vercel &middot; Upstash &middot; Resend</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:4px;" class="infra3">
-        <div><div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px;">Vercel &#8212; Hosting &amp; Cron</div><div style="font-size:12px;color:var(--mut);line-height:1.75;">Deploy <code>index.html</code> to Vercel. Add <code>api/refresh.js</code> serverless function to fetch Yahoo Finance server-side and write signals to Upstash. Cron: <code>"0 23 * * 1-5"</code> (5pm CT)</div></div>
-        <div><div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px;">Upstash &#8212; Redis Storage</div><div style="font-size:12px;color:var(--mut);line-height:1.75;">Two keys: <code>regime:current</code> (today's signals JSON) and <code>alerts:subscribers</code> (email list). Dashboard reads on load &#8212; instant. Free tier is ample.</div></div>
-        <div><div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px;">Resend &#8212; Email Alerts</div><div style="font-size:12px;color:var(--mut);line-height:1.75;">On confirmed regime change, send via <strong>Resend API</strong> (free 3,000/month) to all subscribers. Includes new quadrant, signals, ETF recommendations. ~40 emails/year per subscriber.</div></div>
-      </div>
-      <div class="nb"><strong>Quick start:</strong> 1) Deploy to Vercel &#8594; 2) Create free Upstash Redis DB &#8594; 3) Add <code>UPSTASH_URL</code>, <code>UPSTASH_TOKEN</code>, <code>RESEND_API_KEY</code> as Vercel env vars &#8594; 4) Add <code>api/refresh.js</code> &#8594; 5) Subscribe via Live Regime tab.</div>
+      <div class="nb"><strong>Note on UUP:</strong> Tested and excluded from all baskets &#8212; worst performer in Q4 in both high and low CPI environments (&#8722;0.46% and &#8722;1.35% respectively).</div>
     </div>
   </div>
 </div>
@@ -384,6 +374,9 @@ var SHORTS  = {1:['XLE','EEM','TLT','EWU'],2:['TLT','HYG','FXY','FXE'],3:['TLT',
 var FACTORS = {'QQQ':'US Lg Growth','IWF':'US Lg Growth','MGK':'US Lg Growth','SMH':'High Momentum','XLK':'Tech / Growth','XLY':'US Cyclical','XHB':'Cyclical / Housing','IWM':'US Small Cap','SPY':'US Lg Blend','XLE':'Energy','XLB':'Materials','SLV':'Commodities','DBC':'Broad Cmdty','GLD':'Gold / Real Asset','XLI':'US Industrials','USO':'Oil','TLT':'Long Duration Bonds','IEF':'Med Duration Bonds','IEI':'Med Duration Bonds','SHY':'Short Duration Bonds','HYG':'High Yield Bonds','EMB':'EM Bonds','XLU':'Defensive / Low Vol','XLP':'Defensive / Low Vol','XLV':'Healthcare / Def','EEM':'Emerging Mkts','EWU':'Intl Developed','FXY':'Yen / Safe Haven','FXE':'Euro FX','VNM':'Frontier EM','IBIT':'Crypto (Satellite)'};
 var CRYPTO  = {1:'IBIT: avg +7.2% in Q1 (573 days, std 12.5%) \u2014 satellite/high-risk only',2:'IBIT: avg \u22120.1% in Q2, high dispersion. Not recommended.',3:'IBIT: avg +6.4% in Q3 (std 8.6%) \u2014 satellite/opportunistic only',4:'IBIT: insufficient Q4 data. Not recommended.'};
 var BT      = {1:{hit:62,top10:55,fp:13,avg:1.03,label:'Goldilocks'},2:{hit:55,top10:80,fp:11,avg:1.46,label:'Overheating'},3:{hit:51,top10:63,fp:20,avg:0.36,label:'Stagflation'},4:{hit:50,top10:55,fp:17,avg:0.43,label:'Deflation (filtered)'}};
+var TRANS_PROBS = {1:{1:0.929,2:0.046,3:0.003,4:0.022},2:{1:0.036,2:0.946,3:0.012,4:0.007},3:{1:0.012,2:0.046,3:0.922,4:0.021},4:{1:0.034,2:0.017,3:0.015,4:0.934}};
+var AVG_DURATIONS = {1:14,2:18,3:13,4:15};
+var TRANS_PATTERNS = {'2_to_1':{growth:0.0334,inflation:0.0047},'1_to_2':{growth:0.0273,inflation:-0.0060},'1_to_4':{growth:0.0021,inflation:-0.0234},'4_to_1':{growth:-0.0098,inflation:-0.0264}};
 
 var allPrices={spy:[],dbc:[],gld:[],dba:[]};
 var historyRows=[];
@@ -395,6 +388,42 @@ var histChart=null;
 var sigChart=null;
 var btChartInst=null;
 var lastKnownQ=null;
+
+// ── Multi-proxy fetch (3 fallbacks) ──────────────────────────────────────────
+var PROXIES=[
+  function(u){return 'https://corsproxy.io/?url='+encodeURIComponent(u);},
+  function(u){return 'https://api.allorigins.win/raw?url='+encodeURIComponent(u);},
+  function(u){return 'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(u);}
+];
+var YAHOO_HOSTS=['https://query1.finance.yahoo.com','https://query2.finance.yahoo.com'];
+
+function parseYahooJson(j){
+  var res=j.chart.result[0];
+  var ts=res.timestamp;
+  var cl=res.indicators.quote[0].close;
+  return ts.map(function(t,i){return{d:new Date(t*1000).toISOString().slice(0,10),c:cl[i]};}).filter(function(x){return x.c!=null;});
+}
+
+function fetchWithProxy(ticker,days,pi,hi){
+  pi=pi||0;hi=hi||0;
+  if(pi>=PROXIES.length){return Promise.reject(new Error(ticker+': all proxies failed'));}
+  var yUrl=YAHOO_HOSTS[hi]+'/v8/finance/chart/'+ticker+'?interval=1d&range='+days+'d';
+  var pUrl=PROXIES[pi](yUrl);
+  return fetch(pUrl).then(function(r){
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    return r.json();
+  }).then(function(j){
+    if(!j.chart||!j.chart.result||!j.chart.result[0])throw new Error('bad data');
+    return parseYahooJson(j);
+  }).catch(function(){
+    var nh=hi+1<YAHOO_HOSTS.length?hi+1:0;
+    var np=nh===0?pi+1:pi;
+    return fetchWithProxy(ticker,days,np,nh);
+  });
+}
+
+function fetchYahoo(ticker,days){return fetchWithProxy(ticker,days,0,0);}
+// ─────────────────────────────────────────────────────────────────────────────
 
 function checkRegimeChange(q){
   if(lastKnownQ!==null&&lastKnownQ!==q){
@@ -408,52 +437,72 @@ function checkRegimeChange(q){
   lastKnownQ=q;
 }
 
-function fetchYahoo(ticker,days){
-  var yUrl='https://query1.finance.yahoo.com/v8/finance/chart/'+ticker+'?interval=1d&range='+days+'d';
-  var pUrl='https://api.allorigins.win/raw?url='+encodeURIComponent(yUrl);
-  return fetch(pUrl).then(function(r){
-    if(!r.ok)throw new Error(ticker+': HTTP '+r.status);
-    return r.json();
-  }).then(function(j){
-    var res=j.chart.result[0];
-    var ts=res.timestamp;
-    var cl=res.indicators.quote[0].close;
-    return ts.map(function(t,i){return{d:new Date(t*1000).toISOString().slice(0,10),c:cl[i]};}).filter(function(x){return x.c!=null;});
-  });
-}
-
 function doFetch(manual){
   var btn=document.getElementById('rbtn');
   var badge=document.getElementById('data-badge');
   btn.disabled=true;
   badge.className='badge blo';
   badge.textContent='\u27F3 Fetching\u2026';
-  Promise.all([fetchYahoo('SPY',270),fetchYahoo('DBC',270),fetchYahoo('GLD',270),fetchYahoo('DBA',270)]).then(function(results){
-    allPrices={spy:results[0],dbc:results[1],gld:results[2],dba:results[3]};
-    buildHistoryRows();
-    var fq=historyRows.length?historyRows[historyRows.length-1].q||2:2;
-    etfPerf={};etfPerf5d={};
-    [{t:'SPY',p:results[0]},{t:'DBC',p:results[1]},{t:'GLD',p:results[2]},{t:'DBA',p:results[3]}].forEach(function(x){
-      var n=x.p.length;
-      if(n>=21)etfPerf[x.t]=(x.p[n-1].c-x.p[n-21].c)/x.p[n-21].c*100;
-      if(n>=6)etfPerf5d[x.t]=(x.p[n-1].c-x.p[n-6].c)/x.p[n-6].c*100;
-    });
-    var need=[];var seen={};
-    (RECS[fq]||[]).concat(SHORTS[fq]||[]).forEach(function(t){if(!seen[t]&&!(t in etfPerf)){seen[t]=1;need.push(t);}});
-    return Promise.allSettled(need.map(function(t){return fetchYahoo(t,45);})).then(function(res2){
-      need.forEach(function(t,i){
-        var r=res2[i];
-        if(r.status==='fulfilled'){var p=r.value;var n=p.length;if(n>=21)etfPerf[t]=(p[n-1].c-p[n-21].c)/p[n-21].c*100;if(n>=6)etfPerf5d[t]=(p[n-1].c-p[n-6].c)/p[n-6].c*100;}
-      });
+  // First try loading from server cache (data.json)
+  fetch('/data.json').then(function(r){
+    if(!r.ok)throw new Error('no data.json');
+    return r.json();
+  }).then(function(d){
+    if(d&&d.spy&&d.spy.length>10){
+      allPrices={spy:d.spy,dbc:d.dbc,gld:d.gld,dba:d.dba||[]};
+      buildHistoryRows();
       renderAll();
-      badge.className='badge bl';badge.textContent='\u25CF Live data';btn.disabled=false;
+      badge.className='badge bl';badge.textContent='\u25CF Cached ('+(d.date||'?')+')';btn.disabled=false;
+      // Now fetch live ETF prices on top
+      fetchLiveETFs();
+    } else {
+      throw new Error('stale');
+    }
+  }).catch(function(){
+    // Fall back to direct Yahoo fetch
+    Promise.all([fetchYahoo('SPY',270),fetchYahoo('DBC',270),fetchYahoo('GLD',270),fetchYahoo('DBA',270)]).then(function(results){
+      allPrices={spy:results[0],dbc:results[1],gld:results[2],dba:results[3]};
+      buildHistoryRows();
+      var fq=historyRows.length?historyRows[historyRows.length-1].q||2:2;
+      etfPerf={};etfPerf5d={};
+      [{t:'SPY',p:results[0]},{t:'DBC',p:results[1]},{t:'GLD',p:results[2]},{t:'DBA',p:results[3]}].forEach(function(x){
+        var n=x.p.length;
+        if(n>=21)etfPerf[x.t]=(x.p[n-1].c-x.p[n-21].c)/x.p[n-21].c*100;
+        if(n>=6)etfPerf5d[x.t]=(x.p[n-1].c-x.p[n-6].c)/x.p[n-6].c*100;
+      });
+      var need=[];var seen={};
+      (RECS[fq]||[]).concat(SHORTS[fq]||[]).forEach(function(t){if(!seen[t]&&!(t in etfPerf)){seen[t]=1;need.push(t);}});
+      return Promise.allSettled(need.map(function(t){return fetchYahoo(t,45);})).then(function(res2){
+        need.forEach(function(t,i){
+          var r=res2[i];
+          if(r.status==='fulfilled'){var p=r.value;var n=p.length;if(n>=21)etfPerf[t]=(p[n-1].c-p[n-21].c)/p[n-21].c*100;if(n>=6)etfPerf5d[t]=(p[n-1].c-p[n-6].c)/p[n-6].c*100;}
+        });
+        renderAll();
+        badge.className='badge bl';badge.textContent='\u25CF Live data';btn.disabled=false;
+        var errDiv=document.getElementById('fetch-error-msg');if(errDiv)errDiv.remove();
+      });
+    }).catch(function(e){
+      console.error('Fetch error:',e);
+      badge.className='badge bd';
+      badge.textContent='\u2715 Data unavailable';
+      btn.disabled=false;
+      var statusDiv=document.getElementById('fetch-error-msg');
+      if(!statusDiv){statusDiv=document.createElement('div');statusDiv.id='fetch-error-msg';statusDiv.style.cssText='background:rgba(232,85,85,.1);border:1px solid rgba(232,85,85,.3);border-radius:9px;padding:12px 16px;font-size:12px;color:var(--mut);line-height:1.75;margin-bottom:14px;';document.getElementById('tab-live').insertBefore(statusDiv,document.getElementById('tab-live').firstChild);}
+      statusDiv.innerHTML='<strong style="color:var(--q3);">\u26A0 Data fetch failed.</strong> Yahoo Finance proxy may be temporarily blocked. <strong style="color:var(--txt);">Wait 2\u20133 minutes and click \u8635 Refresh.</strong> Error: '+e.message;
     });
-  }).catch(function(e){
-    console.error('Fetch error:',e);
-    badge.className='badge bd';
-    badge.textContent=manual?'\u2715 Failed \u2014 see console':'\u25CF Demo mode';
-    if(manual)setTimeout(function(){badge.className='badge bd';badge.textContent='\u25CF Demo mode';},4000);
-    btn.disabled=false;
+  });
+}
+
+function fetchLiveETFs(){
+  var fq=historyRows.length?historyRows[historyRows.length-1].q||2:2;
+  var need=[];var seen={};
+  (RECS[fq]||[]).concat(SHORTS[fq]||[]).forEach(function(t){if(!seen[t]&&!(t in etfPerf)){seen[t]=1;need.push(t);}});
+  Promise.allSettled(need.map(function(t){return fetchYahoo(t,45);})).then(function(res2){
+    need.forEach(function(t,i){
+      var r=res2[i];
+      if(r.status==='fulfilled'){var p=r.value;var n=p.length;if(n>=21)etfPerf[t]=(p[n-1].c-p[n-21].c)/p[n-21].c*100;if(n>=6)etfPerf5d[t]=(p[n-1].c-p[n-6].c)/p[n-6].c*100;}
+    });
+    renderAll();
   });
 }
 
@@ -534,7 +583,10 @@ function renderLive(row){
   var is=document.getElementById('i-status');
   is.textContent=fmtPct(row.i);is.style.color=row.i==null?'':row.i>=0?'var(--q2)':'var(--q4)';
   var igs=document.getElementById('ig-status');
-  igs.textContent=fmtPct(row.ig);igs.style.color=row.ig==null?'':row.ig>=0?'var(--q2)':'var(--q1)';
+  if(igs){igs.textContent=fmtPct(row.ig);igs.style.color=row.ig==null?'':row.ig>=0?'var(--q2)':'var(--q1)';}
+  setGauge('g-bar','g-val','g-desc',row.g,0.15,['Growth rising \u2192 risk-on','Growth falling \u2192 risk-off']);
+  setGauge('i-bar','i-val','i-desc',row.i,0.15,['Inflation rising \u2192 commodities','Inflation falling \u2192 bonds/tech']);
+  setGauge('ig-bar','ig-val','ig-desc',row.ig,0.30,['Elevated \u00B7 Q4 blocked','Normalised \u00B7 Q4 active if signalled']);
   renderTransitions(q,row,days);
   checkRegimeChange(q);
   document.getElementById('rec-lbl').textContent=QNAMES[q];
@@ -558,15 +610,24 @@ function renderLive(row){
   cn.textContent=CRYPTO[q]||'';cn.style.display='block';
 }
 
-var TRANS_PROBS={1:{1:0.929,2:0.046,3:0.003,4:0.022},2:{1:0.036,2:0.946,3:0.012,4:0.007},3:{1:0.012,2:0.046,3:0.922,4:0.021},4:{1:0.034,2:0.017,3:0.015,4:0.934}};
-var AVG_DURATIONS={1:14,2:18,3:13,4:15};
-var TRANS_PATTERNS={'2_to_1':{growth:0.0334,inflation:0.0047},'1_to_2':{growth:0.0273,inflation:-0.0060},'1_to_4':{growth:0.0021,inflation:-0.0234},'4_to_1':{growth:-0.0098,inflation:-0.0264}};
+function setGauge(barId,valId,descId,val,maxV,labels){
+  var bar=document.getElementById(barId);
+  if(!bar)return;
+  var p=val==null?0:Math.min(Math.abs(val)/maxV,1);
+  if(val!=null&&val>=0){bar.style.left='50%';bar.style.width=(p*50)+'%';bar.style.background='var(--q1)';}
+  else if(val!=null){bar.style.left=(50-p*50)+'%';bar.style.width=(p*50)+'%';bar.style.background='var(--q3)';}
+  var el=document.getElementById(valId);
+  if(el){el.textContent=val==null?'\u2014':(val>=0?'+':'')+(val*100).toFixed(2)+'%';el.style.color=val==null?'var(--mut)':val>=0?'var(--q1)':'var(--q3)';}
+  var de=document.getElementById(descId);
+  if(de)de.textContent=val==null?'\u2014':val>=0?labels[0]:labels[1];
+}
 
 function renderTransitions(q,row,daysActive){
   var probs=TRANS_PROBS[q];
   [1,2,3,4].forEach(function(tq){
     var el=document.getElementById('prob-q'+tq);
     var val=document.getElementById('prob-q'+tq+'-val');
+    if(!el||!val)return;
     val.textContent=(probs[tq]*100).toFixed(1)+'%';
     if(tq===q){el.style.borderWidth='2px';el.style.borderColor=QCOLS[q];el.style.background='var(--surf3)';}
     else{el.style.borderWidth='1px';el.style.borderColor='var(--bdr)';el.style.background='var(--surf2)';}
@@ -578,8 +639,9 @@ function renderTransitions(q,row,daysActive){
   var iDir=iChg==null?'':iChg>0.005?'\u2191':iChg<-0.005?'\u2193':'\u2192';
   var gCol=gChg==null?'var(--mut)':gChg>0?'var(--q1)':gChg<0?'var(--q3)':'var(--mut)';
   var iCol=iChg==null?'var(--mut)':iChg>0?'var(--q2)':iChg<0?'var(--q4)':'var(--mut)';
-  document.getElementById('momentum-text').innerHTML='Growth <span style="color:'+gCol+'">'+gDir+' '+(gChg!=null?fmtPct(gChg):'\u2014')+'</span><br>Inflation <span style="color:'+iCol+'">'+iDir+' '+(iChg!=null?fmtPct(iChg):'\u2014')+'</span>';
-  var nextQ=Object.keys(probs).filter(function(k){return k!=q;}).sort(function(a,b){return probs[b]-probs[a];})[0];
+  var mt=document.getElementById('momentum-text');
+  if(mt)mt.innerHTML='Growth <span style="color:'+gCol+'">'+gDir+' '+(gChg!=null?fmtPct(gChg):'\u2014')+'</span><br>Inflation <span style="color:'+iCol+'">'+iDir+' '+(iChg!=null?fmtPct(iChg):'\u2014')+'</span>';
+  var nextQ=Object.keys(probs).filter(function(k){return parseInt(k)!==q;}).sort(function(a,b){return probs[b]-probs[a];})[0];
   var patternKey=q+'_to_'+nextQ;
   var pattern=TRANS_PATTERNS[patternKey];
   var patternTxt='Most likely next: <strong style="color:'+QCOLS[nextQ]+'">Q'+nextQ+' '+QNAMES[nextQ]+'</strong> ('+(probs[nextQ]*100).toFixed(1)+'%)';
@@ -588,9 +650,9 @@ function renderTransitions(q,row,daysActive){
     var iDist=row.i!=null?Math.abs(row.i-pattern.inflation):999;
     if(gDist<0.03&&iDist<0.03)patternTxt+='<br><span style="color:var(--q2);font-size:11px;">\u26A0 Signals near historical Q'+q+'\u2192Q'+nextQ+' pattern</span>';
   }
-  document.getElementById('pattern-text').innerHTML=patternTxt;
-  document.getElementById('days-in-regime').textContent=daysActive;
-  document.getElementById('avg-duration').textContent=AVG_DURATIONS[q];
+  var pt=document.getElementById('pattern-text');if(pt)pt.innerHTML=patternTxt;
+  var dr=document.getElementById('days-in-regime');if(dr)dr.textContent=daysActive;
+  var ad=document.getElementById('avg-duration');if(ad)ad.textContent=AVG_DURATIONS[q];
 }
 
 function renderTrack(){
@@ -713,18 +775,27 @@ function subscribeAlert(){
   var email=emailEl.value.trim();
   if(!email||email.indexOf('@')<1){statusEl.textContent='Please enter a valid email address.';statusEl.style.color='var(--q3)';return;}
   btn.disabled=true;btn.textContent='Saving\u2026';
-  try{
-    var subs=JSON.parse(localStorage.getItem('regime_subs')||'[]');
-    if(subs.indexOf(email)>=0){statusEl.textContent='Already subscribed: '+email;statusEl.style.color='var(--q2)';}
-    else{subs.push(email);localStorage.setItem('regime_subs',JSON.stringify(subs));statusEl.textContent='\u2713 Subscribed: '+email+' \u2014 you\'ll receive alerts on confirmed regime changes.';statusEl.style.color='var(--q1)';emailEl.value='';}
-  }catch(e){statusEl.textContent='Error. Connect Vercel + Upstash for production email delivery.';statusEl.style.color='var(--q3)';}
-  btn.disabled=false;btn.textContent='Subscribe';
+  fetch('/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})})
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d.ok){statusEl.textContent='\u2713 Subscribed: '+email+' \u2014 you\'ll receive alerts on confirmed regime changes.';statusEl.style.color='var(--q1)';emailEl.value='';}
+      else{statusEl.textContent=d.message||'Already subscribed or error.';statusEl.style.color='var(--q2)';}
+    })
+    .catch(function(){
+      // Fallback to localStorage if server unreachable
+      try{
+        var subs=JSON.parse(localStorage.getItem('regime_subs')||'[]');
+        if(subs.indexOf(email)>=0){statusEl.textContent='Already subscribed: '+email;statusEl.style.color='var(--q2)';}
+        else{subs.push(email);localStorage.setItem('regime_subs',JSON.stringify(subs));statusEl.textContent='\u2713 Saved locally: '+email+' (server offline \u2014 check subscribe-server.js)';statusEl.style.color='var(--q2)';}
+      }catch(e){statusEl.textContent='Error saving subscription.';statusEl.style.color='var(--q3)';}
+    })
+    .finally(function(){btn.disabled=false;btn.textContent='Subscribe';});
 }
 
 function updateCountdown(){
   var now=new Date();
   var ct=new Date(now.toLocaleString('en-US',{timeZone:'America/Chicago'}));
-  var next=new Date(ct);next.setHours(17,0,0,0);
+  var next=new Date(ct);next.setHours(1,0,0,0);
   if(ct>=next)next.setDate(next.getDate()+1);
   while(next.getDay()===0||next.getDay()===6)next.setDate(next.getDate()+1);
   var diff=next-ct;
@@ -732,7 +803,6 @@ function updateCountdown(){
 }
 updateCountdown();
 setInterval(updateCountdown,60000);
-setInterval(function(){var ct=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Chicago'}));if(ct.getHours()===17&&ct.getMinutes()<3)doFetch(false);},60000);
 
 doFetch(false);
 </script>
