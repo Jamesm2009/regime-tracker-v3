@@ -161,7 +161,7 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
   <button class="tab active" onclick="showTab('live',this)">Live Regime</button>
   <button class="tab" onclick="showTab('history',this)">History</button>
   <button class="tab" onclick="showTab('backtest',this)">Backtest Stats</button>
-  <button class="tab" onclick="showTab('howto',this)">How It Works</button>
+  <button class="tab" onclick="showTab('howto',this)">How to Use</button>
 </div>
 
 <!-- LIVE TAB -->
@@ -290,65 +290,48 @@ code{background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;fo
 <!-- HOW IT WORKS TAB -->
 <div class="tp" id="tab-howto">
   <div class="hg">
-    <div class="hc">
-      <div class="ht" style="color:var(--q1);">&#x2460; Signal Calculation (daily)</div>
-      <div class="hs"><div class="hn">1</div><div class="hb"><strong>Growth proxy</strong> &#8212; SPY rolling 20-day return. Positive = growth rising.</div></div>
-      <div class="hs"><div class="hn">2</div><div class="hb"><strong>Inflation proxy</strong> &#8212; DBC + GLD rolling 20-day avg. Swaps DBC&#8594;DBA if energy premium &gt;6pp (geopolitical filter).</div></div>
-      <div class="hs"><div class="hn">3</div><div class="hb"><strong>Inflation gate</strong> &#8212; DBC + GLD rolling 63-day return. Positive &#8776; sustained CPI above 3%. Used only to filter false Q4 signals.</div></div>
-    </div>
-    <div class="hc">
-      <div class="ht" style="color:var(--q2);">&#x2461; Quadrant Assignment</div>
-      <div class="hs"><div class="hn">Q1</div><div class="hb"><strong style="color:var(--q1);">Goldilocks</strong> &#8212; Growth &#8593; Inflation &#8595; &#8594; Tech, Growth equities<br><span style="font-size:11px;">QQQ &middot; IWF &middot; MGK &middot; SMH &middot; XLK &middot; XLY &middot; XHB &middot; IWM</span></div></div>
-      <div class="hs"><div class="hn">Q2</div><div class="hb"><strong style="color:var(--q2);">Overheating</strong> &#8212; Growth &#8593; Inflation &#8593; &#8594; Commodities, Cyclicals<br><span style="font-size:11px;">XLE &middot; XLB &middot; SLV &middot; DBC &middot; GLD &middot; XLI &middot; SMH &middot; XHB</span></div></div>
-      <div class="hs"><div class="hn">Q3</div><div class="hb"><strong style="color:var(--q3);">Stagflation</strong> &#8212; Growth &#8595; Inflation &#8593; &#8594; Gold, Energy, Short bonds<br><span style="font-size:11px;">GLD &middot; SLV &middot; USO &middot; XLE &middot; SHY &middot; XLK</span></div></div>
-      <div class="hs"><div class="hn">Q4</div><div class="hb"><strong style="color:var(--q4);">Deflation</strong> &#8212; Growth &#8595; Inflation &#8595; &#8594; Defensives, Mid bonds (gate must be clear)<br><span style="font-size:11px;">XLU &middot; XLP &middot; XLV &middot; IEF &middot; IEI &middot; SHY</span></div></div>
-    </div>
-    <div class="hc">
-      <div class="ht" style="color:var(--q3);">&#x2462; 3-Day Confirmation Filter</div>
-      <div class="hs"><div class="hn">A</div><div class="hb">A regime change is <strong>flagged</strong> when today's quadrant differs from yesterday's. No action yet.</div></div>
-      <div class="hs"><div class="hn">B</div><div class="hb">Confirmed only if the same quadrant holds on day+1 and day+2. Eliminates 42% of false signals.</div></div>
-      <div class="hs"><div class="hn">C</div><div class="hb">Unconfirmed flags are <strong>ignored</strong> &#8212; the previous regime remains active. ~40 confirmed changes/year.</div></div>
-    </div>
-    <div class="hc">
-      <div class="ht" style="color:var(--q4);">&#x2463; Q4 Inflation Gate</div>
-      <div class="hs"><div class="hn">A</div><div class="hb">If Q4 fires but 63d DBC+GLD momentum is still positive, inflation hasn't rolled over &#8212; false signal.</div></div>
-      <div class="hs"><div class="hn">B</div><div class="hb"><strong>Action: skip</strong> &#8212; hold the previous regime. 63% of historical Q4 signals filtered this way.</div></div>
-      <div class="hs"><div class="hn">C</div><div class="hb">When gate clears: act with <strong>XLU &middot; XLP &middot; XLV &middot; IEF &middot; IEI &middot; SHY</strong>. Hit rate rises to 50%.</div></div>
-    </div>
     <div class="hc wide tinted">
-      <div class="ht">&#x2464; Style Factor Framework &#8212; What Works in Each Quadrant</div>
-      <div class="fg4">
-        <div class="fcard" style="background:rgba(47,217,138,.07);border:1px solid rgba(47,217,138,.2);">
-          <div style="font-size:11px;font-weight:700;color:var(--q1);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Q1 &#8212; Goldilocks</div>
-          <div style="font-size:12px;color:var(--mut);line-height:1.75;"><strong style="color:var(--txt);">Long:</strong> US Large Growth &middot; High Momentum &middot; Small Cap<br><strong style="color:var(--txt);">Short:</strong> Energy &middot; Intl/EM Equities<br><strong style="color:var(--txt);">Bonds:</strong> Avoid duration<br><strong style="color:var(--txt);">Crypto:</strong> IBIT opportunistic (satellite, high risk)<br><strong style="color:var(--txt);">FX:</strong> USD neutral</div>
-        </div>
-        <div class="fcard" style="background:rgba(240,160,48,.07);border:1px solid rgba(240,160,48,.2);">
-          <div style="font-size:11px;font-weight:700;color:var(--q2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Q2 &#8212; Overheating</div>
-          <div style="font-size:12px;color:var(--mut);line-height:1.75;"><strong style="color:var(--txt);">Long:</strong> Commodities &middot; Energy &middot; Cyclicals<br><strong style="color:var(--txt);">Short:</strong> Long Bonds &middot; High Yield &middot; EUR/JPY<br><strong style="color:var(--txt);">Bonds:</strong> Short duration only<br><strong style="color:var(--txt);">Crypto:</strong> Neutral &#8212; avoid<br><strong style="color:var(--txt);">FX:</strong> USD strong, avoid EUR/JPY</div>
-        </div>
-        <div class="fcard" style="background:rgba(232,85,85,.07);border:1px solid rgba(232,85,85,.2);">
-          <div style="font-size:11px;font-weight:700;color:var(--q3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Q3 &#8212; Stagflation</div>
-          <div style="font-size:12px;color:var(--mut);line-height:1.75;"><strong style="color:var(--txt);">Long:</strong> Gold &middot; Silver &middot; Oil &middot; Energy<br><strong style="color:var(--txt);">Short:</strong> Long Bonds &middot; EM Bonds &middot; JPY<br><strong style="color:var(--txt);">Bonds:</strong> Short duration only (SHY)<br><strong style="color:var(--txt);">Crypto:</strong> IBIT opportunistic (satellite)<br><strong style="color:var(--txt);">FX:</strong> USD strong, avoid JPY</div>
-        </div>
-        <div class="fcard" style="background:rgba(91,158,240,.07);border:1px solid rgba(91,158,240,.2);">
-          <div style="font-size:11px;font-weight:700;color:var(--q4);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Q4 &#8212; Deflation</div>
-          <div style="font-size:12px;color:var(--mut);line-height:1.75;"><strong style="color:var(--txt);">Long:</strong> Defensives &middot; Low Vol &middot; Med Bonds<br><strong style="color:var(--txt);">Short:</strong> Oil &middot; Commodities &middot; Frontier EM<br><strong style="color:var(--txt);">Bonds:</strong> Med duration (IEF/IEI), avoid TLT<br><strong style="color:var(--txt);">Crypto:</strong> Not recommended<br><strong style="color:var(--txt);">Gate:</strong> Only fires when 63d infl gate is clear</div>
-        </div>
+      <div class="ht" style="color:var(--txt);">&#128218; Quick Start &#8212; Three Things to Check Every Morning</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:4px;" class="infra3">
+        <div style="background:var(--surf);border-radius:9px;padding:14px 16px;border:1px solid var(--bdr);"><div style="font-size:11px;font-weight:700;color:var(--q1);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">1 Current Regime</div><div style="font-size:12px;color:var(--mut);line-height:1.8;">Check the <strong style="color:var(--txt);">large coloured card</strong> top-left. It tells you which of the four macro environments we are in right now and how long it has been active.</div></div>
+        <div style="background:var(--surf);border-radius:9px;padding:14px 16px;border:1px solid var(--bdr);"><div style="font-size:11px;font-weight:700;color:var(--q2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">2 Confirmation Status</div><div style="font-size:12px;color:var(--mut);line-height:1.8;">Check the <strong style="color:var(--txt);">status panel</strong> top-right. If it says <strong style="color:var(--q1);">CONFIRMED</strong> the regime is actionable. If <strong style="color:var(--q3);">PENDING</strong> wait one more day before acting.</div></div>
+        <div style="background:var(--surf);border-radius:9px;padding:14px 16px;border:1px solid var(--bdr);"><div style="font-size:11px;font-weight:700;color:var(--q3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">3 ETF Recommendations</div><div style="font-size:12px;color:var(--mut);line-height:1.8;">Scroll to the <strong style="color:var(--txt);">ETF tiles</strong>. Green tiles are <strong style="color:var(--txt);">long recommendations</strong>. Red-bordered tiles are <strong style="color:var(--txt);">short candidates</strong> that historically underperform in this regime.</div></div>
       </div>
+    </div>
+    <div class="hc">
+      <div class="ht" style="color:var(--q1);">Reading the Four Regimes</div>
+      <div class="hs"><div class="hn" style="background:rgba(47,217,138,.15);border-color:var(--q1);color:var(--q1);">Q1</div><div class="hb"><strong style="color:var(--q1);">Goldilocks</strong> &#8212; Economy growing, inflation falling. Best for tech and growth stocks. SPY trending up, commodities flat or falling.</div></div>
+      <div class="hs"><div class="hn" style="background:rgba(240,160,48,.15);border-color:var(--q2);color:var(--q2);">Q2</div><div class="hb"><strong style="color:var(--q2);">Overheating</strong> &#8212; Economy growing but inflation rising. Favour commodities, energy, cyclicals. Avoid long bonds.</div></div>
+      <div class="hs"><div class="hn" style="background:rgba(232,85,85,.15);border-color:var(--q3);color:var(--q3);">Q3</div><div class="hb"><strong style="color:var(--q3);">Stagflation</strong> &#8212; Economy slowing, inflation stays high. Gold and energy hold value. Most equities and bonds struggle.</div></div>
+      <div class="hs"><div class="hn" style="background:rgba(91,158,240,.15);border-color:var(--q4);color:var(--q4);">Q4</div><div class="hb"><strong style="color:var(--q4);">Deflation</strong> &#8212; Economy slowing, inflation falling. Defensives and medium bonds outperform. Only activates when the inflation gate clears.</div></div>
+    </div>
+    <div class="hc">
+      <div class="ht" style="color:var(--q2);">Reading the Three Gauges</div>
+      <div class="hs"><div class="hn" style="color:var(--q1);border-color:var(--q1);">G</div><div class="hb"><strong style="color:var(--q1);">Growth gauge</strong> &#8212; SPY 20-day return. Bar right of centre = growth rising, favour equities. Bar left = growth falling, reduce risk.</div></div>
+      <div class="hs"><div class="hn" style="color:var(--q2);border-color:var(--q2);">I</div><div class="hb"><strong style="color:var(--q2);">Inflation gauge</strong> &#8212; Commodity basket 20-day return. Bar right = inflation rising, favour commodities. Bar left = inflation falling, favour bonds and tech.</div></div>
+      <div class="hs"><div class="hn" style="color:var(--q4);border-color:var(--q4);">G</div><div class="hb"><strong style="color:var(--q4);">Gate gauge</strong> &#8212; 63-day commodity momentum. HIGH = Q4 blocked even if signals say deflation. LOW = Q4 can activate.</div></div>
+    </div>
+    <div class="hc">
+      <div class="ht" style="color:var(--q3);">When a Regime Changes</div>
+      <div class="hs"><div class="hn">1</div><div class="hb"><strong>Wait for confirmation.</strong> A new regime must hold for 3 consecutive days before marked CONFIRMED. Do not act on the first day of a potential change.</div></div>
+      <div class="hs"><div class="hn">2</div><div class="hb"><strong>Check the transition panel.</strong> The probabilities panel shows how likely a shift to each quadrant is, based on 15 years of history.</div></div>
+      <div class="hs"><div class="hn">3</div><div class="hb"><strong>Rotate gradually.</strong> ETF tiles update automatically. Use the 20d and 5d return figures to assess momentum before entering a position.</div></div>
+      <div class="hs"><div class="hn">4</div><div class="hb"><strong>Subscribe to alerts.</strong> Enter your email at the bottom of the Live Regime tab. You will be notified on every confirmed change &#8212; roughly 16 per year.</div></div>
+    </div>
+    <div class="hc">
+      <div class="ht" style="color:var(--q4);">Using History &amp; Backtest Tabs</div>
+      <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>History tab</strong> &#8212; SPY price overlaid with colour-coded regime bands. Toggle 3M / 6M / 1Y. The signal chart below shows what drove each regime change.</div></div>
+      <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Backtest Stats tab</strong> &#8212; 15-year hit rate per quadrant. Q2 has the highest avg forward return (+1.46%). Q1 has the lowest false signal rate (13%).</div></div>
+      <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Track record</strong> &#8212; Bottom of Live Regime tab shows the last 5 trading days with regime, SPY daily return, and all three signal readings.</div></div>
     </div>
     <div class="hc wide">
-      <div class="ht" style="color:var(--mut);">&#x2465; Live Data &middot; DigitalOcean + Tiingo + Yahoo Finance</div>
-      <div class="hconn">
-        <div>
-          <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Nightly signal calc</strong> &#8212; cron.js runs at 1am CT weekdays. Fetches SPY, DBC, GLD, DBA from Tiingo API. Writes <code>data.json</code>. Dashboard reads this on load &#8212; instant.</div></div>
-          <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Live ETF prices</strong> &#8212; Yahoo Finance via corsproxy.io. Fetched client-side for the ETF tiles (20d &amp; 5d returns). No API key required.</div></div>
-        </div>
-        <div>
-          <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Email alerts</strong> &#8212; On confirmed regime change, cron.js fires Resend API to all subscribers. ~40 alerts/year per subscriber.</div></div>
-          <div class="hs"><div class="hn">&#8594;</div><div class="hb"><strong>Subscriptions</strong> &#8212; subscribe-server.js (PM2, port 3001) handles email sign-ups. Nginx proxies <code>/subscribe</code> to it.</div></div>
-        </div>
+      <div class="ht" style="color:var(--mut);">Important Limitations</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;" class="hconn">
+        <div style="font-size:12px;color:var(--mut);line-height:1.8;"><strong style="color:var(--txt);">Signal tool, not a trading system.</strong> The regime identifies the macro environment and historically outperforming asset classes. It does not dictate position sizing, entry timing, or risk management.</div>
+        <div style="font-size:12px;color:var(--mut);line-height:1.8;"><strong style="color:var(--txt);">Hit rates are not guarantees.</strong> A 62% hit rate means outperformance in 62 of 100 signals over 15 years. The other 38% it did not. Always use stop-losses and size positions accordingly.</div>
+        <div style="font-size:12px;color:var(--mut);line-height:1.8;"><strong style="color:var(--txt);">Data updates once per day.</strong> Signals are calculated after market close using end-of-day prices. Not suitable for intraday decisions.</div>
+        <div style="font-size:12px;color:var(--mut);line-height:1.8;"><strong style="color:var(--txt);">Crypto is satellite only.</strong> IBIT is listed as opportunistic in Q1 and Q3 with high average returns but very high standard deviation. Only use with a small allocation you can afford to lose.</div>
       </div>
-      <div class="nb"><strong>Note on UUP:</strong> Tested and excluded from all baskets &#8212; worst performer in Q4 in both high and low CPI environments (&#8722;0.46% and &#8722;1.35% respectively).</div>
     </div>
   </div>
 </div>
@@ -390,39 +373,21 @@ var btChartInst=null;
 var lastKnownQ=null;
 
 // ── Multi-proxy fetch (3 fallbacks) ──────────────────────────────────────────
-var PROXIES=[
-  function(u){return 'https://corsproxy.io/?url='+encodeURIComponent(u);},
-  function(u){return 'https://api.allorigins.win/raw?url='+encodeURIComponent(u);},
-  function(u){return 'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(u);}
-];
-var YAHOO_HOSTS=['https://query1.finance.yahoo.com','https://query2.finance.yahoo.com'];
-
 function parseYahooJson(j){
   var res=j.chart.result[0];
   var ts=res.timestamp;
   var cl=res.indicators.quote[0].close;
   return ts.map(function(t,i){return{d:new Date(t*1000).toISOString().slice(0,10),c:cl[i]};}).filter(function(x){return x.c!=null;});
 }
-
-function fetchWithProxy(ticker,days,pi,hi){
-  pi=pi||0;hi=hi||0;
-  if(pi>=PROXIES.length){return Promise.reject(new Error(ticker+': all proxies failed'));}
-  var yUrl=YAHOO_HOSTS[hi]+'/v8/finance/chart/'+ticker+'?interval=1d&range='+days+'d';
-  var pUrl=PROXIES[pi](yUrl);
-  return fetch(pUrl).then(function(r){
-    if(!r.ok)throw new Error('HTTP '+r.status);
+function fetchYahoo(ticker,days){
+  return fetch('/yf/v8/finance/chart/'+ticker+'?interval=1d&range='+days+'d').then(function(r){
+    if(!r.ok)throw new Error(ticker+' HTTP '+r.status);
     return r.json();
   }).then(function(j){
     if(!j.chart||!j.chart.result||!j.chart.result[0])throw new Error('bad data');
     return parseYahooJson(j);
-  }).catch(function(){
-    var nh=hi+1<YAHOO_HOSTS.length?hi+1:0;
-    var np=nh===0?pi+1:pi;
-    return fetchWithProxy(ticker,days,np,nh);
   });
 }
-
-function fetchYahoo(ticker,days){return fetchWithProxy(ticker,days,0,0);}
 // ─────────────────────────────────────────────────────────────────────────────
 
 function checkRegimeChange(q){
