@@ -73,7 +73,3 @@ var server = http.createServer(function(req, res) {
 
   res.writeHead(405); res.end(JSON.stringify({ok:false,error:'Method not allowed'}));
 });
-
-server.listen(PORT, function(){
-  console.log('['+new Date().toISOString()+'] Subscribe server running on port '+PORT);
-});
