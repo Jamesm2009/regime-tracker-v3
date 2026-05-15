@@ -407,56 +407,42 @@ function doFetch(manual){
   var badge=document.getElementById('data-badge');
   btn.disabled=true;
   badge.className='badge blo';
-  badge.textContent='\u27F3 Fetching\u2026';
-  // First try loading from server cache (data.json)
-  fetch('/data.json').then(function(r){
+  badge.textContent='⟳ Loading…';
+  fetch('/data.json?_='+Date.now()).then(function(r){
     if(!r.ok)throw new Error('no data.json');
     return r.json();
   }).then(function(d){
-    if(d&&d.spy&&d.spy.length>10){
-      allPrices={spy:d.spy,dbc:d.dbc,gld:d.gld,dba:d.dba||[]};
-      buildHistoryRows();
-      renderAll();
-      badge.className='badge bl';badge.textContent='\u25CF Cached ('+(d.date||'?')+')';btn.disabled=false;
-      // Now fetch live ETF prices on top
-      fetchLiveETFs();
-    } else {
-      throw new Error('stale');
-    }
-  }).catch(function(){
-    // Fall back to direct Yahoo fetch
-    Promise.all([fetchYahoo('SPY',270),fetchYahoo('DBC',270),fetchYahoo('GLD',270),fetchYahoo('DBA',270)]).then(function(results){
-      allPrices={spy:results[0],dbc:results[1],gld:results[2],dba:results[3]};
-      buildHistoryRows();
-      var fq=historyRows.length?historyRows[historyRows.length-1].q||2:2;
-      etfPerf={};etfPerf5d={};
-      [{t:'SPY',p:results[0]},{t:'DBC',p:results[1]},{t:'GLD',p:results[2]},{t:'DBA',p:results[3]}].forEach(function(x){
-        var n=x.p.length;
-        if(n>=21)etfPerf[x.t]=(x.p[n-1].c-x.p[n-21].c)/x.p[n-21].c*100;
-        if(n>=6)etfPerf5d[x.t]=(x.p[n-1].c-x.p[n-6].c)/x.p[n-6].c*100;
-      });
-      var need=[];var seen={};
-      (RECS[fq]||[]).concat(SHORTS[fq]||[]).forEach(function(t){if(!seen[t]&&!(t in etfPerf)){seen[t]=1;need.push(t);}});
-      return Promise.allSettled(need.map(function(t){return fetchYahoo(t,45);})).then(function(res2){
-        need.forEach(function(t,i){
-          var r=res2[i];
-          if(r.status==='fulfilled'){var p=r.value;var n=p.length;if(n>=21)etfPerf[t]=(p[n-1].c-p[n-21].c)/p[n-21].c*100;if(n>=6)etfPerf5d[t]=(p[n-1].c-p[n-6].c)/p[n-6].c*100;}
-        });
-        renderAll();
-        badge.className='badge bl';badge.textContent='\u25CF Live data';btn.disabled=false;
-        var errDiv=document.getElementById('fetch-error-msg');if(errDiv)errDiv.remove();
-      });
-    }).catch(function(e){
-      console.error('Fetch error:',e);
-      badge.className='badge bd';
-      badge.textContent='\u2715 Data unavailable';
-      btn.disabled=false;
-      var statusDiv=document.getElementById('fetch-error-msg');
-      if(!statusDiv){statusDiv=document.createElement('div');statusDiv.id='fetch-error-msg';statusDiv.style.cssText='background:rgba(232,85,85,.1);border:1px solid rgba(232,85,85,.3);border-radius:9px;padding:12px 16px;font-size:12px;color:var(--mut);line-height:1.75;margin-bottom:14px;';document.getElementById('tab-live').insertBefore(statusDiv,document.getElementById('tab-live').firstChild);}
-      statusDiv.innerHTML='<strong style="color:var(--q3);">\u26A0 Data fetch failed.</strong> Yahoo Finance proxy may be temporarily blocked. <strong style="color:var(--txt);">Wait 2\u20133 minutes and click \u8635 Refresh.</strong> Error: '+e.message;
-    });
+    if(!d||!d.signals)throw new Error('invalid data');
+    var errDiv=document.getElementById('fetch-error-msg');if(errDiv)errDiv.remove();
+    currentQ=d.regime||2;
+    var fakeRow={d:d.date,spyClose:null,g:d.signals.growth,i:d.signals.inflation,ig:d.signals.gate,q:d.regime};
+    historyRows=[fakeRow];
+    if(d.transitions){var tp={};Object.keys(d.transitions).forEach(function(k){tp[parseInt(k)]=parseFloat(d.transitions[k]);});TRANS_PROBS[currentQ]=tp;}
+    document.getElementById('datestamp').textContent=d.date+' · as of last close';
+    renderLive(fakeRow);
+    badge.className='badge bl';badge.textContent='● '+d.date;btn.disabled=false;
+    fetchLiveETFs();
+    fetchHistory();
+  }).catch(function(e){
+    console.error('data.json error:',e);
+    badge.className='badge bd';badge.textContent='✕ Data unavailable';btn.disabled=false;
+    var statusDiv=document.getElementById('fetch-error-msg');
+    if(!statusDiv){statusDiv=document.createElement('div');statusDiv.id='fetch-error-msg';statusDiv.style.cssText='background:rgba(232,85,85,.1);border:1px solid rgba(232,85,85,.3);border-radius:9px;padding:12px 16px;font-size:12px;color:var(--mut);line-height:1.75;margin-bottom:14px;';document.getElementById('tab-live').insertBefore(statusDiv,document.getElementById('tab-live').firstChild);}
+    statusDiv.innerHTML='<strong style="color:var(--q3);">⚠ Signal data unavailable.</strong> Signals update at <strong style="color:var(--txt);">1am CT weekdays</strong> via the server cron. Try refreshing after that time.';
   });
 }
+
+function fetchHistory(){
+  Promise.all([fetchYahoo('SPY',270),fetchYahoo('DBC',270),fetchYahoo('GLD',270),fetchYahoo('DBA',270)]).then(function(results){
+    allPrices={spy:results[0],dbc:results[1],gld:results[2],dba:results[3]};
+    buildHistoryRows();
+    var cronQ=currentQ;
+    buildHistChart();
+    buildBT();
+    if(historyRows.length){historyRows[historyRows.length-1].q=cronQ;}
+  }).catch(function(e){console.warn('History fetch failed:',e);});
+}
+
 
 function fetchLiveETFs(){
   var fq=historyRows.length?historyRows[historyRows.length-1].q||2:2;
