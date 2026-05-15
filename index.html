@@ -371,6 +371,7 @@ var histChart=null;
 var sigChart=null;
 var btChartInst=null;
 var lastKnownQ=null;
+var cronDaysActive=null;
 
 // ── Multi-proxy fetch (3 fallbacks) ──────────────────────────────────────────
 function parseYahooJson(j){
@@ -420,6 +421,7 @@ function doFetch(manual){
     if(d.transitions){var tp={};Object.keys(d.transitions).forEach(function(k){tp[parseInt(k)]=parseFloat(d.transitions[k]);});TRANS_PROBS[currentQ]=tp;}
     document.getElementById('datestamp').textContent=d.date+' · as of last close';
     renderLive(fakeRow);
+    if(d.days_active){cronDaysActive=d.days_active;document.getElementById('days-val').textContent=d.days_active;}
     badge.className='badge bl';badge.textContent='● '+d.date;btn.disabled=false;
     fetchLiveETFs();
     fetchHistory();
@@ -520,7 +522,7 @@ function renderLive(row){
   nm.textContent=QNAMES[q];nm.style.color=QCOLS[q];
   document.getElementById('regime-arrow').textContent=QARROWS[q];
   var days=0;for(var k=historyRows.length-1;k>=0;k--){if(historyRows[k].q===q)days++;else break;}
-  document.getElementById('days-val').textContent=days;
+  document.getElementById('days-val').textContent=cronDaysActive!==null?cronDaysActive:days;
   document.getElementById('hit-val').textContent=BT[q].hit+'%';
   document.getElementById('fwd-val').textContent='+'+BT[q].avg.toFixed(2)+'%';
   var hi=row.ig!=null&&row.ig>0;
@@ -748,7 +750,7 @@ function updateCountdown(){
   var ct=new Date(now.toLocaleString('en-US',{timeZone:'America/Chicago'}));
   var next=new Date(ct);next.setHours(1,0,0,0);
   if(ct>=next)next.setDate(next.getDate()+1);
-  while(next.getDay()===0||next.getDay()===6)next.setDate(next.getDate()+1);
+  while(next.getDay()===0)next.setDate(next.getDate()+1);
   var diff=next-ct;
   document.getElementById('countdown').textContent='Next update in '+Math.floor(diff/3600000)+'h '+Math.floor((diff%3600000)/60000)+'m';
 }
