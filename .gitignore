@@ -1,0 +1,13 @@
+*.backup
+*.bak
+*.before_optionB
+*.fixed
+apply_fix.sh
+complete_fix.py
+patch_final.py
+patch_guide.py
+patch_guide2.py
+data.json
+state.json
+regime_history.json
+subscribers.json

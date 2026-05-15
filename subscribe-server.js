@@ -1,13 +1,9 @@
 #!/usr/bin/env node
-// subscribe-server.js — tiny HTTP server for email subscription
-// Runs on port 3001. Nginx proxies /api/subscribe to this.
-// Start: node subscribe-server.js
-// Production: use PM2 — pm2 start subscribe-server.js --name regime-subscribe
-
-var http  = require('http');
-var fs    = require('fs');
-var path  = require('path');
-
+var http      = require('http');
+var https     = require('https');
+var fs        = require('fs');
+var path      = require('path');
+var urlModule = require('url');
 var SUBS_FILE = '/var/www/regime-tracker/subscribers.json';
 var PORT      = 3001;
 
@@ -26,27 +22,56 @@ var server = http.createServer(function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') { res.writeHead(200); res.end(); return; }
+
+  var parsed   = urlModule.parse(req.url, true);
+  var pathname = parsed.pathname;
+
+  // ── Proxy route ──────────────────────────────────────────────
+  if (req.method === 'GET' && pathname === '/proxy') {
+    var targetUrl = parsed.query.url;
+    if (!targetUrl) {
+      res.setHeader('Content-Type', 'application/json');
+      res.writeHead(400);
+      res.end(JSON.stringify({error:'no url'}));
+      return;
+    }
+    https.get(targetUrl, {headers:{'User-Agent':'Mozilla/5.0'}}, function(r) {
+      var data = '';
+      r.on('data', function(c){ data += c; });
+      r.on('end', function(){
+        res.setHeader('Content-Type', 'text/plain');
+        res.writeHead(200);
+        res.end(data);
+      });
+    }).on('error', function(e){
+      res.setHeader('Content-Type', 'application/json');
+      res.writeHead(500);
+      res.end(JSON.stringify({error:e.message}));
+    });
+    return;
+  }
+
+  // ── All other routes return JSON ─────────────────────────────
   res.setHeader('Content-Type', 'application/json');
 
-  if(req.method === 'OPTIONS'){ res.writeHead(200); res.end(); return; }
-
-  if(req.method === 'GET'){
+  if (req.method === 'GET') {
     var subs = readSubs();
     res.writeHead(200);
     res.end(JSON.stringify({ok:true, subscriberCount:subs.length, message:'Subscribe server running'}));
     return;
   }
-
-  if(req.method === 'POST'){
+  if (req.method === 'POST') {
     var body = '';
     req.on('data', function(chunk){ body += chunk; });
     req.on('end', function(){
       var data;
       try { data = JSON.parse(body); } catch(e){ res.writeHead(400); res.end(JSON.stringify({ok:false,error:'Bad JSON'})); return; }
       var email = ((data.email || '').trim()).toLowerCase();
-      if(!isValidEmail(email)){ res.writeHead(400); res.end(JSON.stringify({ok:false,error:'Invalid email'})); return; }
+      if (!isValidEmail(email)){ res.writeHead(400); res.end(JSON.stringify({ok:false,error:'Invalid email'})); return; }
       var subs = readSubs();
-      if(subs.indexOf(email) >= 0){
+      if (subs.indexOf(email) >= 0) {
         res.writeHead(200); res.end(JSON.stringify({ok:true,email:email,added:false,message:'Already subscribed'}));
       } else {
         subs.push(email);
@@ -56,20 +81,18 @@ var server = http.createServer(function(req, res) {
     });
     return;
   }
-
-  if(req.method === 'DELETE'){
+  if (req.method === 'DELETE') {
     var body2 = '';
     req.on('data', function(chunk){ body2 += chunk; });
     req.on('end', function(){
       var data2;
       try { data2 = JSON.parse(body2); } catch(e){ res.writeHead(400); res.end(JSON.stringify({ok:false,error:'Bad JSON'})); return; }
       var email2 = ((data2.email || '').trim()).toLowerCase();
-      var subs2 = readSubs().filter(function(e){ return e !== email2; });
+      var subs2  = readSubs().filter(function(e){ return e !== email2; });
       writeSubs(subs2);
       res.writeHead(200); res.end(JSON.stringify({ok:true,email:email2,message:'Unsubscribed'}));
     });
     return;
   }
-
   res.writeHead(405); res.end(JSON.stringify({ok:false,error:'Method not allowed'}));
 });
